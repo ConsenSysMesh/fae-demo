@@ -1,6 +1,4 @@
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE DeriveGeneric #-}
-{-# LANGUAGE GeneralizedNewtypeDeriving #-}
 
 module Lib
   ( runServer
@@ -29,7 +27,7 @@ numClients = length
 
 --Check if a user already exists (based on username):
 clientExists :: Client -> ServerState -> Bool
-clientExists client clients = elem client clients
+clientExists client clients = client `elem` clients
 
 --Add a client (this does not check if the client already exists, you should do
 --this yourself using `clientExists`):
@@ -52,7 +50,7 @@ talk :: WS.Connection -> MVar ServerState -> Client -> IO ()
 talk conn state (Client (user, _)) =
   forever $ do
     msg <- WS.receiveData conn
-    readMVar state >>= broadcast (msg)
+    readMVar state >>= broadcast msg
 
 --The main function first creates a new state for the server, then spawns the
 --actual server. For this purpose, we use the simple server provided by
