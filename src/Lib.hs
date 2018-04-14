@@ -17,77 +17,46 @@ import qualified Data.Text.Lazy.Encoding as D
 import qualified Data.Text.Lazy as X
 import qualified Network.WebSockets as WS
 import Data.Aeson
-import GHC.Generics
-
-data Bid = Bid {
-    value :: String
-  , bidder :: String
-  , timestamp :: String
-  } | Noop deriving (Show, Generic)
-  
-instance FromJSON Bid
-instance ToJSON Bid where
-    toJSON bid = toJSON $ show bid
-
---We represent a client by their username and a `WS.Connection`. We will see how we
---obtain this `WS.Connection` later on.
-
-newtype Client = Client (Text, WS.Connection)
-
-instance Eq Client where
-  (Client (x, _)) == (Client (y, _)) = x == y
-
---The state kept on the server is simply a list of connected clients. We've added
---an alias and some utility functions, so it will be easier to extend this state
---later on.
-
-type ServerState = [Client]
-
-instance ToJSON Client where
-    -- No need to provide a toJSON implementation.
-
-    -- For efficiency, we write a simple toEncoding implementation, as
-    -- the default version uses toJSON.
-    toJSON (Client (name, _)) = toJSON $ show (name, name)
+import Types 
 
 --Create a new, initial state:
-
 newServerState :: ServerState
 newServerState = []
 
 --Get the number of active clients:
-
 numClients :: ServerState -> Int
 numClients = length
 
 --Check if a user already exists (based on username):
-
 clientExists :: Client -> ServerState -> Bool
 clientExists client clients = elem client clients
 
 --Add a client (this does not check if the client already exists, you should do
 --this yourself using `clientExists`):
-
 addClient :: Client -> ServerState -> ServerState
 addClient client clients = client : clients
 
 --Remove a client:
-
 removeClient :: Client -> ServerState -> ServerState
 removeClient client = filter (/= client)
 
 --Send a message to all clients, and log it on stdout:
-
 broadcast :: Text -> ServerState -> IO ()
 broadcast message clients = do
     T.putStrLn message
     forM_ clients $ \(Client (_, conn)) -> WS.sendTextData conn message
 
+--The talk function continues to read messages from a single client until he
+--disconnects. All messages are broadcasted to the other clients.
+talk :: WS.Connection -> MVar ServerState -> Client -> IO ()
+talk conn state (Client(user, _)) = forever $ do
+    msg <- WS.receiveData conn
+    readMVar state >>= broadcast
+        (msg)
 
 --The main function first creates a new state for the server, then spawns the
 --actual server. For this purpose, we use the simple server provided by
 --`WS.runServer`.
-
 runServer :: IO ()
 runServer = do
     state <- newMVar newServerState
@@ -117,7 +86,7 @@ application state pending = do
     msg <- WS.receiveData conn
     clients <- readMVar state
     case msg of
-        
+
 --Check that the given username is not already taken:
 
          _  | clientExists client clients ->
@@ -152,12 +121,3 @@ application state pending = do
                 s <- modifyMVar state $ \s ->
                     let s' = removeClient client s in return (s', s')
                 broadcast (clientName `mappend` " disconnected") s
-
---The talk function continues to read messages from a single client until he
---disconnects. All messages are broadcasted to the other clients.
-
-talk :: WS.Connection -> MVar ServerState -> Client -> IO ()
-talk conn state (Client(user, _)) = forever $ do
-    msg <- WS.receiveData conn
-    readMVar state >>= broadcast
-        (msg)
