@@ -35,9 +35,5 @@ instance Eq Client where
 --later on.
 type ServerState = [Client]
 
-instance ToJSON Client
-    -- No need to provide a toJSON implementation.
-    -- For efficiency, we write a simple toEncoding implementation, as
-    -- the default version uses toJSON.
-                                        where
+instance ToJSON Client where
   toJSON (Client (name, _)) = toJSON $ show (name, name)
