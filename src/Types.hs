@@ -1,7 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE DeriveGeneric #-}
-{-# LANGUAGE GeneralizedNewtypeDeriving #-}
-{-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE DeriveAnyClass #-}
 
 module Types where
 
@@ -17,7 +16,7 @@ newtype Client =
 
 data ServerState = ServerState
   { clients :: [Client]
-  , auctions :: [String]
+  , auctions :: [Auction]
   }
 
 instance Eq Client where
@@ -26,14 +25,41 @@ instance Eq Client where
 instance ToJSON Client where
   toJSON (Client (name, _)) = toJSON $ show (name, name)
 
-data Bid
-  = Bid { value :: String
-        , bidder :: String
-        , timestamp :: String }
-  | Noop
-  deriving (Show, Generic)
+data AuctionCreated = AuctionCreated
+  { createdBy :: String
+  , initialValue :: Double
+  , maxNumBids :: Int
+  , createdTimestamp :: String
+  } deriving (Show, Generic, FromJSON)
 
-instance FromJSON Bid
+data Bid = Bid
+  { bidValue :: String
+  , bidder :: String
+  , bidTimestamp :: String
+  } deriving (Show, Generic, FromJSON)
+
+data Id =
+  Id
+  deriving (Show, Generic, FromJSON)
+
+data Action
+  = AuctionCreatedAction AuctionCreated
+  | BidAction Bid
+  | IdAction Id -- Identity action represents a noop
+  deriving (Show, Generic, FromJSON)
+
+instance ToJSON Action where
+  toJSON action = toJSON $ show action
+
+instance ToJSON AuctionCreated where
+  toJSON auctionCreated = toJSON $ show auctionCreated
 
 instance ToJSON Bid where
   toJSON bid = toJSON $ show bid
+
+instance ToJSON Id where
+  toJSON id = toJSON $ show id
+
+newtype Auction =
+  Auction [Bid]
+  deriving (Show, Generic, FromJSON)

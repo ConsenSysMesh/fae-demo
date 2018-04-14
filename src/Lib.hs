@@ -102,7 +102,9 @@ application state pending = do
               T.filter (\c -> c `notElem` ['"', ' ']) $
               T.drop (T.length prefix) msg
             client = Client (clientName, conn)
-            sampleBid = Bid {value = "1", bidder = "Xena", timestamp = "12pm"}
+            sampleBid =
+              BidAction
+                Bid {bidValue = "1", bidder = "Xena", bidTimestamp = "12pm"}
             jsonClient = X.toStrict $ D.decodeUtf8 $ encode client
             jsonBid = X.toStrict $ D.decodeUtf8 $ encode sampleBid
             disconnect
