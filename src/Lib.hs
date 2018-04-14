@@ -21,10 +21,6 @@ import Types
 newServerState :: ServerState
 newServerState = []
 
---Get the number of active clients:
-numClients :: ServerState -> Int
-numClients = length
-
 --Check if a user already exists (based on username):
 clientExists :: Client -> ServerState -> Bool
 clientExists client clients = client `elem` clients
@@ -47,7 +43,7 @@ broadcast message clients = do
 --The talk function continues to read messages from a single client until he
 --disconnects. All messages are broadcasted to the other clients.
 talk :: WS.Connection -> MVar ServerState -> Client -> IO ()
-talk conn state (Client (user, _)) =
+talk conn state (Client (name, _)) =
   forever $ do
     msg <- WS.receiveData conn
     readMVar state >>= broadcast msg
