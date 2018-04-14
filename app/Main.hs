@@ -3,6 +3,7 @@
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 
 module Main where
+
 import Lib
 
 main :: IO ()
