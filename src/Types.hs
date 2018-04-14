@@ -53,9 +53,6 @@ instance ToJSON AuctionCreated where
 instance ToJSON Bid where
   toJSON bid = toJSON $ show bid
 
-instance ToJSON Id where
-  toJSON id = toJSON $ show id
-
 newtype Auction =
   Auction [Bid]
   deriving (Show, Generic, FromJSON)
