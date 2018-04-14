@@ -38,14 +38,10 @@ data Bid = Bid
   , bidTimestamp :: String
   } deriving (Show, Generic, FromJSON)
 
-data Id =
-  Id
-  deriving (Show, Generic, FromJSON)
-
 data Action
   = AuctionCreatedAction AuctionCreated
   | BidAction Bid
-  | IdAction Id -- Identity action represents a noop
+  | IdAction -- Identity action represents a noop
   deriving (Show, Generic, FromJSON)
 
 instance ToJSON Action where
