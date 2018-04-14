@@ -1,4 +1,5 @@
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE RecordWildCards #-}
 
 module Lib
   ( runServer
@@ -19,24 +20,26 @@ import Types
 
 --Create a new, initial state:
 newServerState :: ServerState
-newServerState = []
+newServerState = ServerState {clients = [], auctions = []}
 
 --Check if a user already exists (based on username):
 clientExists :: Client -> ServerState -> Bool
-clientExists client clients = client `elem` clients
+clientExists client ServerState {..} = client `elem` clients
 
 --Add a client (this does not check if the client already exists, you should do
 --this yourself using `clientExists`):
 addClient :: Client -> ServerState -> ServerState
-addClient client clients = client : clients
+addClient client ServerState {..} = ServerState {clients = client : clients, ..}
 
---Remove a client:
 removeClient :: Client -> ServerState -> ServerState
-removeClient client = filter (/= client)
+removeClient client ServerState {..} =
+  ServerState {clients = filteredClients, ..}
+  where
+    filteredClients = filter (/= client) clients
 
 --Send a message to all clients, and log it on stdout:
 broadcast :: Text -> ServerState -> IO ()
-broadcast message clients = do
+broadcast message ServerState {..} = do
   T.putStrLn message
   forM_ clients $ \(Client (_, conn)) -> WS.sendTextData conn message
 

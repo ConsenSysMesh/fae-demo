@@ -10,6 +10,22 @@ import Data.Text (Text)
 import GHC.Generics
 import qualified Network.WebSockets as WS
 
+--We represent a client by their username and a `WS.Connection`. We will see how we
+--obtain this `WS.Connection` later on.
+newtype Client =
+  Client (Text, WS.Connection)
+
+data ServerState = ServerState
+  { clients :: [Client]
+  , auctions :: [String]
+  }
+
+instance Eq Client where
+  (Client (x, _)) == (Client (y, _)) = x == y
+
+instance ToJSON Client where
+  toJSON (Client (name, _)) = toJSON $ show (name, name)
+
 data Bid
   = Bid { value :: String
         , bidder :: String
@@ -21,19 +37,3 @@ instance FromJSON Bid
 
 instance ToJSON Bid where
   toJSON bid = toJSON $ show bid
-
---We represent a client by their username and a `WS.Connection`. We will see how we
---obtain this `WS.Connection` later on.
-newtype Client =
-  Client (Text, WS.Connection)
-
-instance Eq Client where
-  (Client (x, _)) == (Client (y, _)) = x == y
-
---The state kept on the server is simply a list of connected clients. We've added
---an alias and some utility functions, so it will be easier to extend this state
---later on.
-type ServerState = [Client]
-
-instance ToJSON Client where
-  toJSON (Client (name, _)) = toJSON $ show (name, name)
