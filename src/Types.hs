@@ -18,17 +18,11 @@ data ServerState = ServerState
   , auctions :: [Auction]
   }
 
-instance Eq Client where
-  (Client (x, _)) == (Client (y, _)) = x == y
-
-instance ToJSON Client where
-  toJSON (Client (name, _)) = toJSON $ show (name, name)
-
-data AuctionCreated = AuctionCreated
+data Auction = Auction
   { createdBy :: String
   , initialValue :: Double
   , maxNumBids :: Int
-  , createdTimestamp :: String
+  , auctionStartTimestamp :: String
   } deriving (Show, Generic, FromJSON)
 
 data Bid = Bid
@@ -37,21 +31,23 @@ data Bid = Bid
   , bidTimestamp :: String
   } deriving (Show, Generic, FromJSON)
 
-data Action
-  = AuctionCreatedAction AuctionCreated
-  | BidAction Bid
-  | IdAction -- Identity action represents a noop
+-- Actions for synchronising client-server state
+data AuctionAction
+  = CreateAuctionAction Auction
+  | BidAuctionAction Auction
+                     Bid
+  | EndAuctionAction Auction
+  | IdAuctionAction -- Identity action represents a noop
   deriving (Show, Generic, FromJSON)
 
-instance ToJSON Action where
+instance ToJSON AuctionAction where
   toJSON action = toJSON $ show action
-
-instance ToJSON AuctionCreated where
-  toJSON auctionCreated = toJSON $ show auctionCreated
 
 instance ToJSON Bid where
   toJSON bid = toJSON $ show bid
 
-newtype Auction =
-  Auction [Bid]
-  deriving (Show, Generic, FromJSON)
+instance Eq Client where
+  (Client (x, _)) == (Client (y, _)) = x == y
+
+instance ToJSON Client where
+  toJSON (Client (name, _)) = toJSON $ show (name, name)
