@@ -36,7 +36,6 @@ data AuctionAction
   = CreateAuctionAction Auction
   | BidAuctionAction Auction
                      Bid
-  | EndAuctionAction Auction
   | IdAuctionAction -- Identity action represents a noop
   deriving (Show, Generic, FromJSON)
 

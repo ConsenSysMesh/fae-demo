@@ -20,18 +20,17 @@ import Prelude
 
 import Types
 
-createAuction :: AuctionAction -> Auction
-createAuction = undefined
+bidOnAuction :: Auction -> Bid -> Auction
+bidOnAuction (BidAuctionAction Auction {..} Bid {..} = undefined
 
-bidOnAuction :: AuctionAction -> Auction -> Auction
-bidOnAuction = undefined
+endAuction ::
 
-endAuction :: AuctionAction -> Auction -> Auction
-endAuction = undefined
+handleAuctionAction :: AuctionAction -> Auction
+handleAuctionAction
+ (CreateAuctionAction auction) = auction
+handleAuctionAction
+handleAuctionAction
+ (BidAuctionAction Auction {..} Bid {..}) = bidOnAuction auction bid
+handleAuctionAction
+ IdAuctionAction auction = auction
 
--- import this in Lib to update auction field of Model State
-updateAuction :: AuctionAction -> Auction -> Auction
-updateAuction (CreateAuctionAction Auction {..}) auction = auction
-updateAuction (EndAuctionAction Auction {..}) auction = auction
-updateAuction (BidAuctionAction Auction {..} Bid {..}) auction = auction
-updateAuction IdAuctionAction auction = auction
