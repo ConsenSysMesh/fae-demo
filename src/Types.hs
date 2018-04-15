@@ -40,8 +40,6 @@ data AuctionAction
   deriving (Show, Generic, FromJSON, ToJSON) --toJSON = toJSON
  -- toJSON bid = toJSON bid
 
---instance ToJSON AuctionAction where
---instance ToJSON Bid where
 instance Eq Client where
   (Client (x, _)) == (Client (y, _)) = x == y
 
