@@ -92,9 +92,7 @@ application state pending = do
           modifyMVar_ state $ \s -> do
             let s' = addClient client s
             T.putStrLn clientName
-            print jsonClient
-            WS.sendTextData conn $ T.pack "nnu"
-            broadcast jsonBid s'
+            broadcast jsonAction s'
             return s'
           talk conn state client
       where prefix = "Hi! I am "
@@ -102,11 +100,15 @@ application state pending = do
               T.filter (\c -> c `notElem` ['"', ' ']) $
               T.drop (T.length prefix) msg
             client = Client (clientName, conn)
-            sampleBid =
-              BidAction
-                Bid {bidValue = "1", bidder = "Xena", bidTimestamp = "12pm"}
-            jsonClient = X.toStrict $ D.decodeUtf8 $ encode client
-            jsonBid = X.toStrict $ D.decodeUtf8 $ encode sampleBid
+            sampleAction =
+              AuctionCreatedAction
+                AuctionCreated
+                  { initialValue = 1
+                  , createdBy = "Argo"
+                  , createdTimestamp = "0200"
+                  , maxNumBids = 3
+                  }
+            jsonAction = X.toStrict $ D.decodeUtf8 $ encode sampleAction
             disconnect
                 -- Remove client and return new state
              = do
