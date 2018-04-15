@@ -9,6 +9,7 @@ import Control.Concurrent (MVar, modifyMVar, modifyMVar_, newMVar, readMVar)
 import Control.Exception (finally)
 import Control.Monad (forM_, forever)
 import Data.Aeson
+import qualified Data.ByteString.Lazy.Char8 as C
 import Data.Text (Text)
 import qualified Data.Text as T
 import qualified Data.Text.IO as T
@@ -38,6 +39,21 @@ removeClient client ServerState {..} =
   where
     filteredClients = filter (/= client) clients
 
+bidOnAuction :: Auction -> Bid -> Auction
+bidOnAuction Auction {..} Bid {..} = undefined
+
+handleAuctionAction :: AuctionAction -> Auction -> Auction
+handleAuctionAction (CreateAuctionAction auction) _ = auction
+handleAuctionAction (BidAuctionAction bid) auction = bidOnAuction auction bid
+handleAuctionAction IdAuctionAction auction = auction
+
+getMaybeAuctionAction :: Maybe AuctionAction -> AuctionAction
+getMaybeAuctionAction (Just auctionAction) = auctionAction
+getMaybeAuctionAction Nothing = IdAuctionAction -- noop action
+
+parseAuctionAction :: Text -> AuctionAction
+parseAuctionAction txt = getMaybeAuctionAction $ decode (C.pack $ T.unpack txt)
+
 --Send a message to all clients, and log it on stdout:
 broadcast :: Text -> ServerState -> IO ()
 broadcast message ServerState {..} = do
@@ -46,11 +62,14 @@ broadcast message ServerState {..} = do
 
 --The talk function continues to read messages from a single client until he
 --disconnects. All messages are broadcasted to the other clients.
+-- also listens and broadcasts auction actions
 talk :: WS.Connection -> MVar ServerState -> Client -> IO ()
 talk conn state (Client (name, _)) =
   forever $ do
     msg <- WS.receiveData conn
-    readMVar state >>= broadcast msg
+    print "our auction action from name is"
+    print $ parseAuctionAction msg
+    (readMVar state >>= broadcast msg)
 
 --The main function first creates a new state for the server, then spawns the
 --actual server. For this purpose, we use the simple server provided by
@@ -58,7 +77,7 @@ talk conn state (Client (name, _)) =
 runServer :: IO ()
 runServer = do
   state <- newMVar newServerState
-  WS.runServer "127.0.0.1" 9140 $ application state
+  WS.runServer "127.0.0.1" 9160 $ application state
 
 --Our main application has the type:
 application :: MVar ServerState -> WS.ServerApp
@@ -93,7 +112,8 @@ application state pending = do
           modifyMVar_ state $ \s -> do
             let s' = addClient client s
             T.putStrLn clientName
-            broadcast jsonAction s'
+            print jsonAction
+            broadcast stringifiedJsonAction s'
             return s'
           talk conn state client
       where prefix = "Hi! I am "
@@ -110,6 +130,7 @@ application state pending = do
                   , maxNumBids = 3
                   }
             jsonAction = X.toStrict $ D.decodeUtf8 $ encode sampleAction
+            stringifiedJsonAction = T.pack $ show jsonAction
             disconnect
                 -- Remove client and return new state
              = do
