@@ -16,6 +16,7 @@ import qualified Data.Text.Lazy as X
 import qualified Data.Text.Lazy.Encoding as D
 import qualified Network.WebSockets as WS
 import Prelude
+
 import Types
 
 --Create a new, initial state:
@@ -101,11 +102,11 @@ application state pending = do
               T.drop (T.length prefix) msg
             client = Client (clientName, conn)
             sampleAction =
-              AuctionCreatedAction
-                AuctionCreated
+              CreateAuctionAction
+                Auction
                   { initialValue = 1
                   , createdBy = "Argo"
-                  , createdTimestamp = "0200"
+                  , auctionStartTimestamp = "0200"
                   , maxNumBids = 3
                   }
             jsonAction = X.toStrict $ D.decodeUtf8 $ encode sampleAction
