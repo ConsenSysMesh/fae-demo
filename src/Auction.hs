@@ -25,14 +25,13 @@ import Types
 bidOnAuction :: Auction -> Bid -> Auction
 bidOnAuction Auction {..} Bid {..} = undefined
 
-createAuction ::
-     Auction -> IntMap AuctionId Auction -> IntMap Auction Id Auction
+createAuction :: Auction -> IntMap Auction -> IntMap Auction
 createAuction auction auctionsMap = IntMap.insert key auction auctionsMap
   where
-    key = getNextAuctionId auctionsMap
+    key = getNextAuctionKey auctionsMap
 
-getNextAuctionId :: IntMap Auction Id Auction -> AuctionId
-getNextAuctionId =
-  case IntMap.lookupMax auctionsMap of
-    Nothing -> 1
-    (Just k) -> key + 1
+getNextAuctionKey :: IntMap Auction -> IntMap.Key
+getNextAuctionKey a =
+  case IntMap.maxViewWithKey a of
+    (Just ((k, _), _)) -> k + 1
+    Nothing -> 0

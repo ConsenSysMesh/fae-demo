@@ -1,10 +1,12 @@
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE DeriveAnyClass #-}
-{-# LANGUAGE DuplicateRecordFields #-}
 
+--{-# LANGUAGE DuplicateRecordFields #-}
 module Types where
 
 import Data.Aeson.Types
+import Data.IntMap.Lazy (IntMap)
+import qualified Data.IntMap.Lazy as IntMap
 import Data.Text (Text)
 import GHC.Generics
 import qualified Network.WebSockets as WS
@@ -21,7 +23,7 @@ instance Show Client where
 
 data ServerState = ServerState
   { clients :: [Client]
-  , auctions :: [Auction]
+  , auctions :: IntMap Auction
   } deriving (Show)
 
 data Auction = Auction
@@ -33,7 +35,7 @@ data Auction = Auction
   } deriving (Show, Generic, FromJSON, ToJSON)
 
 data Bid = Bid
-  { auctionId :: AuctionId
+  { bidAuctionId :: AuctionId
   , bidValue :: String
   , bidder :: String
   , bidTimestamp :: String

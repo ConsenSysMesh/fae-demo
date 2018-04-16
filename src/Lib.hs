@@ -11,6 +11,8 @@ import Control.Monad (forM_, forever)
 import Data.Aeson
 import qualified Data.ByteString.Lazy.Char8 as C
 import Data.Foldable
+import Data.IntMap.Lazy (IntMap)
+import qualified Data.IntMap.Lazy as IntMap
 import Data.Maybe
 import Data.Text (Text)
 import qualified Data.Text as T
@@ -25,8 +27,7 @@ import Types
 
 --Create a new, initial state:
 initialServerState :: ServerState
-initialServerState =
-  ServerState {clients = [], auctions = empty :: IntMap AuctionId Auction}
+initialServerState = ServerState {clients = [], auctions = IntMap.empty}
 
 --Check if a user already exists (based on username):
 clientExists :: Client -> ServerState -> Bool
@@ -45,11 +46,9 @@ removeClient client ServerState {..} =
 
 handleAuctionAction :: ServerState -> AuctionAction -> ServerState
 handleAuctionAction ServerState {..} (CreateAuctionAction auction) =
-  ServerState {auctions = auction : auctions, ..}
+  ServerState {auctions = IntMap.empty, ..}
 handleAuctionAction ServerState {..} (BidAuctionAction bid) =
-  ServerState {auctions = [], ..}
-  where
-    newAuction = bidonAuction auction bid
+  ServerState {auctions = IntMap.empty, ..}
 
 --Send a message to all clients, and log it on stdout:
 broadcast :: Text -> ServerState -> IO ()
@@ -154,7 +153,8 @@ application state pending = do
             sampleAction =
               CreateAuctionAction
                 Auction
-                  { initialValue = 1
+                  { auctionId = 1
+                  , initialValue = 1
                   , createdBy = "Argo"
                   , auctionStartTimestamp = "0200"
                   , maxNumBids = 3
