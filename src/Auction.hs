@@ -22,17 +22,24 @@ import Prelude
 
 import Types
 
+validBid :: Bid -> Auction -> Bool
+validBid Bid {..} Auction {..} = bidValue > value && numBids < maxNumBids
+  where
+    numBids = length bids
+
 bidOnAuction :: AuctionId -> Bid -> IntMap Auction -> IntMap Auction
-bidOnAuction key bid@Bid {..} =
+bidOnAuction key (bid@Bid {..}) =
   IntMap.adjust
-    (\Auction {..} -> Auction {bids = bid : bids, value = bidValue, ..})
+    (\auction@Auction {..} ->
+       case validBid bid auction of
+         true -> Auction {bids = bid : bids, value = bidValue, ..}
+         false -> auction)
     key
 
 createAuction :: Auction -> IntMap Auction -> IntMap Auction
 createAuction auction auctionsMap = IntMap.insert key auction auctionsMap
   where
     key = getNextAuctionKey auctionsMap
-    -- auctionStartTimestamp = currentTimeStamp
 
 getNextAuctionKey :: IntMap Auction -> IntMap.Key
 getNextAuctionKey a =
