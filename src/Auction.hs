@@ -22,16 +22,6 @@ import Prelude
 
 import Types
 
-{-}
-data Auction = Auction
-  { auctionId :: AuctionId
-  , createdBy :: String
-  , initialValue :: Double
-  , bids :: [Bid]
-  , maxNumBids :: Int
-  , auctionStartTimestamp :: String
-  } deriving (Show, Generic, FromJSON, ToJSON)
--}
 bidOnAuction :: AuctionId -> Bid -> IntMap Auction -> IntMap Auction
 bidOnAuction key bid@Bid {..} =
   IntMap.adjust
