@@ -30,13 +30,13 @@ data Auction = Auction
   { auctionId :: AuctionId
   , bids :: [Bid]
   , createdBy :: String
-  , initialValue :: Double
+  , value :: Int
   , maxNumBids :: Int
   , auctionStartTimestamp :: String
   } deriving (Show, Generic, FromJSON, ToJSON)
 
 data Bid = Bid
-  { bidValue :: String
+  { bidValue :: Int
   , bidder :: String
   , bidTimestamp :: String
   } deriving (Show, Generic, FromJSON, ToJSON)

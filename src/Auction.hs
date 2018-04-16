@@ -34,7 +34,9 @@ data Auction = Auction
 -}
 bidOnAuction :: AuctionId -> Bid -> IntMap Auction -> IntMap Auction
 bidOnAuction key bid@Bid {..} =
-  IntMap.adjust (\Auction {..} -> Auction {bids = bid : bids, ..}) key
+  IntMap.adjust
+    (\Auction {..} -> Auction {bids = bid : bids, value = bidValue, ..})
+    key
 
 createAuction :: Auction -> IntMap Auction -> IntMap Auction
 createAuction auction auctionsMap = IntMap.insert key auction auctionsMap
@@ -46,4 +48,4 @@ getNextAuctionKey :: IntMap Auction -> IntMap.Key
 getNextAuctionKey a =
   case IntMap.maxViewWithKey a of
     (Just ((k, _), _)) -> k + 1
-    Nothing -> 0
+    Nothing -> 1

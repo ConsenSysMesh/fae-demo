@@ -86,8 +86,8 @@ talk conn state (Client (name, _)) =
   forever $ do
     msg <- WS.receiveData conn
     serverState <- readMVar state
-  --  print $ "our unparsed ws message from" ++ T.unpack name
-  --  putStrLn $ T.unpack msg
+    print $ "our unparsed ws message from" ++ T.unpack name
+    putStrLn $ T.unpack msg
     print $ "our parsed ws message from: " ++ T.unpack name
     let parsedAuctionAction = parseAuctionAction msg
     print $ parseAuctionAction msg
@@ -142,6 +142,8 @@ application state pending = do
           modifyMVar_ state $ \s -> do
             let s' = addClient client s
             T.putStrLn clientName
+            putStrLn $ C.unpack $ encode sampleAction
+            putStrLn $ C.unpack $ encode sampleAction2
             --broadcast stringifiedJsonAction s'
             return s'
           talk conn state client
@@ -154,12 +156,16 @@ application state pending = do
               CreateAuctionAction
                 Auction
                   { auctionId = 1
-                  , initialValue = 1
+                  , value = 1
                   , bids = []
                   , createdBy = "Argo"
                   , auctionStartTimestamp = "0200"
                   , maxNumBids = 3
                   }
+            sampleAction2 =
+              BidAuctionAction
+                1
+                Bid {bidValue = 3, bidder = "Xena", bidTimestamp = "22:10"}
             jsonAction = X.toStrict $ D.decodeUtf8 $ encode sampleAction
             stringifiedJsonAction = T.pack $ show jsonAction
             disconnect
