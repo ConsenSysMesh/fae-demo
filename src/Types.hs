@@ -13,10 +13,13 @@ import qualified Network.WebSockets as WS
 newtype Client =
   Client (Text, WS.Connection)
 
+instance Show Client where
+  show (Client (name, _)) = show name
+
 data ServerState = ServerState
   { clients :: [Client]
   , auctions :: [Auction]
-  }
+  } deriving (Show)
 
 data Auction = Auction
   { createdBy :: String
@@ -36,9 +39,7 @@ data Bid = Bid
 data AuctionAction
   = CreateAuctionAction Auction
   | BidAuctionAction Bid
-  | IdAuctionAction -- Identity action represents a noop
-  deriving (Show, Generic, FromJSON, ToJSON) --toJSON = toJSON
- -- toJSON bid = toJSON bid
+  deriving (Show, Generic, FromJSON, ToJSON)
 
 instance Eq Client where
   (Client (x, _)) == (Client (y, _)) = x == y

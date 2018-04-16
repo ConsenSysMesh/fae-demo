@@ -10,6 +10,7 @@ import Control.Exception (finally)
 import Control.Monad (forM_, forever)
 import Data.Aeson
 import qualified Data.ByteString.Lazy.Char8 as C
+import Data.Maybe
 import Data.Text (Text)
 import qualified Data.Text as T
 import qualified Data.Text.IO as T
@@ -17,7 +18,6 @@ import qualified Data.Text.Lazy as X
 import qualified Data.Text.Lazy.Encoding as D
 import qualified Network.WebSockets as WS
 import Prelude
-
 import Types
 
 --Create a new, initial state:
@@ -42,23 +42,29 @@ removeClient client ServerState {..} =
 bidOnAuction :: Auction -> Bid -> Auction
 bidOnAuction Auction {..} Bid {..} = undefined
 
-handleAuctionAction :: AuctionAction -> Auction -> Auction
-handleAuctionAction (CreateAuctionAction auction) _ = auction
-handleAuctionAction (BidAuctionAction bid) auction = bidOnAuction auction bid
-handleAuctionAction IdAuctionAction auction = auction
-
-getMaybeAuctionAction :: Maybe AuctionAction -> AuctionAction
-getMaybeAuctionAction (Just auctionAction) = auctionAction
-getMaybeAuctionAction Nothing = IdAuctionAction -- noop action
-
-parseAuctionAction :: Text -> AuctionAction
-parseAuctionAction txt = getMaybeAuctionAction $ decode (C.pack $ T.unpack txt)
+handleAuctionAction :: Maybe AuctionAction -> Auction -> Auction
+handleAuctionAction (Just (CreateAuctionAction auction)) _ = auction
+handleAuctionAction (Just (BidAuctionAction bid)) auction =
+  bidOnAuction auction bid
+handleAuctionAction Nothing auction = auction
 
 --Send a message to all clients, and log it on stdout:
 broadcast :: Text -> ServerState -> IO ()
 broadcast message ServerState {..} = do
   T.putStrLn message
   forM_ clients $ \(Client (_, conn)) -> WS.sendTextData conn message
+
+parseAuctionAction :: Text -> Maybe AuctionAction
+parseAuctionAction jsonTxt = decode $ C.pack $ T.unpack jsonTxt
+
+encodeAuctionAction :: AuctionAction -> Text
+encodeAuctionAction a = T.pack $ show $ X.toStrict $ D.decodeUtf8 $ encode a
+
+broadcastAuctionAction ::
+     MVar ServerState -> Maybe AuctionAction -> Maybe (IO ())
+broadcastAuctionAction _ Nothing = Nothing
+broadcastAuctionAction state (Just auctionAction) =
+  Just $ readMVar state >>= broadcast (encodeAuctionAction auctionAction)
 
 --The talk function continues to read messages from a single client until he
 --disconnects. All messages are broadcasted to the other clients.
@@ -67,11 +73,15 @@ talk :: WS.Connection -> MVar ServerState -> Client -> IO ()
 talk conn state (Client (name, _)) =
   forever $ do
     msg <- WS.receiveData conn
-    print "our auction action from name is"
+    serverState <- readMVar state
+    print serverState
+  --  print $ "our unparsed ws message from" ++ T.unpack name
+  --  putStrLn $ T.unpack msg
+    print $ "our parsed ws message from: " ++ T.unpack name
     print $ parseAuctionAction msg
-    (readMVar state >>= broadcast msg)
+    fromMaybe (pure ()) (broadcastAuctionAction state $ parseAuctionAction msg)
+    --readMVar state >>= broadcast msg
 
---The main function first creates a new state for the server, then spawns the
 --actual server. For this purpose, we use the simple server provided by
 --`WS.runServer`.
 runServer :: IO ()
@@ -112,8 +122,7 @@ application state pending = do
           modifyMVar_ state $ \s -> do
             let s' = addClient client s
             T.putStrLn clientName
-            print jsonAction
-            broadcast stringifiedJsonAction s'
+            --broadcast stringifiedJsonAction s'
             return s'
           talk conn state client
       where prefix = "Hi! I am "
