@@ -18,6 +18,8 @@ import qualified Data.Text.Lazy as X
 import qualified Data.Text.Lazy.Encoding as D
 import qualified Network.WebSockets as WS
 import Prelude
+
+import Auction
 import Types
 
 --Create a new, initial state:
@@ -39,14 +41,10 @@ removeClient client ServerState {..} =
   where
     filteredClients = filter (/= client) clients
 
-bidOnAuction :: Auction -> Bid -> Auction
-bidOnAuction Auction {..} Bid {..} = undefined
-
-handleAuctionAction :: Maybe AuctionAction -> Auction -> Auction
-handleAuctionAction (Just (CreateAuctionAction auction)) _ = auction
-handleAuctionAction (Just (BidAuctionAction bid)) auction =
-  bidOnAuction auction bid
-handleAuctionAction Nothing auction = auction
+handleAuctionAction :: ServerState -> AuctionAction -> ServerState
+handleAuctionAction ServerState {..} (CreateAuctionAction auction) =
+  ServerState {auctions = [auction], ..}
+handleAuctionAction ServerState {..} (BidAuctionAction bid) = ServerState {..}
 
 --Send a message to all clients, and log it on stdout:
 broadcast :: Text -> ServerState -> IO ()
@@ -60,6 +58,16 @@ parseAuctionAction jsonTxt = decode $ C.pack $ T.unpack jsonTxt
 encodeAuctionAction :: AuctionAction -> Text
 encodeAuctionAction a = T.pack $ show $ X.toStrict $ D.decodeUtf8 $ encode a
 
+-- update auction in serverState based on action
+updateServerState :: MVar ServerState -> Maybe AuctionAction -> Maybe (IO ())
+updateServerState _ Nothing = Nothing
+updateServerState state (Just action) =
+  Just $
+  modifyMVar_
+    state
+    (\serverState -> return (handleAuctionAction serverState action))
+
+---modifyMVar_ :: MVar a -> (a -> IO a) -> IO ()
 broadcastAuctionAction ::
      MVar ServerState -> Maybe AuctionAction -> Maybe (IO ())
 broadcastAuctionAction _ Nothing = Nothing
@@ -74,13 +82,18 @@ talk conn state (Client (name, _)) =
   forever $ do
     msg <- WS.receiveData conn
     serverState <- readMVar state
-    print serverState
   --  print $ "our unparsed ws message from" ++ T.unpack name
   --  putStrLn $ T.unpack msg
     print $ "our parsed ws message from: " ++ T.unpack name
+    let parsedAuctionAction = parseAuctionAction msg
     print $ parseAuctionAction msg
-    fromMaybe (pure ()) (broadcastAuctionAction state $ parseAuctionAction msg)
+    fromMaybe (pure ()) (updateServerState state parsedAuctionAction)
+    fromMaybe (pure ()) (broadcastAuctionAction state parsedAuctionAction)
+    print serverState
     --readMVar state >>= broadcast msg
+    -- updateserverstate = updateServerState state parsedAuctionAction
+    -- broadcastaction = (broadcastAuctionAction state parsedAuctionAction)
+    --handleMsg msg = traverse_ fold [updateserverstate, broadcastaction] 
 
 --actual server. For this purpose, we use the simple server provided by
 --`WS.runServer`.

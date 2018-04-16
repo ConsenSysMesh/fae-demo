@@ -19,3 +19,6 @@ import qualified Network.WebSockets as WS
 import Prelude
 
 import Types
+
+bidOnAuction :: Auction -> Bid -> Auction
+bidOnAuction Auction {..} Bid {..} = undefined
