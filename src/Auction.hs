@@ -2,7 +2,7 @@
 {-# LANGUAGE RecordWildCards #-}
 
 {--------------------------------------------------------
-  Logic to return new Auction State from Auction Actions
+  Logic for Updating Auction State
 ---------------------------------------------------------}
 module Auction where
 
