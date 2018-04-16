@@ -10,6 +10,7 @@ import Control.Exception (finally)
 import Control.Monad (forM_, forever)
 import Data.Aeson
 import qualified Data.ByteString.Lazy.Char8 as C
+import Data.Foldable
 import Data.Maybe
 import Data.Text (Text)
 import qualified Data.Text as T
@@ -23,8 +24,9 @@ import Auction
 import Types
 
 --Create a new, initial state:
-newServerState :: ServerState
-newServerState = ServerState {clients = [], auctions = []}
+initialServerState :: ServerState
+initialServerState =
+  ServerState {clients = [], auctions = empty :: IntMap AuctionId Auction}
 
 --Check if a user already exists (based on username):
 clientExists :: Client -> ServerState -> Bool
@@ -43,8 +45,11 @@ removeClient client ServerState {..} =
 
 handleAuctionAction :: ServerState -> AuctionAction -> ServerState
 handleAuctionAction ServerState {..} (CreateAuctionAction auction) =
-  ServerState {auctions = [auction], ..}
-handleAuctionAction ServerState {..} (BidAuctionAction bid) = ServerState {..}
+  ServerState {auctions = auction : auctions, ..}
+handleAuctionAction ServerState {..} (BidAuctionAction bid) =
+  ServerState {auctions = [], ..}
+  where
+    newAuction = bidonAuction auction bid
 
 --Send a message to all clients, and log it on stdout:
 broadcast :: Text -> ServerState -> IO ()
@@ -87,8 +92,11 @@ talk conn state (Client (name, _)) =
     print $ "our parsed ws message from: " ++ T.unpack name
     let parsedAuctionAction = parseAuctionAction msg
     print $ parseAuctionAction msg
-    fromMaybe (pure ()) (updateServerState state parsedAuctionAction)
-    fromMaybe (pure ()) (broadcastAuctionAction state parsedAuctionAction)
+    traverse_
+      fold
+      [ (updateServerState state parsedAuctionAction)
+      , (broadcastAuctionAction state parsedAuctionAction)
+      ]
     print serverState
     --readMVar state >>= broadcast msg
     -- updateserverstate = updateServerState state parsedAuctionAction
@@ -99,7 +107,7 @@ talk conn state (Client (name, _)) =
 --`WS.runServer`.
 runServer :: IO ()
 runServer = do
-  state <- newMVar newServerState
+  state <- newMVar initialServerState
   WS.runServer "127.0.0.1" 9160 $ application state
 
 --Our main application has the type:

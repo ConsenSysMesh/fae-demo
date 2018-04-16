@@ -1,5 +1,6 @@
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE DeriveAnyClass #-}
+{-# LANGUAGE DuplicateRecordFields #-}
 
 module Types where
 
@@ -7,6 +8,8 @@ import Data.Aeson.Types
 import Data.Text (Text)
 import GHC.Generics
 import qualified Network.WebSockets as WS
+
+type AuctionId = Int
 
 --We represent a client by their username and a `WS.Connection`. We will see how we
 --obtain this `WS.Connection` later on.
@@ -22,14 +25,15 @@ data ServerState = ServerState
   } deriving (Show)
 
 data Auction = Auction
-  { createdBy :: String
+  { auctionId :: AuctionId
+  , createdBy :: String
   , initialValue :: Double
   , maxNumBids :: Int
   , auctionStartTimestamp :: String
   } deriving (Show, Generic, FromJSON, ToJSON)
 
 data Bid = Bid
-  { auctionId :: String
+  { auctionId :: AuctionId
   , bidValue :: String
   , bidder :: String
   , bidTimestamp :: String
