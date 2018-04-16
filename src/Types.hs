@@ -28,6 +28,7 @@ data ServerState = ServerState
 
 data Auction = Auction
   { auctionId :: AuctionId
+  , bids :: [Bid]
   , createdBy :: String
   , initialValue :: Double
   , maxNumBids :: Int
@@ -35,8 +36,7 @@ data Auction = Auction
   } deriving (Show, Generic, FromJSON, ToJSON)
 
 data Bid = Bid
-  { bidAuctionId :: AuctionId
-  , bidValue :: String
+  { bidValue :: String
   , bidder :: String
   , bidTimestamp :: String
   } deriving (Show, Generic, FromJSON, ToJSON)
@@ -44,7 +44,8 @@ data Bid = Bid
 -- Actions for synchronising client-server state
 data AuctionAction
   = CreateAuctionAction Auction
-  | BidAuctionAction Bid
+  | BidAuctionAction AuctionId
+                     Bid
   deriving (Show, Generic, FromJSON, ToJSON)
 
 instance Eq Client where

@@ -22,13 +22,30 @@ import Prelude
 
 import Types
 
-bidOnAuction :: Auction -> Bid -> Auction
-bidOnAuction Auction {..} Bid {..} = undefined
+{-}
+data Auction = Auction
+  { auctionId :: AuctionId
+  , createdBy :: String
+  , initialValue :: Double
+  , bids :: [Bid]
+  , maxNumBids :: Int
+  , auctionStartTimestamp :: String
+  } deriving (Show, Generic, FromJSON, ToJSON)
+-}
+updateAuction :: AuctionId -> IntMap Auction -> IntMap Auction
+updateAuction auctionId auctions = IntMap.insert auctionId v auctions
+
+bidOnAuction :: AuctionId -> Bid -> IntMap Auction -> IntMap Auction
+bidOnAuction auctionId bid@Bid {..} auctions =
+  IntMap.adjust auctionId newAuction auctions
+  where
+    newAuction = Auction {bids = bids : bid, ..}
 
 createAuction :: Auction -> IntMap Auction -> IntMap Auction
 createAuction auction auctionsMap = IntMap.insert key auction auctionsMap
   where
     key = getNextAuctionKey auctionsMap
+    -- auctionStartTimestamp = currentTimeStamp
 
 getNextAuctionKey :: IntMap Auction -> IntMap.Key
 getNextAuctionKey a =
