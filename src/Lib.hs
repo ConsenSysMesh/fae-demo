@@ -46,9 +46,9 @@ removeClient client ServerState {..} =
 
 handleAuctionAction :: ServerState -> AuctionAction -> ServerState
 handleAuctionAction ServerState {..} (CreateAuctionAction auction) =
-  ServerState {auctions = IntMap.empty, ..}
-handleAuctionAction ServerState {..} (BidAuctionAction bid) =
-  ServerState {auctions = IntMap.empty, ..}
+  ServerState {auctions = createAuction auction auctions, ..}
+handleAuctionAction ServerState {..} (BidAuctionAction auctionId bid) =
+  ServerState {auctions = bidOnAuction auctionId bid auctions, ..}
 
 --Send a message to all clients, and log it on stdout:
 broadcast :: Text -> ServerState -> IO ()
@@ -93,8 +93,8 @@ talk conn state (Client (name, _)) =
     print $ parseAuctionAction msg
     traverse_
       fold
-      [ (updateServerState state parsedAuctionAction)
-      , (broadcastAuctionAction state parsedAuctionAction)
+      [ updateServerState state parsedAuctionAction
+      , broadcastAuctionAction state parsedAuctionAction
       ]
     print serverState
     --readMVar state >>= broadcast msg
@@ -155,6 +155,7 @@ application state pending = do
                 Auction
                   { auctionId = 1
                   , initialValue = 1
+                  , bids = []
                   , createdBy = "Argo"
                   , auctionStartTimestamp = "0200"
                   , maxNumBids = 3
