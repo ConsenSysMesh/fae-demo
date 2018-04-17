@@ -52,19 +52,15 @@ handleAuctionAction ServerState {..} (BidAuctionAction auctionId bid) =
 
 --Send a message to all clients, and log it on stdout:
 broadcast :: Text -> ServerState -> IO ()
-broadcast msg ServerState {..} = T.putStrLn msg *> sendMsg msg clients
-
-sendMsg :: Text -> [Client] -> IO ()
-sendMsg msg clients = do
-  print "incoming "
-  print msg
-  forM_ clients $ \(Client (_, conn)) -> WS.sendTextData conn msg
+broadcast message ServerState {..} = do
+  T.putStrLn message
+  forM_ clients $ \(Client (_, conn)) -> WS.sendTextData conn message
 
 parseAuctionAction :: Text -> Maybe AuctionAction
 parseAuctionAction jsonTxt = decode $ C.pack $ T.unpack jsonTxt
 
 encodeAuctionAction :: AuctionAction -> Text
-encodeAuctionAction a = X.toStrict $ D.decodeUtf8 $ encode a
+encodeAuctionAction a = T.pack $ show $ X.toStrict $ D.decodeUtf8 $ encode a
 
 -- update auction in serverState based on action
 updateServerState :: MVar ServerState -> Maybe AuctionAction -> Maybe (IO ())
@@ -75,9 +71,13 @@ updateServerState state (Just action) =
     state
     (\serverState -> return (handleAuctionAction serverState action))
 
+sendMsg :: Text -> [Client] -> IO ()
+sendMsg msg clients =
+  forM_ clients $ \(Client (_, conn)) -> WS.sendTextData conn msg
+
 --- client name is action initator we dont broadcast their msg back to them
 broadcastAuctionAction ::
-     ClientName -> MVar ServerState -> Maybe AuctionAction -> Maybe (IO ())
+     Text -> MVar ServerState -> Maybe AuctionAction -> Maybe (IO ())
 broadcastAuctionAction _ _ Nothing = Nothing
 broadcastAuctionAction clientName state (Just auctionAction) =
   Just $
@@ -119,7 +119,7 @@ talk conn state (Client (name, _)) =
 runServer :: IO ()
 runServer = do
   state <- newMVar initialServerState
-  WS.runServer "127.0.0.1" 9170 $ application state
+  WS.runServer "127.0.0.1" 9160 $ application state
 
 --Our main application has the type:
 application :: MVar ServerState -> WS.ServerApp
@@ -187,5 +187,4 @@ application state pending = do
                 modifyMVar state $ \s ->
                   let s' = removeClient client s
                    in return (s', s')
-              print "Disconnected client!"
               broadcast (clientName `mappend` " disconnected") s
