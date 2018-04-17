@@ -50,6 +50,3 @@ data AuctionAction
 
 instance Eq Client where
   (Client (x, _)) == (Client (y, _)) = x == y
-
-instance ToJSON Client where
-  toJSON (Client (name, _)) = toJSON $ show (name, name)
