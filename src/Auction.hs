@@ -27,6 +27,7 @@ validBid Bid {..} Auction {..} = bidValue > value && numBids < maxNumBids
   where
     numBids = length bids
 
+-- should use either type for error messages?
 bidOnAuction :: AuctionId -> Bid -> IntMap Auction -> IntMap Auction
 bidOnAuction key (bid@Bid {..}) =
   IntMap.adjust
@@ -37,9 +38,9 @@ bidOnAuction key (bid@Bid {..}) =
     key
 
 createAuction :: Auction -> IntMap Auction -> IntMap Auction
-createAuction auction auctionsMap = IntMap.insert key auction auctionsMap
+createAuction auction auctionsMap = IntMap.insert nextKey auction auctionsMap
   where
-    key = getNextAuctionKey auctionsMap
+    nextKey = getNextAuctionKey auctionsMap
 
 getNextAuctionKey :: IntMap Auction -> IntMap.Key
 getNextAuctionKey a =
