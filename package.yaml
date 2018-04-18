@@ -26,6 +26,8 @@ dependencies:
 - aeson
 - bytestring
 - containers
+- uuid
+
 library:
   source-dirs: src
 
