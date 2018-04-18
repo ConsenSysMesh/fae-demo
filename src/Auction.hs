@@ -36,6 +36,7 @@ bidOnAuction key (bid@Bid {..}) =
          false -> auction)
     key
 
+-- TODO timestamp auction starts and bids
 createAuction :: Auction -> IntMap Auction -> IntMap Auction
 createAuction auction auctionsMap = IntMap.insert key auction auctionsMap
   where
