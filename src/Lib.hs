@@ -72,21 +72,21 @@ updateServerState state (Just action) =
     (\serverState -> return (handleAuctionAction serverState action))
 
 sendMsg :: Text -> [Client] -> IO ()
-sendMsg msg clients =
+sendMsg msg clients = do
+  print
+    ("outgoing to: [  " ++
+     (show clients) ++ " ] ---------------> " ++ (show msg))
   forM_ clients $ \(Client (_, conn)) -> WS.sendTextData conn msg
 
---- client name is action initator we dont broadcast their msg back to them
 broadcastAuctionAction ::
-     Text -> MVar ServerState -> Maybe AuctionAction -> Maybe (IO ())
-broadcastAuctionAction _ _ Nothing = Nothing
-broadcastAuctionAction clientName state (Just auctionAction) =
+     MVar ServerState -> Maybe AuctionAction -> Maybe (IO ())
+broadcastAuctionAction _ Nothing = Nothing
+broadcastAuctionAction state (Just auctionAction) =
   Just $
   readMVar state >>=
-  (\ServerState {..} -- Broadcast msg to everyone execpt action initator
-    ->
-     sendMsg
-       jsonMsg
-       (filter (\(Client (name, _)) -> name /= clientName) clients))
+  (\ServerState {..} ->
+     sendMsg jsonMsg clients -- broadcast to all inc. action initiator
+   )
   where
     jsonMsg = encodeAuctionAction auctionAction
 
@@ -106,7 +106,7 @@ talk conn state (Client (name, _)) =
     traverse_
       fold
       [ updateServerState state parsedAuctionAction
-      , broadcastAuctionAction name state parsedAuctionAction
+      , broadcastAuctionAction state parsedAuctionAction
       ]
     print serverState
     --readMVar state >>= broadcast msg
