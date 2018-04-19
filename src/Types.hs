@@ -32,7 +32,7 @@ data Auction = Auction
   , createdBy :: String
   , value :: Int
   , maxNumBids :: Int
-  , auctionStartTimestamp :: String
+  , createdTimestamp :: String
   } deriving (Show, Generic, FromJSON, ToJSON)
 
 data Bid = Bid

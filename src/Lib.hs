@@ -159,10 +159,7 @@ application state pending = do
             --broadcast stringifiedJsonAction s'
             return s'
           talk conn state client
-      where prefix = "Hi! I am "
-            clientName =
-              T.filter (\c -> c `notElem` ['"', ' ']) $
-              T.drop (T.length prefix) msg
+      where clientName = T.filter (\c -> c `notElem` ['"', ' ']) msg
             client = Client (clientName, conn)
             sampleAction =
               CreateAuctionAction
@@ -171,7 +168,7 @@ application state pending = do
                   , value = 1
                   , bids = []
                   , createdBy = "Argo"
-                  , auctionStartTimestamp = "0200"
+                  , createdTimestamp = "0200"
                   , maxNumBids = 3
                   }
             sampleAction2 =
