@@ -118,14 +118,10 @@ runServer = do
   state <- newMVar initialServerState
   WS.runServer "127.0.0.1" 9160 $ application state
 
---Our main application has the type:
 application :: MVar ServerState -> WS.ServerApp
---Note that `WS.ServerApp` is nothing but a type synonym for
+--`WS.ServerApp` is nothing but a type synonym for
 --`WS.PendingConnection -> IO ()`.
---Our application starts by accepting the connection. In a more realistic
---application, you probably want to check the path and headers provided by the
---pending request.
---We also fork a pinging thread in the background. This will ensure the connection
+--ork a pinging thread in the background. This will ensure the connection
 --stays alive on some browsers.
 application state pending = do
   conn <- WS.acceptRequest pending
@@ -140,14 +136,8 @@ application state pending = do
     _
       | clientExists client clients ->
         WS.sendTextData conn ("User already exists" :: Text)
---All is right! We're going to allow the client, but for safety reasons we *first*
---setup a `disconnect` function that will be run when the connection is closed.
       | otherwise ->
-        flip finally disconnect $
---We send a "Welcome!", according to our own little protocol. We add the client to
---the list and broadcast the fact that he has joined. Then, we give control to the
---'talk' function.
-         do
+        flip finally disconnect $ do
           modifyMVar_ state $ \s -> do
             let s' = addClient client s
             T.putStrLn clientName
@@ -174,6 +164,7 @@ application state pending = do
                 Bid {bidValue = 3, bidder = "Xena", bidTimestamp = "22:10"}
             jsonAction = X.toStrict $ D.decodeUtf8 $ encode sampleAction
             stringifiedJsonAction = T.pack $ show jsonAction
+            -- disconnect is called when the connection is closed.
             disconnect
                 -- Remove client and return new state
              = do
