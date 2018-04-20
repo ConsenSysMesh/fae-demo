@@ -65,10 +65,8 @@ encodeAuctionAction :: AuctionAction -> Text
 encodeAuctionAction a = T.pack $ show $ X.toStrict $ D.decodeUtf8 $ encode a
 
 -- update auction in serverState based on action
-updateServerState :: MVar ServerState -> Maybe AuctionAction -> Maybe (IO ())
-updateServerState _ Nothing = Nothing
-updateServerState state (Just action) =
-  Just $
+updateServerState :: MVar ServerState -> AuctionAction -> IO ()
+updateServerState state action =
   modifyMVar_
     state
     (\serverState -> return (handleAuctionAction serverState action))
@@ -80,11 +78,9 @@ sendMsg msg clients = do
      (show clients) ++ " ] ---------------> " ++ (show msg))
   forM_ clients $ \(Client (_, conn)) -> WS.sendTextData conn msg
 
-broadcastAuctionAction ::
-     MVar ServerState -> Maybe AuctionAction -> Maybe (IO ())
-broadcastAuctionAction _ Nothing = Nothing
-broadcastAuctionAction state (Just auctionAction) =
-  Just $ readMVar state >>= (\ServerState {..} -> sendMsg jsonMsg clients)
+broadcastAuctionAction :: MVar ServerState -> AuctionAction -> IO ()
+broadcastAuctionAction state auctionAction =
+  readMVar state >>= (\ServerState {..} -> sendMsg jsonMsg clients)
   where
     jsonMsg = encodeAuctionAction auctionAction
 
@@ -96,30 +92,24 @@ isValidAuctionAction (BidAuctionAction aucId bid) auctions =
 isValidAuctionAction (CreateAuctionAction Auction {..}) auctions =
   IntMap.member auctionId auctions
 
---BidAction -> IntMap Auction -> Maybe IO
---The talk function continues to read messages from a single client until he
---disconnects. All messages are broadcasted to the other clients.
--- also listens and broadcasts auction actions
-talk :: WS.Connection -> MVar ServerState -> Client -> IO ()
+broadcastValidAuctionActions ::
+     MVar ServerState -> IntMap Auction -> AuctionAction -> IO ()
+broadcastValidAuctionActions state auctions act =
+  when (isValidAuctionAction act auctions) $ broadcastAuctionAction state act
+
 talk conn state (Client (name, _)) =
   forever $ do
     msg <- WS.receiveData conn
-    serverState <- readMVar state
+    serverState@ServerState {..} <- readMVar state
     pPrint $ "our unparsed ws message from" ++ T.unpack name
     pPrint $ T.unpack msg
     pPrint $ "our parsed ws message from: " ++ T.unpack name
     let parsedAuctionAction = parseAuctionAction msg
     pPrint $ parseAuctionAction msg
-    traverse_
-      fold
-      [ updateServerState state parsedAuctionAction
-      , broadcastAuctionAction state parsedAuctionAction
-      ]
     pPrint serverState
-    --readMVar state >>= broadcast msg
-    -- updateserverstate = updateServerState state parsedAuctionAction
-    -- broadcastaction = (broadcastAuctionAction state parsedAuctionAction)
-    --handleMsg msg = traverse_ fold [updateserverstate, broadcastaction] 
+    for_ (parseAuctionAction msg) $ \parsedAuctionAction -> do
+      updateServerState state parsedAuctionAction
+      broadcastValidAuctionActions state auctions parsedAuctionAction
 
 --actual server. For this purpose, we use the simple server provided by
 --`WS.runServer`.
