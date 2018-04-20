@@ -32,8 +32,8 @@ bidOnAuction key (bid@Bid {..}) =
   IntMap.adjust
     (\auction@Auction {..} ->
        case validBid bid auction of
-         true -> Auction {bids = bid : bids, value = bidValue, ..}
-         false -> auction)
+         True -> Auction {bids = bid : bids, value = bidValue, ..}
+         False -> auction)
     key
 
 -- TODO timestamp auction starts and bids
