@@ -28,6 +28,7 @@ dependencies:
 - containers
 - process
 - regex-pcre
+- pretty-simple
 
 library:
   source-dirs: src

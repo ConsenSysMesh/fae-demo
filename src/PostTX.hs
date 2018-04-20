@@ -1,9 +1,11 @@
 {-# LANGUAGE OverloadedStrings #-}
 
 module PostTX where
-
+import Prelude
 import System.Process
 import Text.Regex.PCRE
+import Control.Monad
+import Text.Pretty.Simple (pPrint)
 
 txIDregex = "(?<=Transaction\\W)(\\w|\\d)+" :: String
 
@@ -63,9 +65,10 @@ parseTXoutput txOut =
 
 -- make sure that dev environment provisioning gives postTX.sh executable permissions
 postTX :: ContractName -> [String] -> IO TXoutData
-postTX contractName args = txOut >>= pure . parseTXoutput
+postTX contractName args = txOut >>= pPrint >> txOut >>= pure . parseTXoutput
   where
     txOut = readProcess "./postTX.sh" args []
-
 main = do
-  postTX " " [] >>= print
+  postTX " " ["Create"] >>= pPrint
+
+  --postTX contractName args = txOut >>= print >> txOut >>= pure . parseTXoutput
