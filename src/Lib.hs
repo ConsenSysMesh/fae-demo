@@ -126,8 +126,6 @@ application :: MVar ServerState -> WS.ServerApp
 application state pending = do
   conn <- WS.acceptRequest pending
   WS.forkPingThread conn 30
---When a client is succesfully connected, we read the first message. This should
---be in the format of "Hi! I am Jasper", where Jasper is the requested username.
   msg <- WS.receiveData conn
   clients <- readMVar state
   case msg
