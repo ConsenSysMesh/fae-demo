@@ -8,6 +8,7 @@ module Lib
 import Control.Concurrent (MVar, modifyMVar, modifyMVar_, newMVar, readMVar)
 import Control.Exception (finally)
 import Control.Monad (forM_, forever)
+import Control.Monad
 import Data.Aeson
 import qualified Data.ByteString.Lazy.Char8 as C
 import Data.Foldable
@@ -21,6 +22,7 @@ import qualified Data.Text.Lazy as X
 import qualified Data.Text.Lazy.Encoding as D
 import qualified Network.WebSockets as WS
 import Prelude
+import Text.Pretty.Simple (pPrint)
 
 import Auction
 import Types
@@ -82,14 +84,19 @@ broadcastAuctionAction ::
      MVar ServerState -> Maybe AuctionAction -> Maybe (IO ())
 broadcastAuctionAction _ Nothing = Nothing
 broadcastAuctionAction state (Just auctionAction) =
-  Just $
-  readMVar state >>=
-  (\ServerState {..} ->
-     sendMsg jsonMsg clients -- broadcast to all inc. action initiator
-   )
+  Just $ readMVar state >>= (\ServerState {..} -> sendMsg jsonMsg clients)
   where
     jsonMsg = encodeAuctionAction auctionAction
 
+isValidAuctionAction :: AuctionAction -> IntMap Auction -> Bool
+isValidAuctionAction (BidAuctionAction aucId bid) auctions =
+  case IntMap.lookup aucId auctions of
+    (Just auction) -> validBid bid auction
+    Nothing -> False
+isValidAuctionAction (CreateAuctionAction Auction {..}) auctions =
+  IntMap.member auctionId auctions
+
+--BidAction -> IntMap Auction -> Maybe IO
 --The talk function continues to read messages from a single client until he
 --disconnects. All messages are broadcasted to the other clients.
 -- also listens and broadcasts auction actions
@@ -98,17 +105,17 @@ talk conn state (Client (name, _)) =
   forever $ do
     msg <- WS.receiveData conn
     serverState <- readMVar state
-    print $ "our unparsed ws message from" ++ T.unpack name
-    putStrLn $ T.unpack msg
-    print $ "our parsed ws message from: " ++ T.unpack name
+    pPrint $ "our unparsed ws message from" ++ T.unpack name
+    pPrint $ T.unpack msg
+    pPrint $ "our parsed ws message from: " ++ T.unpack name
     let parsedAuctionAction = parseAuctionAction msg
-    print $ parseAuctionAction msg
+    pPrint $ parseAuctionAction msg
     traverse_
       fold
       [ updateServerState state parsedAuctionAction
       , broadcastAuctionAction state parsedAuctionAction
       ]
-    print serverState
+    pPrint serverState
     --readMVar state >>= broadcast msg
     -- updateserverstate = updateServerState state parsedAuctionAction
     -- broadcastaction = (broadcastAuctionAction state parsedAuctionAction)
