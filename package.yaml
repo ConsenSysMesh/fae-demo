@@ -26,6 +26,8 @@ dependencies:
 - aeson
 - bytestring
 - containers
+- process
+- regex-pcre
 
 library:
   source-dirs: src
