@@ -72,22 +72,25 @@ parseTXoutput txOut =
 postTX :: [String] -> IO TXoutData
 postTX args = txOut >>= pPrint >> txOut >>= pure . parseTXoutput
   where
-    txOut = readProcess "./loggerPostTX.sh" args []
+    txOut = readProcess "./contracts/postTX.sh" args []
 
 getFakeArg :: IsFake -> String
 getFakeArg fake = if fake then "--fake" else ""
 
 getArgs :: Contract -> Maybe Key -> Maybe AucTXid -> Maybe CoinTXid -> Maybe CoinSCID -> Maybe CoinVersion -> IsFake -> [(String)]
-getArgs Bid key aucTXid coinTXid coinSCID coinVersion isFake = ["Bid", getFakeArg isFake]
-getArgs Create key _ _ _ _ isFake = ["Create", getFakeArg isFake]
-getArgs Withdraw key aucTXid coinTXid coinSCID coinVersion isFake = ["Withdraw", getFakeArg isFake]
-getArgs GetCoin _ _ _ _ _  isFake = ["GetCoin", getFakeArg isFake]
-getArgs GetMoreCoins _ _ _ _ _  isFake = ["GetMoreCoins", getFakeArg isFake] 
+getArgs Bid key aucTXid coinTXid coinSCID coinVersion isFake = [getFakeArg isFake, "Bid"]
+getArgs Create _ _ _ _ _ _ = ["Create"]
+getArgs Withdraw key aucTXid coinTXid coinSCID coinVersion _ = ["Withdraw"]
+getArgs GetCoin (Just key) _ _ _ _  _ = ["-e key=" ++ key, "GetCoin"]
+getArgs GetMoreCoins key _ _ _ _ _ = ["GetMoreCoins"] 
 
 createAuction :: IO TXoutData
 createAuction = postTX (getArgs Create Nothing Nothing Nothing Nothing Nothing False)
 
+getCoin :: Key -> IO TXoutData
+getCoin key = postTX (getArgs GetCoin (Just key) Nothing Nothing Nothing Nothing False)
+
 main = do
-  createAuction >>= pPrint
+  getCoin "tom" >>= pPrint
 
   --postTX contractName args = txOut >>= print >> txOut >>= pure . parseTXoutput
