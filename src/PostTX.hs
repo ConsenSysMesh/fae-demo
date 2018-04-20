@@ -4,6 +4,7 @@ module PostTX where
 import Prelude
 import System.Process
 import Text.Regex.PCRE
+import Data.Maybe
 import Control.Monad
 import Text.Pretty.Simple (pPrint)
 
@@ -16,17 +17,21 @@ coinSCIDregex = "(?<=input )(\\w|\\d)+" :: String
 tx =
   "Transaction a82b661c0e6a662947bf9d7e271ce23af4980bd25ec04161305baec5e77a349e result : () outputs : [0] signers : self : 0331775 a097e2b85c1f3cb17a802009616dc220b24cb1a2b53168147fe5cf2ca" :: String
 
-type ContractName = String
+data Contract = Bid | Create | Withdraw | GetCoin | GetMoreCoins deriving (Eq, Show)
 
 type TXid = String
+
+type Key = String
 
 type CoinSCID = String
 
 type CoinVersion = String
 
-type CoinTX = String
+type CoinTXid = String
 
-type AucTX = String
+type AucTXid = String
+
+type IsFake = Bool
 
 -----------------------------------------------------------------------------
 -- Parsing Output of postTX.sh
@@ -64,11 +69,25 @@ parseTXoutput txOut =
     }
 
 -- make sure that dev environment provisioning gives postTX.sh executable permissions
-postTX :: ContractName -> [String] -> IO TXoutData
-postTX contractName args = txOut >>= pPrint >> txOut >>= pure . parseTXoutput
+postTX :: [String] -> IO TXoutData
+postTX args = txOut >>= pPrint >> txOut >>= pure . parseTXoutput
   where
-    txOut = readProcess "./postTX.sh" args []
+    txOut = readProcess "./loggerPostTX.sh" args []
+
+getFakeArg :: IsFake -> String
+getFakeArg fake = if fake then "--fake" else ""
+
+getArgs :: Contract -> Maybe Key -> Maybe AucTXid -> Maybe CoinTXid -> Maybe CoinSCID -> Maybe CoinVersion -> IsFake -> [(String)]
+getArgs Bid key aucTXid coinTXid coinSCID coinVersion isFake = ["Bid", getFakeArg isFake]
+getArgs Create key _ _ _ _ isFake = ["Create", getFakeArg isFake]
+getArgs Withdraw key aucTXid coinTXid coinSCID coinVersion isFake = ["Withdraw", getFakeArg isFake]
+getArgs GetCoin _ _ _ _ _  isFake = ["GetCoin", getFakeArg isFake]
+getArgs GetMoreCoins _ _ _ _ _  isFake = ["GetMoreCoins", getFakeArg isFake] 
+
+createAuction :: IO TXoutData
+createAuction = postTX (getArgs Create Nothing Nothing Nothing Nothing Nothing False)
+
 main = do
-  postTX " " ["Create"] >>= pPrint
+  createAuction >>= pPrint
 
   --postTX contractName args = txOut >>= print >> txOut >>= pure . parseTXoutput
