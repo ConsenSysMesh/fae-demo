@@ -1,23 +1,21 @@
 {-# LANGUAGE OverloadedStrings #-}
 
 module PostTX where
+
+import Control.Monad
+import Data.Maybe
 import Prelude
 import System.Process
-import Text.Regex.PCRE
-import Data.Maybe
-import Control.Monad
 import Text.Pretty.Simple (pPrint)
+import Text.Regex.PCRE
 
-txIDregex = "(?<=Transaction\\W)(\\w|\\d)+" :: String
-
-coinVersionRegex = "(?<=versions:\\s      )(\\w|\\d)+" :: String
-
-coinSCIDregex = "(?<=input )(\\w|\\d)+" :: String
-
-tx =
-  "Transaction a82b661c0e6a662947bf9d7e271ce23af4980bd25ec04161305baec5e77a349e result : () outputs : [0] signers : self : 0331775 a097e2b85c1f3cb17a802009616dc220b24cb1a2b53168147fe5cf2ca" :: String
-
-data Contract = Bid | Create | Withdraw | GetCoin | GetMoreCoins deriving (Eq, Show)
+data Contract
+  = Bid
+  | Create
+  | Withdraw
+  | GetCoin
+  | GetMoreCoins
+  deriving (Eq, Show)
 
 type TXid = String
 
@@ -33,9 +31,6 @@ type AucTXid = String
 
 type IsFake = Bool
 
------------------------------------------------------------------------------
--- Parsing Output of postTX.sh
------------------------------------------------------------------------------
 -- Every TX has an ID but only some have coinSCID or coinVersion
 data TXoutData = TXoutData
   { txId :: TXid
@@ -43,6 +38,18 @@ data TXoutData = TXoutData
   , coinVersion :: Maybe (CoinVersion)
   } deriving (Eq, Show)
 
+txIDregex :: String
+txIDregex = "(?<=Transaction\\W)(\\w|\\d)+" :: String
+
+coinVersionRegex :: String
+coinVersionRegex = "(?<=versions:\\s      )(\\w|\\d)+" :: String
+
+coinSCIDregex :: String
+coinSCIDregex = "(?<=input )(\\w|\\d)+" :: String
+
+-----------------------------------------------------------------------------
+-- Parsing Output of postTX.sh
+-----------------------------------------------------------------------------
 parseTXid :: String -> String
 parseTXid str = str =~ txIDregex :: String
 
@@ -75,22 +82,35 @@ postTX args = txOut >>= pPrint >> txOut >>= pure . parseTXoutput
     txOut = readProcess "./contracts/postTX.sh" args []
 
 getFakeArg :: IsFake -> String
-getFakeArg fake = if fake then "--fake" else ""
+getFakeArg fake =
+  if fake
+    then "--fake"
+    else ""
 
-getArgs :: Contract -> Maybe Key -> Maybe AucTXid -> Maybe CoinTXid -> Maybe CoinSCID -> Maybe CoinVersion -> IsFake -> [(String)]
-getArgs Bid key aucTXid coinTXid coinSCID coinVersion isFake = [getFakeArg isFake, "Bid"]
+getArgs ::
+     Contract
+  -> Maybe Key
+  -> Maybe AucTXid
+  -> Maybe CoinTXid
+  -> Maybe CoinSCID
+  -> Maybe CoinVersion
+  -> IsFake
+  -> [(String)]
+getArgs Bid key aucTXid coinTXid coinSCID coinVersion isFake =
+  [getFakeArg isFake, "Bid"]
 getArgs Create _ _ _ _ _ _ = ["Create"]
 getArgs Withdraw key aucTXid coinTXid coinSCID coinVersion _ = ["Withdraw"]
-getArgs GetCoin (Just key) _ _ _ _  _ = ["-e key=" ++ key, "GetCoin"]
-getArgs GetMoreCoins key _ _ _ _ _ = ["GetMoreCoins"] 
+getArgs GetCoin (Just key) _ _ _ _ _ = ["-e key=" ++ key, "GetCoin"]
+getArgs GetMoreCoins key _ _ _ _ _ = ["GetMoreCoins"]
 
 createAuction :: IO TXoutData
-createAuction = postTX (getArgs Create Nothing Nothing Nothing Nothing Nothing False)
+createAuction =
+  postTX (getArgs Create Nothing Nothing Nothing Nothing Nothing False)
 
 getCoin :: Key -> IO TXoutData
-getCoin key = postTX (getArgs GetCoin (Just key) Nothing Nothing Nothing Nothing False)
+getCoin key =
+  postTX (getArgs GetCoin (Just key) Nothing Nothing Nothing Nothing False)
 
+main :: IO ()
 main = do
   getCoin "tom" >>= pPrint
-
-  --postTX contractName args = txOut >>= print >> txOut >>= pure . parseTXoutput

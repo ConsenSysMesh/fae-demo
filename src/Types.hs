@@ -6,7 +6,6 @@ module Types where
 
 import Data.Aeson.Types
 import Data.IntMap.Lazy (IntMap)
-import qualified Data.IntMap.Lazy as IntMap
 import Data.Text (Text)
 import GHC.Generics
 import qualified Network.WebSockets as WS

@@ -17,7 +17,6 @@ import qualified Data.IntMap.Lazy as IntMap
 import Data.Maybe
 import Data.Text (Text)
 import qualified Data.Text as T
-import qualified Data.Text.IO as T
 import qualified Data.Text.Lazy as X
 import qualified Data.Text.Lazy.Encoding as D
 import qualified Network.WebSockets as WS
@@ -27,16 +26,12 @@ import Text.Pretty.Simple (pPrint)
 import Auction
 import Types
 
---Create a new, initial state:
 initialServerState :: ServerState
 initialServerState = ServerState {clients = [], auctions = IntMap.empty}
 
---Check if a user already exists (based on username):
 clientExists :: Client -> ServerState -> Bool
 clientExists client ServerState {..} = client `elem` clients
 
---Add a client (this does not check if the client already exists, you should do
---this yourself using `clientExists`):
 addClient :: Client -> ServerState -> ServerState
 addClient client ServerState {..} = ServerState {clients = client : clients, ..}
 
@@ -52,10 +47,8 @@ handleAuctionAction ServerState {..} (CreateAuctionAction auction) =
 handleAuctionAction ServerState {..} (BidAuctionAction auctionId bid) =
   ServerState {auctions = bidOnAuction auctionId bid auctions, ..}
 
---Send a message to all clients, and log it on stdout:
 broadcast :: Text -> ServerState -> IO ()
-broadcast message ServerState {..} = do
-  T.putStrLn message
+broadcast message ServerState {..} =
   forM_ clients $ \(Client (_, conn)) -> WS.sendTextData conn message
 
 parseAuctionAction :: Text -> Maybe AuctionAction
@@ -99,17 +92,11 @@ broadcastValidAuctionActions ::
 broadcastValidAuctionActions state auctions act =
   when (isValidAuctionAction act auctions) $ broadcastAuctionAction state act
 
-talk :: WS.Connection -> MVar ServerState -> Client -> IO ()
-talk conn state (Client (name, _)) =
+talk :: WS.Connection -> MVar ServerState -> IO ()
+talk conn state =
   forever $ do
     msg <- WS.receiveData conn
-    serverState@ServerState {..} <- readMVar state
-    pPrint $ "our unparsed ws message from" ++ T.unpack name
-    pPrint $ T.unpack msg
-    pPrint $ "our parsed ws message from: " ++ T.unpack name
-    let parsedAuctionAction = parseAuctionAction msg
-    pPrint $ parseAuctionAction msg
-    pPrint serverState
+    ServerState {..} <- readMVar state
     for_ (parseAuctionAction msg) $ \parsedAuctionAction -> do
       updateServerState state parsedAuctionAction
       broadcastValidAuctionActions state auctions parsedAuctionAction
@@ -141,30 +128,10 @@ application state pending = do
         flip finally disconnect $ do
           modifyMVar_ state $ \s -> do
             let s' = addClient client s
-            T.putStrLn clientName
-            putStrLn $ C.unpack $ encode sampleAction
-            putStrLn $ C.unpack $ encode sampleAction2
-            --broadcast stringifiedJsonAction s'
             return s'
-          talk conn state client
+          talk conn state
       where clientName = T.filter (\c -> c `notElem` ['"', ' ']) msg
             client = Client (clientName, conn)
-            sampleAction =
-              CreateAuctionAction
-                Auction
-                  { auctionId = 1
-                  , value = 1
-                  , bids = []
-                  , createdBy = "Argo"
-                  , createdTimestamp = "0200"
-                  , maxNumBids = 3
-                  }
-            sampleAction2 =
-              BidAuctionAction
-                1
-                Bid {bidValue = 3, bidder = "Xena", bidTimestamp = "22:10"}
-            jsonAction = X.toStrict $ D.decodeUtf8 $ encode sampleAction
-            stringifiedJsonAction = T.pack $ show jsonAction
             -- disconnect is called when the connection is closed.
             disconnect
                 -- Remove client and return new state
