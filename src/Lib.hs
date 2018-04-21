@@ -64,12 +64,22 @@ parseAuctionAction jsonTxt = decode $ C.pack $ T.unpack jsonTxt
 encodeAuctionAction :: AuctionAction -> Text
 encodeAuctionAction a = T.pack $ show $ X.toStrict $ D.decodeUtf8 $ encode a
 
+isValidAuctionAction :: AuctionAction -> IntMap Auction -> Bool
+isValidAuctionAction (BidAuctionAction aucId bid) auctions =
+  case IntMap.lookup aucId auctions of
+    (Just auction) -> validBid bid auction
+    Nothing -> False
+isValidAuctionAction (CreateAuctionAction Auction {..}) auctions =
+  not $ IntMap.member auctionId auctions
+
 -- update auction in serverState based on action
 updateServerState :: MVar ServerState -> AuctionAction -> IO ()
 updateServerState state action =
   modifyMVar_
     state
-    (\serverState -> return (handleAuctionAction serverState action))
+    (\serverState@ServerState {..} -> do
+       print $ isValidAuctionAction action auctions
+       return (handleAuctionAction serverState action))
 
 sendMsg :: Text -> [Client] -> IO ()
 sendMsg msg clients = do
@@ -84,19 +94,12 @@ broadcastAuctionAction state auctionAction =
   where
     jsonMsg = encodeAuctionAction auctionAction
 
-isValidAuctionAction :: AuctionAction -> IntMap Auction -> Bool
-isValidAuctionAction (BidAuctionAction aucId bid) auctions =
-  case IntMap.lookup aucId auctions of
-    (Just auction) -> validBid bid auction
-    Nothing -> False
-isValidAuctionAction (CreateAuctionAction Auction {..}) auctions =
-  IntMap.member auctionId auctions
-
 broadcastValidAuctionActions ::
      MVar ServerState -> IntMap Auction -> AuctionAction -> IO ()
 broadcastValidAuctionActions state auctions act =
   when (isValidAuctionAction act auctions) $ broadcastAuctionAction state act
 
+talk :: WS.Connection -> MVar ServerState -> Client -> IO ()
 talk conn state (Client (name, _)) =
   forever $ do
     msg <- WS.receiveData conn
