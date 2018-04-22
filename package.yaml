@@ -27,6 +27,7 @@ dependencies:
 - bytestring
 - containers
 - process
+- time
 - regex-pcre
 - pretty-simple
 

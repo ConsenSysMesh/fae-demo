@@ -7,6 +7,7 @@ module Types where
 import Data.Aeson.Types
 import Data.IntMap.Lazy (IntMap)
 import Data.Text (Text)
+import Data.Time.Clock
 import GHC.Generics
 import qualified Network.WebSockets as WS
 
@@ -31,14 +32,14 @@ data Auction = Auction
   , createdBy :: String
   , value :: Int
   , maxNumBids :: Int
-  , createdTimestamp :: String
+  , createdTimestamp :: UTCTime
   } deriving (Show, Generic, FromJSON, ToJSON)
 
 data Bid = Bid
   { bidValue :: Int
   , bidder :: String
-  , bidTimestamp :: String
-  } deriving (Show, Generic, FromJSON, ToJSON)
+  , bidTimestamp :: UTCTime
+  } deriving (Eq, Show, Generic, FromJSON, ToJSON)
 
 -- Actions for synchronising client-server state
 data AuctionAction
