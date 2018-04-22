@@ -30,7 +30,7 @@ data Auction = Auction
   { auctionId :: AuctionId
   , bids :: [Bid]
   , createdBy :: String
-  , value :: Int
+  , initialValue :: Int
   , maxNumBids :: Int
   , createdTimestamp :: UTCTime
   } deriving (Show, Generic, FromJSON, ToJSON)

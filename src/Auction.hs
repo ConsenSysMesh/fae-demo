@@ -23,7 +23,8 @@ import Prelude
 import Types
 
 validBid :: Bid -> Auction -> Bool
-validBid Bid {..} Auction {..} = bidValue > value && numBids < maxNumBids
+validBid Bid {..} a@Auction {..} =
+  bidValue > (currentBidValue a) && numBids < maxNumBids
   where
     numBids = length bids
 
@@ -32,11 +33,10 @@ bidOnAuction key (bid@Bid {..}) =
   IntMap.adjust
     (\auction@Auction {..} ->
        case validBid bid auction of
-         True -> Auction {bids = bid : bids, value = bidValue, ..}
+         True -> Auction {bids = bid : bids, ..}
          False -> auction)
     key
 
--- TODO timestamp auction starts and bids
 createAuction :: Auction -> IntMap Auction -> IntMap Auction
 createAuction auction auctionsMap = IntMap.insert key auction auctionsMap
   where
@@ -47,3 +47,30 @@ getNextAuctionKey a =
   case IntMap.maxViewWithKey a of
     (Just ((k, _), _)) -> k + 1
     Nothing -> 1
+
+auctionStatus :: Auction -> String
+auctionStatus auc@Auction {..}
+  | (numBids auc) < maxNumBids = highBidder <> "is Winning"
+  | numBids auc == 0 = "No Bids yet"
+  | otherwise = highBidder <> " Has Won!"
+  where
+    highBidder = highestBidder auc
+
+getBidValue :: Bid -> Int
+getBidValue Bid {..} = bidValue
+
+numBids :: Auction -> Int
+numBids Auction {..} = Prelude.length bids
+
+getBidder :: Bid -> String
+getBidder Bid {..} = bidder
+
+currentBidValue :: Auction -> Int
+currentBidValue Auction {..}
+  | length bids > 0 = (getBidValue . Li.last) bids
+  | otherwise = initialValue
+
+highestBidder :: Auction -> String
+highestBidder Auction {..}
+  | length bids > 0 = (getBidder . Li.last) bids
+  | otherwise = "No Bidders"
