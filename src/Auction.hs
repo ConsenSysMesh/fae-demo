@@ -12,6 +12,8 @@ import Control.Monad (forM_, forever)
 import Data.Aeson
 import Data.IntMap.Lazy (IntMap)
 import qualified Data.IntMap.Lazy as IntMap
+import qualified Data.List as Li
+import Data.Monoid
 import Data.Text (Text)
 import qualified Data.Text as T
 import qualified Data.Text.IO as T
@@ -19,7 +21,6 @@ import qualified Data.Text.Lazy as X
 import qualified Data.Text.Lazy.Encoding as D
 import qualified Network.WebSockets as WS
 import Prelude
-
 import Types
 
 validBid :: Bid -> Auction -> Bool
