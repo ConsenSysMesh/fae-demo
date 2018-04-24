@@ -6,6 +6,7 @@ module FaeTX.Outgoing.PostTX where
 import Control.Monad
 import FaeTX.Outgoing.Types
 import Prelude
+import System.IO
 import System.Process
 import Text.Pretty.Simple (pPrint)
 
@@ -19,7 +20,12 @@ getPostTXArgs (GetMoreCoinsTXinput key coinTXID) = ["GetMoreCoins"]
 
 -- make sure that dev environment provisioning gives postTX.sh executable permissions
 postTX :: [String] -> IO ()
-postTX args = readProcess "./contracts/postTX.sh" args [] >>= pPrint
+postTX args = do
+  (_, Just hout, _, _) <-
+    createProcess (proc "./contracts/postTX.sh" args) {std_out = CreatePipe}
+  txOutput <- hGetContents hout
+  putStrLn $ "> posttx args " ++ (show args)
+  putStrLn txOutput
 
 getFakeArg :: Bool -> String
 getFakeArg fake =
