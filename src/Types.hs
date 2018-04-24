@@ -41,12 +41,6 @@ data Bid = Bid
   , bidTimestamp :: UTCTime
   } deriving (Eq, Show, Generic, FromJSON, ToJSON)
 
--- Actions for synchronising client-server state
-data AuctionAction
-  = CreateAuctionAction Auction
-  | BidAuctionAction AuctionId
-                     Bid
-  deriving (Show, Generic, FromJSON, ToJSON)
-
 instance Eq Client where
   (Client (x, _)) == (Client (y, _)) = x == y
+  -- Actions for synchronising client-server state

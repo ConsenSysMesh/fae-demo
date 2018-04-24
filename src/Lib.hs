@@ -24,80 +24,40 @@ import Prelude
 import Text.Pretty.Simple (pPrint)
 
 import Auction
+import ClientMsg.Incoming
+
+import ClientMsg.Outgoing
+import ClientMsg.Types
 import Clients
 import Types
 
 initialServerState :: ServerState
 initialServerState = ServerState {clients = [], auctions = IntMap.empty}
 
-handleAuctionAction :: ServerState -> AuctionAction -> ServerState
-handleAuctionAction ServerState {..} (CreateAuctionAction auction) =
-  ServerState {auctions = createAuction auction auctions, ..}
-handleAuctionAction ServerState {..} (BidAuctionAction auctionId bid) =
-  ServerState {auctions = bidOnAuction auctionId bid auctions, ..}
-
-parseAuctionAction :: Text -> Maybe AuctionAction
-parseAuctionAction jsonTxt = decode $ C.pack $ T.unpack jsonTxt
-
-encodeAuctionAction :: AuctionAction -> Text
-encodeAuctionAction a = T.pack $ show $ X.toStrict $ D.decodeUtf8 $ encode a
-
-isValidAuctionAction :: AuctionAction -> IntMap Auction -> Bool
-isValidAuctionAction (BidAuctionAction aucId bid) auctions =
-  case IntMap.lookup aucId auctions of
-    (Just auction) -> validBid bid auction
-    Nothing -> False
-isValidAuctionAction (CreateAuctionAction Auction {..}) auctions =
-  not $ IntMap.member auctionId auctions
-
 -- update auction in serverState based on action
-updateServerState :: MVar ServerState -> AuctionAction -> IO ()
+updateServerState :: MVar ServerState -> ClientMsg.Types.AuctionAction -> IO ()
 updateServerState state action =
   modifyMVar_
     state
     (\serverState@ServerState {..} -> do
        print $ isValidAuctionAction action auctions
-       return (handleAuctionAction serverState action))
-
-sendMsg :: Text -> [Client] -> IO ()
-sendMsg msg clients = do
-  print
-    ("outgoing to: [  " ++
-     (show clients) ++ " ] ---------------> " ++ (show msg))
-  forM_ clients $ \(Client (_, conn)) -> WS.sendTextData conn msg
-
-broadcastAuctionAction :: MVar ServerState -> AuctionAction -> IO ()
-broadcastAuctionAction state auctionAction =
-  readMVar state >>= (\ServerState {..} -> sendMsg jsonMsg clients)
-  where
-    jsonMsg = encodeAuctionAction auctionAction
-
-broadcastValidAuctionActions ::
-     MVar ServerState -> IntMap Auction -> AuctionAction -> IO ()
-broadcastValidAuctionActions state auctions act =
-  when (isValidAuctionAction act auctions) $ broadcastAuctionAction state act
+       return (ClientMsg.Incoming.handleAuctionAction serverState action))
 
 talk :: WS.Connection -> MVar ServerState -> IO ()
 talk conn state =
   forever $ do
     msg <- WS.receiveData conn
     ServerState {..} <- readMVar state
-    for_ (parseAuctionAction msg) $ \parsedAuctionAction -> do
+    for_ (ClientMsg.Incoming.parseAuctionAction msg) $ \parsedAuctionAction -> do
       updateServerState state parsedAuctionAction
       broadcastValidAuctionActions state auctions parsedAuctionAction
 
---actual server. For this purpose, we use the simple server provided by
---`WS.runServer`.
 runServer :: IO ()
 runServer = do
   state <- newMVar initialServerState
   WS.runServer "127.0.0.1" 9160 $ application state
 
 application :: MVar ServerState -> WS.ServerApp
---`WS.ServerApp` is nothing but a type synonym for
---`WS.PendingConnection -> IO ()`.
---ork a pinging thread in the background. This will ensure the connection
---stays alive on some browsers.
 application state pending = do
   conn <- WS.acceptRequest pending
   WS.forkPingThread conn 30
@@ -127,4 +87,4 @@ application state pending = do
                   let s' =
                         ServerState {clients = removeClient client clients, ..}
                    in return (s', s')
-              broadcast (clientName `mappend` " disconnected") [conn]
+              sendMsgs (clientName `mappend` " disconnected") [conn]

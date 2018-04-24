@@ -44,10 +44,11 @@ parseCoinSCID str
 parseTXoutput txOut = undefined
 
 -- make sure that dev environment provisioning gives postTX.sh executable permissions
---postTX :: [String] -> IO TXout
---postTX args = txOut >>= pPrint >> txOut >>= pure . parseTXoutput
---  where
---    txOut = readProcess "./contracts/postTX.sh" args []
+postTX :: Contract -> String
+postTX args = txOut >>= pPrint >> txOut >>= pure . parseTXoutput
+  where
+    txOut = readProcess "./contracts/postTX.sh" args []
+
 getFakeArg :: Bool -> String
 getFakeArg fake =
   if fake

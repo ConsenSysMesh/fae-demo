@@ -28,6 +28,7 @@ validBid Bid {..} a@Auction {..} =
   bidValue > (currentBidValue a) && numBids < maxNumBids
   where
     numBids = length bids
+    -- the output of PostTX should decide this
 
 bidOnAuction :: AuctionId -> Bid -> IntMap Auction -> IntMap Auction
 bidOnAuction key (bid@Bid {..}) =
