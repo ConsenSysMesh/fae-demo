@@ -11,32 +11,32 @@ import Text.Pretty.Simple (pPrint)
 import Data.List
 import Data.Monoid
 
-getPostTXArgs :: TXinput -> [String]
-getPostTXArgs (FakeBidTXinput key aucTXID coinTXID) = 
-  formatArgs [("key", show key), ("aucTX", show aucTXID), ("coinTX", show coinTXID)] ++ ["--fake", "Bid"]
-getPostTXArgs (BidTXinput key aucTXID coinTXID coinSCID coinVersion) = 
-  formatArgs [("key", show key), ("aucTX", show aucTXID), ("coinTX", show coinTXID), ("coinSCID", show coinSCID), ("coinVersion", show coinVersion)] ++ ["Bid"]
-getPostTXArgs (CreateAuctionTXinput key aucTXID) =
-  formatArgs [("key", show key), ("aucTX", show aucTXID)] ++ ["Create"]
-getPostTXArgs (WithdrawCoinTXinput key aucTXID) =
-  formatArgs [("key", show key), ("aucTX", show aucTXID)] ++ ["Withdraw"]
-getPostTXArgs (GetCoinTXinput key) =
-  formatArgs [("key", show key)] ++ ["GetCoin"]
-getPostTXArgs (GetMoreCoinsTXinput key coinTXID) = 
-  formatArgs [("key", show key), ("coinTX", show coinTXID)] ++ ["GetMoreCoins"]
+import FaeTX.Types
+
+getPostTXargs :: TXinput -> [String]
+getPostTXargs (FakeBidTXinput key aucTXID coinTXID) = 
+  f [("key", show key), ("aucTX", show aucTXID), ("coinTX", show coinTXID)] ++ ["--fake", "Bid"]
+getPostTXargs (BidTXinput key aucTXID coinTXID coinSCID coinVersion) = 
+  f  [("key", show key), ("aucTX", show aucTXID), ("coinTX", show coinTXID), ("coinSCID", show coinSCID), ("coinVersion", show coinVersion)] ++ ["Bid"]
+getPostTXargs (CreateAuctionTXinput key aucTXID) =
+ f [("key", show key), ("aucTX", show aucTXID)] ++ ["Create"]
+getPostTXargs (WithdrawCoinTXinput key aucTXID) =
+  f [("key", show key), ("aucTX", show aucTXID)] ++ ["Withdraw"]
+getPostTXargs (GetCoinTXinput key) =
+  f  [("key", show key)] ++ ["GetCoin"]
+getPostTXargs (GetMoreCoinsTXinput key coinTXID) = 
+  f [("key", show key), ("coinTX", show coinTXID)] ++ ["GetMoreCoins"]
 
 prependEnvArg :: String -> [String]
 prependEnvArg arg = ["-e"] <> [arg]
 
 quoteString :: String -> String
-quoteString str = "\"" <> str <> "\""
+quoteString str =  "\"" <> str <> "\""
 
 formatArg :: (String, String) -> [String]
-formatArg (key, val) = prependEnvArg $ key <> "=" <> quoteString val
+formatArg (key, val) =[ key <> "=" <> (quoteString val)]
 
-formatArgs :: [(String, String)] -> [String]
-formatArgs args = concatMap formatArg args
-
+f = concatMap formatArg
 -- make sure that dev environment provisioning gives postTX.sh executable permissions
 postTX :: [String] -> IO ()
 postTX args = readProcess "./contracts/postTX.sh" args [] >>= pPrint
@@ -48,4 +48,4 @@ getFakeArg fake =
     else ""
 
 main :: IO ()
-main = postTX ["-e","self=\"tom\"", "GetCoin"]
+main = print $ getPostTXargs (GetCoinTXinput (Key "tom"))

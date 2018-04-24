@@ -1,6 +1,6 @@
 module FaeTX.Types where
 
-newtype TXID =
+type TXID =
   TXID String
   deriving (Show, Eq)
  -- private key for signing txs

@@ -4,6 +4,7 @@ module FaeTX.Incoming.Types where
 
 import FaeTX.Types
 
+
 data TXOutput
   = FakeBidTXoutput TXID
                     AucTXID
