@@ -1,5 +1,7 @@
 {-# LANGUAGE DuplicateRecordFields #-}
 
+module FaeTX.Outgoing.Types where
+
 type Key = String -- private key for signing txs
 
 type CoinSCID = String -- hash of the coin

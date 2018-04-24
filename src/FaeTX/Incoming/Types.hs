@@ -1,5 +1,7 @@
 {-# LANGUAGE DuplicateRecordFields #-}
 
+module FaeTX.Incoming.Types where
+
 type TXID = String
 
 type Key = String

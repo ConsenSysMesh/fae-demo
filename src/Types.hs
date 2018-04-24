@@ -16,7 +16,7 @@ type AuctionId = Int
 --We represent a client by their username and a `WS.Connection`. We will see how we
 --obtain this `WS.Connection` later on.
 newtype Client =
-  Client (Text, WS.Connection)
+  Client (Text, WS.Connection) -- add wallet
 
 instance Show Client where
   show (Client (name, _)) = show name

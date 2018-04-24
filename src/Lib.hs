@@ -24,32 +24,17 @@ import Prelude
 import Text.Pretty.Simple (pPrint)
 
 import Auction
+import Clients
 import Types
 
 initialServerState :: ServerState
 initialServerState = ServerState {clients = [], auctions = IntMap.empty}
-
-clientExists :: Client -> ServerState -> Bool
-clientExists client ServerState {..} = client `elem` clients
-
-addClient :: Client -> ServerState -> ServerState
-addClient client ServerState {..} = ServerState {clients = client : clients, ..}
-
-removeClient :: Client -> ServerState -> ServerState
-removeClient client ServerState {..} =
-  ServerState {clients = filteredClients, ..}
-  where
-    filteredClients = filter (/= client) clients
 
 handleAuctionAction :: ServerState -> AuctionAction -> ServerState
 handleAuctionAction ServerState {..} (CreateAuctionAction auction) =
   ServerState {auctions = createAuction auction auctions, ..}
 handleAuctionAction ServerState {..} (BidAuctionAction auctionId bid) =
   ServerState {auctions = bidOnAuction auctionId bid auctions, ..}
-
-broadcast :: Text -> ServerState -> IO ()
-broadcast message ServerState {..} =
-  forM_ clients $ \(Client (_, conn)) -> WS.sendTextData conn message
 
 parseAuctionAction :: Text -> Maybe AuctionAction
 parseAuctionAction jsonTxt = decode $ C.pack $ T.unpack jsonTxt
@@ -117,7 +102,7 @@ application state pending = do
   conn <- WS.acceptRequest pending
   WS.forkPingThread conn 30
   msg <- WS.receiveData conn
-  clients <- readMVar state
+  ServerState {..} <- readMVar state
   case msg
 --Check that the given username is not already taken:
         of
@@ -126,9 +111,10 @@ application state pending = do
         WS.sendTextData conn ("User already exists" :: Text)
       | otherwise ->
         flip finally disconnect $ do
-          modifyMVar_ state $ \s -> do
-            let s' = addClient client s
-            return s'
+          modifyMVar_ state $ \ServerState {..} -> do
+            let newServerState =
+                  ServerState {clients = (addClient client clients), ..}
+            return newServerState
           talk conn state
       where clientName = T.filter (\c -> c `notElem` ['"', ' ']) msg
             client = Client (clientName, conn)
@@ -137,7 +123,8 @@ application state pending = do
                 -- Remove client and return new state
              = do
               s <-
-                modifyMVar state $ \s ->
-                  let s' = removeClient client s
+                modifyMVar state $ \ServerState {..} ->
+                  let s' =
+                        ServerState {clients = removeClient client clients, ..}
                    in return (s', s')
-              broadcast (clientName `mappend` " disconnected") s
+              broadcast (clientName `mappend` " disconnected") [conn]

@@ -1,6 +1,7 @@
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE RecordWildCards #-}
 
-module PostTX where
+module FaeTX.Incoming.ParseTX where
 
 import Control.Monad
 import Data.Maybe
@@ -9,34 +10,7 @@ import System.Process
 import Text.Pretty.Simple (pPrint)
 import Text.Regex.PCRE
 
-data Contract
-  = Bid
-  | Create
-  | Withdraw
-  | GetCoin
-  | GetMoreCoins
-  deriving (Eq, Show)
-
-type TXid = String
-
-type Key = String
-
-type CoinSCID = String
-
-type CoinVersion = String
-
-type CoinTXid = String
-
-type AucTXid = String
-
-type IsFake = Bool
-
--- Every TX has an ID but only some have coinSCID or coinVersion
-data TXoutData = TXoutData
-  { txId :: TXid
-  , coinsSCID :: Maybe (CoinSCID)
-  , coinVersion :: Maybe (CoinVersion)
-  } deriving (Eq, Show)
+import FaeTX.Incoming.Types
 
 txIDregex :: String
 txIDregex = "(?<=Transaction\\W)(\\w|\\d)+" :: String
@@ -67,26 +41,19 @@ parseCoinSCID str
   where
     result = str =~ coinSCIDregex :: String
 
-parseTXoutput :: String -> TXoutData
-parseTXoutput txOut =
-  TXoutData
-    { txId = parseTXid txOut
-    , coinsSCID = parseCoinSCID txOut
-    , coinVersion = parseCoinVersion txOut
-    }
+parseTXoutput txOut = undefined
 
 -- make sure that dev environment provisioning gives postTX.sh executable permissions
-postTX :: [String] -> IO TXoutData
-postTX args = txOut >>= pPrint >> txOut >>= pure . parseTXoutput
-  where
-    txOut = readProcess "./contracts/postTX.sh" args []
-
-getFakeArg :: IsFake -> String
+--postTX :: [String] -> IO TXout
+--postTX args = txOut >>= pPrint >> txOut >>= pure . parseTXoutput
+--  where
+--    txOut = readProcess "./contracts/postTX.sh" args []
+getFakeArg :: Bool -> String
 getFakeArg fake =
   if fake
     then "--fake"
     else ""
-
+{-
 getArgs ::
      Contract
   -> Maybe Key
@@ -94,7 +61,7 @@ getArgs ::
   -> Maybe CoinTXid
   -> Maybe CoinSCID
   -> Maybe CoinVersion
-  -> IsFake
+  -> Fake
   -> [(String)]
 getArgs Bid key aucTXid coinTXid coinSCID coinVersion isFake =
   [getFakeArg isFake, "Bid"]
@@ -103,14 +70,16 @@ getArgs Withdraw key aucTXid coinTXid coinSCID coinVersion _ = ["Withdraw"]
 getArgs GetCoin (Just key) _ _ _ _ _ = ["-e key=" ++ key, "GetCoin"]
 getArgs GetMoreCoins key _ _ _ _ _ = ["GetMoreCoins"]
 
-createAuction :: IO TXoutData
+
+createAuction :: IO CreateAuctionTXout
 createAuction =
   postTX (getArgs Create Nothing Nothing Nothing Nothing Nothing False)
 
-getCoin :: Key -> IO TXoutData
+getCoin :: Key -> IO GetCoinTXout
 getCoin key =
   postTX (getArgs GetCoin (Just key) Nothing Nothing Nothing Nothing False)
 
 main :: IO ()
 main = do
   getCoin "tom" >>= pPrint
+-}
