@@ -41,46 +41,4 @@ parseCoinSCID str
   where
     result = str =~ coinSCIDregex :: String
 
-parseTXoutput txOut = undefined
-
--- make sure that dev environment provisioning gives postTX.sh executable permissions
-postTX :: Contract -> String
-postTX args = txOut >>= pPrint >> txOut >>= pure . parseTXoutput
-  where
-    txOut = readProcess "./contracts/postTX.sh" args []
-
-getFakeArg :: Bool -> String
-getFakeArg fake =
-  if fake
-    then "--fake"
-    else ""
-{-
-getArgs ::
-     Contract
-  -> Maybe Key
-  -> Maybe AucTXid
-  -> Maybe CoinTXid
-  -> Maybe CoinSCID
-  -> Maybe CoinVersion
-  -> Fake
-  -> [(String)]
-getArgs Bid key aucTXid coinTXid coinSCID coinVersion isFake =
-  [getFakeArg isFake, "Bid"]
-getArgs Create _ _ _ _ _ _ = ["Create"]
-getArgs Withdraw key aucTXid coinTXid coinSCID coinVersion _ = ["Withdraw"]
-getArgs GetCoin (Just key) _ _ _ _ _ = ["-e key=" ++ key, "GetCoin"]
-getArgs GetMoreCoins key _ _ _ _ _ = ["GetMoreCoins"]
-
-
-createAuction :: IO CreateAuctionTXout
-createAuction =
-  postTX (getArgs Create Nothing Nothing Nothing Nothing Nothing False)
-
-getCoin :: Key -> IO GetCoinTXout
-getCoin key =
-  postTX (getArgs GetCoin (Just key) Nothing Nothing Nothing Nothing False)
-
-main :: IO ()
-main = do
-  getCoin "tom" >>= pPrint
--}
+parse = undefined
