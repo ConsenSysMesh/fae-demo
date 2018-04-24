@@ -16,25 +16,25 @@ import FaeTX.Types
 getPostTXargs :: TXinput -> [String]
 getPostTXargs (FakeBidTXinput key aucTXID coinTXID) =
   formatArgs
-    [("key", show key), ("aucTX", show aucTXID), ("coinTX", show coinTXID)] ++
+    [("key", show key), ("aucTX", aucTXID), ("coinTX", coinTXID)] ++
   ["--fake", "Bid"]
 getPostTXargs (BidTXinput key aucTXID coinTXID coinSCID coinVersion) =
   formatArgs
-    [ ("key", show key)
-    , ("aucTX", show aucTXID)
-    , ("coinTX", show coinTXID)
-    , ("coinSCID", show coinSCID)
-    , ("coinVersion", show coinVersion)
+    [ ("key", key)
+    , ("aucTX", aucTXID)
+    , ("coinTX", coinTXID)
+    , ("coinSCID", coinSCID)
+    , ("coinVersion", coinVersion)
     ] ++
   ["Bid"]
-getPostTXargs (CreateAuctionTXinput key aucTXID) =
-  formatArgs [("key", show key), ("aucTX", show aucTXID)] ++ ["Create"]
-getPostTXargs (WithdrawCoinTXinput key aucTXID) =
-  formatArgs [("key", show key), ("aucTX", show aucTXID)] ++ ["Withdraw"]
+getPostTXargs (CreateAuctionTXinput (Key key) (AucTXID aucTXID)) =
+  formatArgs [("key", key), ("aucTX", aucTXID)] ++ ["Create"]
+getPostTXargs (WithdrawCoinTXinput (Key key) (AucTXID aucTXID)) =
+  formatArgs [("key", key), ("aucTX", aucTXID)] ++ ["Withdraw"]
 getPostTXargs (GetCoinTXinput (Key (key))) =
-  formatArgs [("key", show key), ("self", show key)] ++ ["GetCoin"]
+  formatArgs [("key", key), ("self", key)] ++ ["GetCoin"]
 getPostTXargs (GetMoreCoinsTXinput (Key (key)) (CoinTXID (coinTXID))) =
-  formatArgs [("key", show key),("self", show key), ("coinTX", show coinTXID)] ++ ["GetMoreCoins"]
+  formatArgs [("self",  key), ("key",  key), ("coinTX",  coinTXID)] ++ ["GetMoreCoins"]
 
 formatArg :: (String, String) -> [String]
 formatArg (key, val) = ["-e"] <> [key <> "=" <> val]
@@ -53,4 +53,7 @@ getFakeArg fake =
     else ""
 
 main :: IO ()
-main = postTX $ getPostTXargs (GetMoreCoinsTXinput (Key "tom") (CoinTXID "f6d974df9a7f2721f7f56f87d5cf6694d97c761df817ad6db47ccf91a960922b"))
+main = getCs
+getC = postTX $ getPostTXargs (GetCoinTXinput (Key "tom"))
+  
+getCs = postTX $ getPostTXargs (GetMoreCoinsTXinput (Key "tom") (CoinTXID "e207e26d7a14dcfc8881d63b292ed8cd3e6170c49c8c2a516d0e946ebed51930"))
