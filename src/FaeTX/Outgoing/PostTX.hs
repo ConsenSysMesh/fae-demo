@@ -14,7 +14,7 @@ getPostTXArgs (FakeBidTXinput key aucTXID coinTXID) = ["--fake", "Bid"]
 getPostTXArgs (BidTXinput key aucTXID coinTXID coinSCID coinVersion) = ["Bid"]
 getPostTXArgs (CreateAuctionTXinput key aucTXID) = ["Create"]
 getPostTXArgs (WithdrawCoinTXinput key aucTXID) = ["Withdraw"]
-getPostTXArgs GetCoinTXinput = ["-e key=" ++ show key, "GetCoin"]
+getPostTXArgs (GetCoinTXinput key) = ["-e self=" ++ show key, "GetCoin"]
 getPostTXArgs (GetMoreCoinsTXinput key coinTXID) = ["GetMoreCoins"]
 
 -- make sure that dev environment provisioning gives postTX.sh executable permissions

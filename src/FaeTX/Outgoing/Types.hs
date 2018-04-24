@@ -17,6 +17,6 @@ data TXinput
                          AucTXID
   | WithdrawCoinTXinput Key
                         AucTXID
-  | GetCoinTXinput
+  | GetCoinTXinput Key
   | GetMoreCoinsTXinput Key
                         CoinTXID
