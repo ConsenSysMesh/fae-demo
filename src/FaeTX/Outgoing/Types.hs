@@ -14,7 +14,6 @@ data TXinput
                CoinSCID
                CoinVersion
   | CreateAuctionTXinput Key
-                         AucTXID
   | WithdrawCoinTXinput Key
                         AucTXID
   | GetCoinTXinput Key
