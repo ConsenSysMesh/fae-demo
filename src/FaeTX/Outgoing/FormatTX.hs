@@ -15,17 +15,17 @@ import Text.Pretty.Simple (pPrint)
 
 import FaeTX.Types
 
-getPostTXargs :: AuctionTX -> [String]
-getPostTXargs (FakeBidTX (Key key) (AucTXID aucTXID) (CoinTXID coinTXID)) =
+getPostTXargs :: AuctionTXin -> [String]
+getPostTXargs (FakeBidTXin (Key key) (AucTXID aucTXID) (CoinTXID coinTXID)) =
   formatArgs
-    [ ("key", show key)
+    [ ("key", key)
     , ("aucTX", aucTXID)
     , ("coinTX", coinTXID)
     , ("coinSCID", "")
     , ("coinVersion", "")
     ] ++
   ["Bid", "--fake"]
-getPostTXargs (BidTX (Key key) (AucTXID aucTXID) (CoinTXID coinTXID) (CoinSCID coinSCID) (CoinVersion coinVersion)) =
+getPostTXargs (BidTXin (Key key) (AucTXID aucTXID) (CoinTXID coinTXID) (CoinSCID coinSCID) (CoinVersion coinVersion)) =
   formatArgs
     [ ("key", key)
     , ("aucTX", aucTXID)
@@ -34,13 +34,13 @@ getPostTXargs (BidTX (Key key) (AucTXID aucTXID) (CoinTXID coinTXID) (CoinSCID c
     , ("coinVersion", coinVersion)
     ] ++
   ["Bid"]
-getPostTXargs (CreateAuctionTX (Key key)) =
+getPostTXargs (CreateAuctionTXin (Key key)) =
   formatArgs [("key", key)] ++ ["Create"]
-getPostTXargs (WithdrawCoinTX (Key key) (AucTXID aucTXID)) =
+getPostTXargs (WithdrawCoinTXin (Key key) (AucTXID aucTXID)) =
   formatArgs [("key", key), ("aucTX", aucTXID)] ++ ["Withdraw"]
-getPostTXargs (GetCoinTX (Key (key))) =
+getPostTXargs (GetCoinTXin (Key (key))) =
   formatArgs [("key", key), ("self", key)] ++ ["GetCoin"]
-getPostTXargs (GetMoreCoinsTX (Key (key)) (CoinTXID (coinTXID))) =
+getPostTXargs (GetMoreCoinsTXin (Key (key)) (CoinTXID (coinTXID))) =
   formatArgs [("self", key), ("key", key), ("coinTX", coinTXID)] ++
   ["GetMoreCoins"]
 

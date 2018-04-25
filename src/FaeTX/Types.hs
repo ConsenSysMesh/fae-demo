@@ -28,19 +28,19 @@ newtype AucTXID =
   AucTXID String
   deriving (Show, Eq)
 
-data AuctionTX
-  = FakeBidTX Key
+data AuctionTXin
+  = FakeBidTXin Key
               AucTXID
               CoinTXID
-  | BidTX Key
+  | BidTXin Key
           AucTXID
           CoinTXID
           CoinSCID
           CoinVersion
-  | CreateAuctionTX Key
-  | WithdrawCoinTX Key
+  | CreateAuctionTXin Key
+  | WithdrawCoinTXin Key
                    AucTXID
-  | GetCoinTX Key
-  | GetMoreCoinsTX Key
+  | GetCoinTXin Key
+  | GetMoreCoinsTXin Key
                    CoinTXID
   deriving (Show, Eq)

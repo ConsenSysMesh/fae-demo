@@ -3,9 +3,11 @@ module FaeTX.Incoming.Types where
 import FaeTX.Types
 
 data AuctionTXout
-  = FakeBidTXout TXID
-                 CoinSCID
-                 CoinVersion
+  = FakeBidTXout TXID 
+  AucTXID
+  CoinTXID
+  CoinSCID
+  CoinVersion
   | BidTXout TXID
              AucTXID
              CoinTXID
