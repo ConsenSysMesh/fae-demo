@@ -18,7 +18,6 @@ data AuctionTXout
              CoinVersion
              IsWinningBid
   | CreateAuctionTXout TXID
-                       AucTXID
   | WithdrawCoinTXout TXID
                       CoinTXID
   | GetCoinTXout TXID
