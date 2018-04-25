@@ -45,10 +45,11 @@ placeBid :: AuctionTXout -> IO (Maybe AuctionTXout)
 placeBid fBid@(FakeBidTXout key _ aucTXID coinTXID _ _) =
   (postTX $ getBidTXin fBid) >>= pure . bidParser key aucTXID coinTXID
 
-bid :: Key -> AucTXID -> CoinTXID -> IO (Maybe AuctionTXout)
 bid key auctionid coinid =
-  (placeFakeBid key auctionid coinid) >>= \fakeBidTXout ->
-    pure $ maybe fakeBidTXout (pure Nothing) (pure placeBid)
+  (placeFakeBid key auctionid coinid) >>= \fBid ->
+    case fBid of
+      Just fbidOut -> placeBid fbidOut
+      Nothing -> pure Nothing
 
 main = bid key auctionid coinid >>= print
 
