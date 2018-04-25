@@ -1,20 +1,22 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
 
-module FaeTX.Outgoing.FormatTXinput where
+{-------------------------------------------------------------------------------------
+  Retrieve the args required to post a transaction to Fae according to the postTX API
+--------------------------------------------------------------------------------------}
+module FaeTX.Outgoing.FormatTX where
 
 import Control.Monad
 import Data.List
 import Data.Monoid
-import FaeTX.Outgoing.Types
 import Prelude
 import System.Process
 import Text.Pretty.Simple (pPrint)
 
 import FaeTX.Types
 
-getPostTXargs :: TXinput -> [String]
-getPostTXargs (FakeBidTXinput (Key key) (AucTXID aucTXID) (CoinTXID coinTXID)) =
+getPostTXargs :: AuctionTX -> [String]
+getPostTXargs (FakeBidTX (Key key) (AucTXID aucTXID) (CoinTXID coinTXID)) =
   formatArgs
     [ ("key", show key)
     , ("aucTX", aucTXID)
@@ -23,7 +25,7 @@ getPostTXargs (FakeBidTXinput (Key key) (AucTXID aucTXID) (CoinTXID coinTXID)) =
     , ("coinVersion", "")
     ] ++
   ["Bid", "--fake"]
-getPostTXargs (BidTXinput (Key key) (AucTXID aucTXID) (CoinTXID coinTXID) (CoinSCID coinSCID) (CoinVersion coinVersion)) =
+getPostTXargs (BidTX (Key key) (AucTXID aucTXID) (CoinTXID coinTXID) (CoinSCID coinSCID) (CoinVersion coinVersion)) =
   formatArgs
     [ ("key", key)
     , ("aucTX", aucTXID)
@@ -32,13 +34,13 @@ getPostTXargs (BidTXinput (Key key) (AucTXID aucTXID) (CoinTXID coinTXID) (CoinS
     , ("coinVersion", coinVersion)
     ] ++
   ["Bid"]
-getPostTXargs (CreateAuctionTXinput (Key key)) =
+getPostTXargs (CreateAuctionTX (Key key)) =
   formatArgs [("key", key)] ++ ["Create"]
-getPostTXargs (WithdrawCoinTXinput (Key key) (AucTXID aucTXID)) =
+getPostTXargs (WithdrawCoinTX (Key key) (AucTXID aucTXID)) =
   formatArgs [("key", key), ("aucTX", aucTXID)] ++ ["Withdraw"]
-getPostTXargs (GetCoinTXinput (Key (key))) =
+getPostTXargs (GetCoinTX (Key (key))) =
   formatArgs [("key", key), ("self", key)] ++ ["GetCoin"]
-getPostTXargs (GetMoreCoinsTXinput (Key (key)) (CoinTXID (coinTXID))) =
+getPostTXargs (GetMoreCoinsTX (Key (key)) (CoinTXID (coinTXID))) =
   formatArgs [("self", key), ("key", key), ("coinTX", coinTXID)] ++
   ["GetMoreCoins"]
 

@@ -10,8 +10,6 @@ import System.Process
 import Text.Pretty.Simple (pPrint)
 import Text.Regex.PCRE
 
-import FaeTX.Incoming.Types
-
 txIDregex :: String
 txIDregex = "(?<=Transaction\\W)(\\w|\\d)+" :: String
 
