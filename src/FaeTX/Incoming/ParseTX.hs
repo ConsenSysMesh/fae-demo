@@ -45,8 +45,8 @@ hasWonParser = runRegex hasWonRegex
 hasWonAuction :: String -> Bool
 hasWonAuction txOut = not . isNothing $ hasWonParser txOut
 
-auctionParser :: String -> Maybe AuctionTXout
-auctionParser txOut = case txidParser txOut of 
+createAuctionParser :: String -> Maybe AuctionTXout
+createAuctionParser txOut = case txidParser txOut of 
   Just txid -> Just (CreateAuctionTXout (TXID txid))
   Nothing -> Nothing
 

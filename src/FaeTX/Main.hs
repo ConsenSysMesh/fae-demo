@@ -56,7 +56,7 @@ bid key auctionid coinid =
 
 --main = bid key auctionid coinid >>= print
 main = 
-  createAuction key >>= pure .  auctionParser >>= print
+  createAuctionParser key >>= pure .  auctionParser >>= print
 
 key = Key "bidder1"
 
