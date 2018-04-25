@@ -29,6 +29,8 @@ data AuctionContract
 callContract :: AuctionContract -> IO String
 callContract (GetCoin (Key (key))) =
   postTX $ getPostTXargs (GetCoinTXinput (Key (key)))
+callContract (CreateAuction (Key (key))) =
+  postTX $ getPostTXargs (CreateAuctionTXinput (Key (key)))
 
 main :: IO ()
 main = getCs >>= pPrint
