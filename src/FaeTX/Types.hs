@@ -27,12 +27,3 @@ newtype CoinTXID =
 newtype AucTXID =
   AucTXID String
   deriving (Show, Eq)
-
-data AuctionContract
-  = FakeBidContract
-  | BidContract
-  | CreateContract
-  | WithdrawContract
-  | GetCoinContract
-  | GetMoreCoinsContract
-  deriving (Show, Eq)
