@@ -12,6 +12,7 @@ import Data.Monoid
 import FaeTX.Incoming.ParseTX
 import FaeTX.Incoming.Types
 import FaeTX.Outgoing.FormatTX
+import FaeTX.Outgoing.Types
 import FaeTX.Outgoing.PostTX
 import Prelude
 import System.Process
