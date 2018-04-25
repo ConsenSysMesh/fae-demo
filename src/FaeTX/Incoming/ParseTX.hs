@@ -43,13 +43,17 @@ hasWonParser :: String -> Maybe String
 hasWonParser = runRegex hasWonRegex
 
 hasWonAuction :: String -> Bool
-hasWonAuction txOut = not . isNothing $ hasWonParser txOut
+hasWonAuction txOut = isJust $ hasWonParser txOut
 
 createAuctionParser :: String -> Maybe AuctionTXout
 createAuctionParser txOut = case txidParser txOut of 
   Just txid -> Just (CreateAuctionTXout (TXID txid))
   Nothing -> Nothing
 
+getCoinParser :: String -> Maybe AuctionTXout
+getCoinParser txOut = case txidParser txOut of 
+  Just txid -> Just (GetCoinTXout (TXID txid))
+  Nothing -> Nothing
 
 fakeBidParser :: Key -> AucTXID -> CoinTXID -> String -> Maybe AuctionTXout
 fakeBidParser key aucTXID coinTXID txOut =

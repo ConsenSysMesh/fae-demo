@@ -21,7 +21,5 @@ data AuctionTXout
   | WithdrawCoinTXout TXID
                       CoinTXID
   | GetCoinTXout TXID
-                 CoinTXID
   | GetMoreCoinsTXout TXID
-                      CoinTXID
   deriving (Show, Eq)
