@@ -27,12 +27,14 @@ data AuctionContract
   deriving (Show, Eq)
 
 callContract :: AuctionContract -> IO String
-callContract (GetCoin (Key (key))) =
-  postTX $ getPostTXargs (GetCoinTXinput (Key (key)))
-callContract (CreateAuction (Key (key))) =
-  postTX $ getPostTXargs (CreateAuctionTXinput (Key (key)))
+callContract (GetCoin key) =
+  postTX $ getPostTXargs (GetCoinTXinput key)
+callContract (CreateAuction key) =
+  postTX $ getPostTXargs (CreateAuctionTXinput key)
+callContract (Withdraw key aucTXID) =
+  postTX $ getPostTXargs (WithdrawCoinTXinput key aucTXID)
 
 main :: IO ()
 main = getCs >>= pPrint
 
-getCs = callContract (GetCoin (Key "tom"))
+getCs = callContract (Withdraw (Key "tom") (AucTXID "d32918fbcd3eebdcc37bd0271b0033868c36ac8695078187538423b22a03cdac"))
