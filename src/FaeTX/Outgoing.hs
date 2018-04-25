@@ -1,4 +1,17 @@
+{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE RecordWildCards #-}
+
 module FaeTX.Outgoing where
+
+import Control.Monad
+import Data.List
+import Data.Monoid
+import FaeTX.Outgoing.FormatTXinput
+import FaeTX.Outgoing.PostTX
+import FaeTX.Outgoing.Types
+import Prelude
+import System.Process
+import Text.Pretty.Simple (pPrint)
 
 import FaeTX.Types
 
@@ -13,5 +26,11 @@ data AuctionContract
   | GetMoreCoins Key
   deriving (Show, Eq)
 
-postTX :: AuctionContract -> String
-postTX contract = undefined
+callContract :: AuctionContract -> IO String
+callContract (GetCoin (Key (key))) =
+  postTX $ getPostTXargs (GetCoinTXinput (Key (key)))
+
+main :: IO ()
+main = getCs >>= pPrint
+
+getCs = callContract (GetCoin (Key "tom"))
