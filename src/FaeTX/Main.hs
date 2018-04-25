@@ -1,7 +1,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
 
-module FaeTX.Outgoing where
+module FaeTX.Main where
 
 import Control.Monad
 import Data.List
@@ -27,8 +27,7 @@ data AuctionContract
   deriving (Show, Eq)
 
 callContract :: AuctionContract -> IO String
-callContract (GetCoin key) =
-  postTX $ getPostTXargs (GetCoinTXinput key)
+callContract (GetCoin key) = postTX $ getPostTXargs (GetCoinTXinput key)
 callContract (CreateAuction key) =
   postTX $ getPostTXargs (CreateAuctionTXinput key)
 callContract (Withdraw key aucTXID) =
@@ -37,4 +36,9 @@ callContract (Withdraw key aucTXID) =
 main :: IO ()
 main = getCs >>= pPrint
 
-getCs = callContract (Withdraw (Key "tom") (AucTXID "d32918fbcd3eebdcc37bd0271b0033868c36ac8695078187538423b22a03cdac"))
+getCs =
+  callContract
+    (Withdraw
+       (Key "tom")
+       (AucTXID
+          "d32918fbcd3eebdcc37bd0271b0033868c36ac8695078187538423b22a03cdac"))
