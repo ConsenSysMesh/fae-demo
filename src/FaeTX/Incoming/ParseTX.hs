@@ -20,6 +20,9 @@ coinVersionRegex = "(?<=versions:\\s      )(\\w|\\d)+" :: String
 coinSCIDregex :: String
 coinSCIDregex = "(?<=input )(\\w|\\d)+" :: String
 
+hasWonRegex :: String
+hasWonRegex = "You won!" :: String
+
 txidParser :: String -> Maybe String
 txidParser = runRegex txidRegex -- case runRegex txidRegex of
 
@@ -35,6 +38,12 @@ runRegex regex str
   | otherwise = (Just result)
   where
     result = str =~ regex :: String
+
+hasWonParser :: String -> Maybe String
+hasWonParser = runRegex hasWonRegex
+
+hasWonAuction :: String -> Bool
+hasWonAuction txOut = not . isNothing $ hasWonParser txOut
 
 fakeBidParser :: Key -> AucTXID -> CoinTXID -> String -> Maybe AuctionTXout
 fakeBidParser key aucTXID coinTXID txOut =
@@ -61,4 +70,5 @@ bidParser key aucTXID coinTXID txOut =
              aucTXID
              coinTXID
              (CoinSCID coinSCID)
-             (CoinVersion coinVersion))
+             (CoinVersion coinVersion)
+             (hasWonAuction txOut))
