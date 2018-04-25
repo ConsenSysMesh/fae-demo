@@ -9,6 +9,7 @@ module FaeTX.Main where
 import Control.Monad
 import Data.List
 import Data.Monoid
+import FaeTX.Incoming.ParseTX
 import FaeTX.Outgoing.FormatTX
 import FaeTX.Outgoing.PostTX
 import Prelude
@@ -23,11 +24,13 @@ callContract (CreateAuctionTX key) = postTX (CreateAuctionTX key)
 callContract (WithdrawCoinTX key aucTXID) = postTX (WithdrawCoinTX key aucTXID)
 
 main :: IO ()
-main = getCs >>= pPrint
+main = postTransaction >>= print . fakeBidParser
 
-getCs =
+postTransaction :: IO String
+postTransaction =
   callContract
-    (WithdrawCoinTX
+    (FakeBidTX
        (Key "tom")
-       (AucTXID
+       (AucTXID "inhlkin")
+       (CoinTXID
           "d32918fbcd3eebdcc37bd0271b0033868c36ac8695078187538423b22a03cdac"))

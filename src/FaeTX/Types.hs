@@ -43,3 +43,4 @@ data AuctionTX
   | GetCoinTX Key
   | GetMoreCoinsTX Key
                    CoinTXID
+  deriving (Show, Eq)
