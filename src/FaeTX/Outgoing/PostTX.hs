@@ -6,8 +6,9 @@ module FaeTX.Outgoing.PostTX where
 import Control.Monad
 import Data.List
 import Data.Monoid
-import FaeTX.Outgoing.FormatTX
 import FaeTX.Incoming.Types
+import FaeTX.Outgoing.FormatTX
+import FaeTX.Outgoing.Types
 import FaeTX.Types
 import Prelude
 import System.Process

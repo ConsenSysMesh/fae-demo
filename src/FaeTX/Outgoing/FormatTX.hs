@@ -13,6 +13,7 @@ import Prelude
 import System.Process
 import Text.Pretty.Simple (pPrint)
 
+import FaeTX.Outgoing.Types
 import FaeTX.Types
 
 getPostTXargs :: AuctionTXin -> [String]

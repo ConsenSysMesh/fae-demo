@@ -36,13 +36,27 @@ runRegex regex str
   where
     result = str =~ regex :: String
 
-fakeBidParser :: AucTXID -> CoinTXID -> String -> Maybe AuctionTXout
-fakeBidParser aucTXID coinTXID txOut =
+fakeBidParser :: Key -> AucTXID -> CoinTXID -> String -> Maybe AuctionTXout
+fakeBidParser key aucTXID coinTXID txOut =
   coinSCIDparser txOut >>= \coinSCID ->
     coinVersionParser txOut >>= \coinVersion ->
       txidParser txOut >>= \txid ->
         return
           (FakeBidTXout
+             key
+             (TXID txid)
+             aucTXID
+             coinTXID
+             (CoinSCID coinSCID)
+             (CoinVersion coinVersion))
+
+bidParser :: Key -> AucTXID -> CoinTXID -> String -> Maybe AuctionTXout
+bidParser key aucTXID coinTXID txOut =
+  coinSCIDparser txOut >>= \coinSCID ->
+    coinVersionParser txOut >>= \coinVersion ->
+      txidParser txOut >>= \txid ->
+        return
+          (BidTXout
              (TXID txid)
              aucTXID
              coinTXID

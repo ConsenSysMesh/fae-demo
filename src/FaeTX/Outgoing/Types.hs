@@ -1,18 +1,20 @@
+module FaeTX.Outgoing.Types where
+
 import FaeTX.Types
 
 data AuctionTXin
-    = FakeBidTXin Key
+  = FakeBidTXin Key
                 AucTXID
                 CoinTXID
-    | BidTXin Key
+  | BidTXin Key
             AucTXID
             CoinTXID
             CoinSCID
             CoinVersion
-    | CreateAuctionTXin Key
-    | WithdrawCoinTXin Key
+  | CreateAuctionTXin Key
+  | WithdrawCoinTXin Key
                      AucTXID
-    | GetCoinTXin Key
-    | GetMoreCoinsTXin Key
+  | GetCoinTXin Key
+  | GetMoreCoinsTXin Key
                      CoinTXID
-    deriving (Show, Eq)
+  deriving (Show, Eq)

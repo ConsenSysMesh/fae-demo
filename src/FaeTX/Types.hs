@@ -28,10 +28,16 @@ newtype AucTXID =
   AucTXID String
   deriving (Show, Eq)
 
-data AuctionContract = Create Key 
-| Bid Key
- AucTXID
- CoinTXID
- CoinSCID
- CoinVersion
- | GetCoin Key | GetMoreCoins Key CoinTXID | Withdraw Key AucTXID deriving (Show, Eq)
+data AuctionContract
+  = Create Key
+  | Bid Key
+        AucTXID
+        CoinTXID
+        CoinSCID
+        CoinVersion
+  | GetCoin Key
+  | GetMoreCoins Key
+                 CoinTXID
+  | Withdraw Key
+             AucTXID
+  deriving (Show, Eq)
