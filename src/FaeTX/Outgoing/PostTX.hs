@@ -14,11 +14,10 @@ import Text.Pretty.Simple (pPrint)
 import FaeTX.Types
 
 getPostTXargs :: TXinput -> [String]
-getPostTXargs (FakeBidTXinput key aucTXID coinTXID) =
-  formatArgs
-    [("key", show key), ("aucTX", aucTXID), ("coinTX", coinTXID)] ++
+getPostTXargs (FakeBidTXinput (Key key) (AucTXID aucTXID) (CoinTXID coinTXID)) =
+  formatArgs [("key", show key), ("aucTX", aucTXID), ("coinTX", coinTXID)] ++
   ["--fake", "Bid"]
-getPostTXargs (BidTXinput key aucTXID coinTXID coinSCID coinVersion) =
+getPostTXargs (BidTXinput (Key key) (AucTXID aucTXID) (CoinTXID coinTXID) (CoinSCID coinSCID) (CoinVersion coinVersion)) =
   formatArgs
     [ ("key", key)
     , ("aucTX", aucTXID)
@@ -34,7 +33,8 @@ getPostTXargs (WithdrawCoinTXinput (Key key) (AucTXID aucTXID)) =
 getPostTXargs (GetCoinTXinput (Key (key))) =
   formatArgs [("key", key), ("self", key)] ++ ["GetCoin"]
 getPostTXargs (GetMoreCoinsTXinput (Key (key)) (CoinTXID (coinTXID))) =
-  formatArgs [("self",  key), ("key",  key), ("coinTX",  coinTXID)] ++ ["GetMoreCoins"]
+  formatArgs [("self", key), ("key", key), ("coinTX", coinTXID)] ++
+  ["GetMoreCoins"]
 
 formatArg :: (String, String) -> [String]
 formatArg (key, val) = ["-e"] <> [key <> "=" <> val]
@@ -54,6 +54,13 @@ getFakeArg fake =
 
 main :: IO ()
 main = getCs
+
 getC = postTX $ getPostTXargs (GetCoinTXinput (Key "tom"))
-  
-getCs = postTX $ getPostTXargs (GetMoreCoinsTXinput (Key "tom") (CoinTXID "e207e26d7a14dcfc8881d63b292ed8cd3e6170c49c8c2a516d0e946ebed51930"))
+
+getCs =
+  postTX $
+  getPostTXargs
+    (GetMoreCoinsTXinput
+       (Key "tom")
+       (CoinTXID
+          "e207e26d7a14dcfc8881d63b292ed8cd3e6170c49c8c2a516d0e946ebed51930"))
