@@ -10,6 +10,7 @@ import FaeTX.Types
 import Prelude
 import Text.Pretty.Simple (pPrint)
 import Text.Regex.PCRE
+import Debug.Trace
 
 txidRegex :: String
 txidRegex = "(?<=Transaction\\W)(\\w|\\d)+" :: String
@@ -56,12 +57,11 @@ getCoinParser txOut = case txidParser txOut of
   Nothing -> Nothing
 
 fakeBidParser :: Key -> AucTXID -> CoinTXID -> String -> Maybe AuctionTXout
-fakeBidParser key aucTXID coinTXID txOut =
-  coinSCIDparser txOut >>= \coinSCID ->
-    coinVersionParser txOut >>= \coinVersion ->
-      txidParser txOut >>= \txid ->
-        return
-          (FakeBidTXout
+fakeBidParser key aucTXID coinTXID txOut = do
+  coinSCID <- coinSCIDparser txOut
+  coinVersion <- coinVersionParser txOut 
+  txid <- txidParser txOut
+  return (FakeBidTXout
              key
              (TXID txid)
              aucTXID
