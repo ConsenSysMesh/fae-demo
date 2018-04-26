@@ -23,7 +23,7 @@ import FaeTX.Types
 
 placeFakeBid :: Key -> AucTXID -> CoinTXID -> IO (Maybe AuctionTXout)
 placeFakeBid key aucTXID coinTXID =
-  postTX fakeBid >>= pure . fakeBidParser key aucTXID coinTXID
+  postTX fakeBid >>= pure . (fakeBidParser key aucTXID coinTXID)
   where
     fakeBid = FakeBidTXin key aucTXID coinTXID
 
