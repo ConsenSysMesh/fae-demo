@@ -58,8 +58,11 @@ getCoinParser txOut = case txidParser txOut of
 
 fakeBidParser :: Key -> AucTXID -> CoinTXID -> String -> Maybe AuctionTXout
 fakeBidParser key aucTXID coinTXID txOut = do
+  traceShow "txid" $ txidParser txOut
   coinSCID <- coinSCIDparser txOut
+  traceShow "coinSCID" $ coinSCIDparser txOut
   coinVersion <- coinVersionParser txOut 
+  traceShow "coinVersion" $ coinVersionParser txOut 
   txid <- txidParser txOut
   return (FakeBidTXout
              key
