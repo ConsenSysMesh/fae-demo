@@ -49,14 +49,15 @@ placeBid key aucTXID coinTXID coinSCID coinVersion =
       (bidParser aucTXID coinTXID postTXStdOut)
 
 --main = 
---main = bid key auctionid coinid >>= print --getMoreCoins key coinid
+main = getMoreCoins key coinid >>= print
+  --bid key auctionid coinid >>= print 
+  --getMoreCoins key coinid
 --getCoin key >>= print
 key = "bidder1"
 
 auctionid = "e673db9705c9c85e65e0fe6e9f9b2eb13195c244daf4cb36e8aa48c223780804"
 
-coinid = "ba176290c888b8a3f9146052ef07507d54d996fee94d79f36062ac93cd69f84e"
- -- 9cf4103511c46ca2b0ee255c8368b63d02cd66f66e9fb6c3c439fd9569ad170b
+coinid = "f926cd2fd6c82a6157d5f6f887fec77e596b08b4406300163ce63a4710dbd9c6"
  -- 6041899bdfccf2ec1008a1c9f7fe323254c6fbf067fd794f210742712ccda2b0
  -- edc29dfeb8fe80ac348b59658b67a53cad2a0b25dd0951f572b170e0c4e36bc1
 
@@ -110,7 +111,7 @@ getMoreCoins key coinTXID =
     maybe
       (Left $ TXBodyFailed postTXStdOut)
       (\(GetMoreCoinsTXout txid) -> Right $ GetMoreCoins txid)
-      (getCoinParser postTXStdOut)
+      (getMoreCoinsParser postTXStdOut)
 --withdraw :: String -> String -> IO (Either PostTXError PostTXResponse)
 --withdraw key aucTXID=
 --  postTX (WithdrawCoinTXin (Key key) (AucTXID aucTXID)) >>=

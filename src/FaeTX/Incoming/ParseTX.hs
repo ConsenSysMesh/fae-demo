@@ -12,6 +12,9 @@ import Prelude
 import Text.Pretty.Simple (pPrint)
 import Text.Regex.PCRE
 
+exceptionRegex :: String
+exceptionRegex = "<exception>" :: String
+
 txidRegex :: String
 txidRegex = "(?<=Transaction\\W)(\\w|\\d)+" :: String
 
@@ -25,7 +28,7 @@ hasWonRegex :: String
 hasWonRegex = "You won!" :: String
 
 txidParser :: String -> Maybe String
-txidParser = runRegex txidRegex -- case runRegex txidRegex of
+txidParser = runRegex txidRegex
 
 coinVersionParser :: String -> Maybe String
 coinVersionParser = runRegex coinVersionRegex
@@ -33,7 +36,10 @@ coinVersionParser = runRegex coinVersionRegex
 coinSCIDparser :: String -> Maybe String
 coinSCIDparser = runRegex coinSCIDregex
 
-runRegex :: String -> String -> Maybe String
+exceptionParser :: String -> Maybe String
+exceptionParser = runRegex exceptionRegex
+
+runRegex :: String -> String -> Maybe String -- change maybe string to maybe a
 runRegex regex str
   | result == "" = Nothing
   | otherwise = (Just result)
@@ -58,6 +64,13 @@ getCoinParser txOut =
     Just txid -> Just (GetCoinTXout (TXID txid))
     Nothing -> Nothing
 
+getMoreCoinsParser :: String -> Maybe AuctionTXout
+getMoreCoinsParser txOut = txidParser txOut >>= \txid ->
+   case exceptionParser txOut of 
+    (Just _) -> Nothing
+    _        -> Just $ GetMoreCoinsTXout (TXID txid)
+
+-- fake bids postTX output has exceptions so don't use exception parser
 fakeBidParser :: Key -> AucTXID -> CoinTXID -> String -> Maybe AuctionTXout
 fakeBidParser key aucTXID coinTXID txOut = do
   traceShow "txid" $ txidParser txOut
