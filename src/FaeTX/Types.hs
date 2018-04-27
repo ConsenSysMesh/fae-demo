@@ -26,13 +26,24 @@ newtype CoinTXID =
 -- id of the tx which created auction
 newtype AucTXID =
   AucTXID String
-  deriving (Show, Eq)
+  deriving (Show, Eq) -- Int represents the number of the argument that failed
+
+data PostTXError
+  = TXFailed String
+  | TXBodyFailed String
+  | TXInputFailed Int
 
 data PostTXResponse
-    = Create TXID
-    | Bid Bool
-    | GetCoin TXID
-    | GetMoreCoins TXID
-    | Withdraw TXID
+  = CreateAuction TXID
+  | FakeBid Key
+            AucTXID
+            CoinTXID
+            CoinSCID
+            CoinVersion
+  | Bid TXID
+        AucTXID
+        Bool
+  | GetCoin TXID
+  | GetMoreCoins TXID
+  | Withdraw TXID
   deriving (Show, Eq)
-

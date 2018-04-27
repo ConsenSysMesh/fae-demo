@@ -5,12 +5,12 @@ module FaeTX.Incoming.ParseTX where
 
 import Control.Monad
 import Data.Maybe
+import Debug.Trace
 import FaeTX.Incoming.Types
 import FaeTX.Types
 import Prelude
 import Text.Pretty.Simple (pPrint)
 import Text.Regex.PCRE
-import Debug.Trace
 
 txidRegex :: String
 txidRegex = "(?<=Transaction\\W)(\\w|\\d)+" :: String
@@ -47,33 +47,36 @@ hasWonAuction :: String -> Bool
 hasWonAuction txOut = isJust $ hasWonParser txOut
 
 createAuctionParser :: String -> Maybe AuctionTXout
-createAuctionParser txOut = case txidParser txOut of 
-  Just txid -> Just (CreateAuctionTXout (TXID txid))
-  Nothing -> Nothing
+createAuctionParser txOut =
+  case txidParser txOut of
+    Just txid -> Just (CreateAuctionTXout (TXID txid))
+    Nothing -> Nothing
 
 getCoinParser :: String -> Maybe AuctionTXout
-getCoinParser txOut = case txidParser txOut of 
-  Just txid -> Just (GetCoinTXout (TXID txid))
-  Nothing -> Nothing
+getCoinParser txOut =
+  case txidParser txOut of
+    Just txid -> Just (GetCoinTXout (TXID txid))
+    Nothing -> Nothing
 
 fakeBidParser :: Key -> AucTXID -> CoinTXID -> String -> Maybe AuctionTXout
 fakeBidParser key aucTXID coinTXID txOut = do
   traceShow "txid" $ txidParser txOut
   coinSCID <- coinSCIDparser txOut
   traceShow "coinSCID" $ coinSCIDparser txOut
-  coinVersion <- coinVersionParser txOut 
-  traceShow "coinVersion" $ coinVersionParser txOut 
+  coinVersion <- coinVersionParser txOut
+  traceShow "coinVersion" $ coinVersionParser txOut
   txid <- txidParser txOut
-  return (FakeBidTXout
-             key
-             (TXID txid)
-             aucTXID
-             coinTXID
-             (CoinSCID coinSCID)
-             (CoinVersion coinVersion))
+  return
+    (FakeBidTXout
+       key
+       (TXID txid)
+       aucTXID
+       coinTXID
+       (CoinSCID coinSCID)
+       (CoinVersion coinVersion))
 
-bidParser :: Key -> AucTXID -> CoinTXID -> String -> Maybe AuctionTXout
-bidParser key aucTXID coinTXID txOut =
+bidParser :: AucTXID -> CoinTXID -> String -> Maybe AuctionTXout
+bidParser aucTXID coinTXID txOut =
   coinSCIDparser txOut >>= \coinSCID ->
     coinVersionParser txOut >>= \coinVersion ->
       txidParser txOut >>= \txid ->
