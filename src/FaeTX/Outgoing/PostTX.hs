@@ -12,11 +12,13 @@ import FaeTX.Outgoing.Types
 import FaeTX.Types
 import System.Process
 import System.IO
+import System.Exit
 
-postTX :: AuctionTXin -> IO String
+postTX :: AuctionTXin -> IO (ExitCode, String, String)
 postTX tx = do
-    postTXoutput <- readProcess path args []
-    System.IO.putStrLn postTXoutput
-    return postTXoutput
+    (exitCode, stdOut, stdErr) <- readProcessWithExitCode path args []
+    System.IO.putStrLn stdOut
+    System.IO.putStrLn stdErr
+    return (exitCode, stdOut, stdErr) 
     where args = getPostTXargs tx 
           path = "./contracts/postTX.sh"

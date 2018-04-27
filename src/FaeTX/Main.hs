@@ -25,6 +25,7 @@ import FaeTX.Outgoing.Types
 import Prelude
 import System.Process
 import Text.Pretty.Simple (pPrint)
+import System.Exit
 
 import FaeTX.Types
 
@@ -40,38 +41,39 @@ placeBid ::
   -> CoinVersion
   -> IO (Either PostTXError PostTXResponse)
 placeBid key aucTXID coinTXID coinSCID coinVersion =
-  postTX (BidTXin key aucTXID coinTXID coinSCID coinVersion) >>= \postTXStdOut ->
-    pure $
-    maybe
-      (Left $ TXBodyFailed postTXStdOut)
-      (\(BidTXout txID aucTXID _ _ _ isWinningBid) ->
-         Right $ Bid txID aucTXID isWinningBid)
-      (bidParser aucTXID coinTXID postTXStdOut)
+  postTX (BidTXin key aucTXID coinTXID coinSCID coinVersion) >>= \(exitCode, stdOut, stdErr) ->
+  return $ case exitCode of
+      ExitSuccess ->
+        maybe
+          (Left $ TXBodyFailed stdOut)
+          (\(BidTXout txID _ _ _ _ isWinningBid) ->
+            Right $ Bid txID aucTXID isWinningBid)
+          (bidParser aucTXID coinTXID stdOut)
+      ExitFailure _ -> Left $ TXFailed stdErr
 
 --main = 
-main = getMoreCoins key coinid >>= print
+main = bid key auctionid coinid >>= print
   --bid key auctionid coinid >>= print 
   --getMoreCoins key coinid
 --getCoin key >>= print
 key = "bidder1"
 
-auctionid = "e673db9705c9c85e65e0fe6e9f9b2eb13195c244daf4cb36e8aa48c223780804"
+auctionid = "e31bdb1d4e539d917dcfd8620e82aa5d777222f3662c8c3dc9482788cec75b4e"
+--132cbf82c795d8cc2da3700539b1e5fceca5602847a62daa0ecb390e9679840b
+coinid = "0533f1b8b921f343d718bcf2047f962511164a7c7c1fe84b46b3c53b47690c45" -- 2
 
-coinid = "f926cd2fd6c82a6157d5f6f887fec77e596b08b4406300163ce63a4710dbd9c6"
- -- 6041899bdfccf2ec1008a1c9f7fe323254c6fbf067fd794f210742712ccda2b0
- -- edc29dfeb8fe80ac348b59658b67a53cad2a0b25dd0951f572b170e0c4e36bc1
-
---callFaeContract txInput postTXstdoutParser = postTx txInput >>= pure . postTXstdoutParser
 placeFakeBid ::
      Key -> AucTXID -> CoinTXID -> IO (Either PostTXError PostTXResponse)
 placeFakeBid key aucTXID coinTXID =
-  postTX fakeBid >>= \postTXstdout ->
-    pure $
-    maybe
-      (Left $ TXBodyFailed postTXstdout)
-      (\(FakeBidTXout key _ aucTXID coinTXID coinSCID coinVersion) ->
-         Right (FakeBid key aucTXID coinTXID coinSCID coinVersion))
-      (fakeBidParser key aucTXID coinTXID postTXstdout)
+  postTX fakeBid >>= \(exitCode, stdOut, stdErr) ->
+    return $ case exitCode of 
+      ExitSuccess -> 
+          maybe
+            (Left $ TXBodyFailed stdOut)
+            (\(FakeBidTXout _ _ _ _ coinSCID coinVersion) ->
+              Right (FakeBid key aucTXID coinTXID coinSCID coinVersion))
+            (fakeBidParser key aucTXID coinTXID stdOut)
+      ExitFailure _ -> Left $ TXFailed stdErr
   where
     fakeBid = FakeBidTXin key aucTXID coinTXID
 
@@ -87,31 +89,39 @@ bid key aucTXID coinTXID =
 
 createAuction :: String -> IO (Either PostTXError PostTXResponse)
 createAuction key =
-  postTX (CreateAuctionTXin (Key key)) >>= \postTXStdOut ->
-    pure $
-    maybe
-      (Left $ TXBodyFailed postTXStdOut)
-      (\(CreateAuctionTXout txid) -> Right $ CreateAuction txid)
-      (createAuctionParser postTXStdOut)
+  postTX (CreateAuctionTXin (Key key)) >>= \(exitCode, stdOut, stdErr) ->
+   return $ case exitCode of 
+      ExitSuccess -> 
+          maybe
+            (Left $ TXBodyFailed stdOut)
+            (\(CreateAuctionTXout txid) -> Right $ CreateAuction txid)
+            (createAuctionParser stdOut)
+      ExitFailure _ -> Left $ TXFailed stdErr
+   
 
 getCoin :: String -> IO (Either PostTXError PostTXResponse)
 getCoin key =
-  postTX (GetCoinTXin (Key key)) >>= \postTXStdOut ->
-    pure $
-    maybe
-      (Left $ TXBodyFailed postTXStdOut)
-      (\(GetCoinTXout txid) -> Right $ GetCoin txid)
-      (getCoinParser postTXStdOut)
+  postTX (GetCoinTXin (Key key)) >>= \(exitCode, stdOut, stdErr) ->
+    return $ case exitCode of 
+      ExitSuccess -> 
+        maybe
+        (Left $ TXBodyFailed stdOut)
+        (\(GetCoinTXout txid) -> Right $ GetCoin txid)
+        (getCoinParser stdOut)
+      ExitFailure _ -> Left $ TXFailed stdErr
 
 -- take the coins from an old cache destroy the cache and deposit the old coins + 1 new coin to a new cache
 getMoreCoins :: String -> String -> IO (Either PostTXError PostTXResponse)
 getMoreCoins key coinTXID =
-  postTX (GetMoreCoinsTXin (Key key) (CoinTXID coinTXID)) >>= \postTXStdOut ->
-    pure $
-    maybe
-      (Left $ TXBodyFailed postTXStdOut)
-      (\(GetMoreCoinsTXout txid) -> Right $ GetMoreCoins txid)
-      (getMoreCoinsParser postTXStdOut)
+  postTX (GetMoreCoinsTXin (Key key) (CoinTXID coinTXID)) >>= \(exitCode, stdOut, stdErr) ->
+    return $ case exitCode of 
+      ExitSuccess -> 
+        maybe
+        (Left $ TXBodyFailed stdOut)
+        (\(GetMoreCoinsTXout txid) -> Right $ GetMoreCoins txid)
+        (getMoreCoinsParser stdOut)
+      ExitFailure _ -> Left $ TXFailed stdErr
+
 --withdraw :: String -> String -> IO (Either PostTXError PostTXResponse)
 --withdraw key aucTXID=
 --  postTX (WithdrawCoinTXin (Key key) (AucTXID aucTXID)) >>=
