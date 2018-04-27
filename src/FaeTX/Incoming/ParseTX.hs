@@ -74,11 +74,8 @@ getMoreCoinsParser txOut =
 -- fake bids postTX output has exceptions so don't use exception parser
 fakeBidParser :: Key -> AucTXID -> CoinTXID -> String -> Maybe AuctionTXout
 fakeBidParser key aucTXID coinTXID txOut = do
-  traceShow "txid" $ txidParser txOut
   coinSCID <- coinSCIDparser txOut
-  traceShow "coinSCID" $ coinSCIDparser txOut
   coinVersion <- coinVersionParser txOut
-  traceShow "coinVersion" $ coinVersionParser txOut
   txid <- txidParser txOut
   return
     (FakeBidTXout
@@ -91,14 +88,17 @@ fakeBidParser key aucTXID coinTXID txOut = do
 
 bidParser :: AucTXID -> CoinTXID -> String -> Maybe AuctionTXout
 bidParser aucTXID coinTXID txOut =
-  coinSCIDparser txOut >>= \coinSCID ->
-    coinVersionParser txOut >>= \coinVersion ->
-      txidParser txOut >>= \txid ->
-        return
-          (BidTXout
-             (TXID txid)
-             aucTXID
-             coinTXID
-             (CoinSCID coinSCID)
-             (CoinVersion coinVersion)
-             (hasWonAuction txOut))
+  case exceptionParser txOut of
+    (Just _) -> Nothing
+    _ ->
+      coinSCIDparser txOut >>= \coinSCID ->
+        coinVersionParser txOut >>= \coinVersion ->
+          txidParser txOut >>= \txid ->
+            return
+              (BidTXout
+                 (TXID txid)
+                 aucTXID
+                 coinTXID
+                 (CoinSCID coinSCID)
+                 (CoinVersion coinVersion)
+                 (hasWonAuction txOut))
