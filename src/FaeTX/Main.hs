@@ -82,7 +82,7 @@ bid key aucTXID coinTXID =
   placeFakeBid (Key key) (AucTXID aucTXID) (CoinTXID coinTXID) >>=
   (\fakeBidOutput ->
      (either
-        (pure . Left . id)
+        (pure . Left)
         (\(FakeBid key aucTXID coinTXID coinSCID coinVersion) ->
            placeBid key aucTXID coinTXID coinSCID coinVersion)
         fakeBidOutput))
