@@ -65,10 +65,11 @@ getCoinParser txOut =
     Nothing -> Nothing
 
 getMoreCoinsParser :: String -> Maybe AuctionTXout
-getMoreCoinsParser txOut = txidParser txOut >>= \txid ->
-   case exceptionParser txOut of 
-    (Just _) -> Nothing
-    _        -> Just $ GetMoreCoinsTXout (TXID txid)
+getMoreCoinsParser txOut =
+  txidParser txOut >>= \txid ->
+    case exceptionParser txOut of
+      (Just _) -> Nothing
+      _ -> Just $ GetMoreCoinsTXout (TXID txid)
 
 -- fake bids postTX output has exceptions so don't use exception parser
 fakeBidParser :: Key -> AucTXID -> CoinTXID -> String -> Maybe AuctionTXout
