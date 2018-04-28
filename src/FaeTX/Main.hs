@@ -9,6 +9,7 @@ module FaeTX.Main
   , createAuction
   , getCoin
   , getMoreCoins
+  , withdraw
   , PostTXResponse
   , PostTXError
   ) where
