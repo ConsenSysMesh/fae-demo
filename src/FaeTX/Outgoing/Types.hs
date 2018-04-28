@@ -12,7 +12,7 @@ data AuctionTXin
             CoinSCID
             CoinVersion
   | CreateAuctionTXin Key
-  | WithdrawCoinTXin Key
+  | WithdrawTXin Key
                      AucTXID
   | GetCoinTXin Key
   | GetMoreCoinsTXin Key

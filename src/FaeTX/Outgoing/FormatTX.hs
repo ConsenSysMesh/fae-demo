@@ -37,7 +37,7 @@ getPostTXargs (BidTXin (Key key) (AucTXID aucTXID) (CoinTXID coinTXID) (CoinSCID
   ["Bid"]
 getPostTXargs (CreateAuctionTXin (Key key)) =
   formatArgs [("key", key)] ++ ["Create"]
-getPostTXargs (WithdrawCoinTXin (Key key) (AucTXID aucTXID)) =
+getPostTXargs (WithdrawTXin (Key key) (AucTXID aucTXID)) =
   formatArgs [("key", key), ("aucTX", aucTXID)] ++ ["Withdraw"]
 getPostTXargs (GetCoinTXin (Key (key))) =
   formatArgs [("key", key), ("self", key)] ++ ["GetCoin"]

@@ -31,7 +31,8 @@ newtype AucTXID =
 data PostTXError
   = TXFailed String
   | TXBodyFailed String
-  | TXInputFailed Int deriving (Show, Eq)
+  | TXInputFailed Int
+  deriving (Show, Eq)
 
 data PostTXResponse
   = CreateAuction TXID
