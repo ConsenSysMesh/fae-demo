@@ -63,19 +63,19 @@ placeFakeBid key aucTXID coinTXID -- convert to DO notation
   where
     fakeBid = FakeBidTXin key aucTXID coinTXID
 
-bid :: String -> String -> String -> IO (Either PostTXError PostTXResponse)
+bid :: Key -> AucTXID -> CoinTXID -> IO (Either PostTXError PostTXResponse)
 bid key aucTXID coinTXID =
-  placeFakeBid (Key key) (AucTXID aucTXID) (CoinTXID coinTXID) >>=
+  placeFakeBid key aucTXID coinTXID >>=
   (\fakeBidOutput ->
      (either
         (pure . Left)
-        (\(FakeBid key aucTXID coinTXID coinSCID coinVersion) ->
+        (\(FakeBid _ _ _ coinSCID coinVersion) ->
            placeBid key aucTXID coinTXID coinSCID coinVersion)
         fakeBidOutput))
 
-createAuction :: String -> IO (Either PostTXError PostTXResponse)
+createAuction :: Key -> IO (Either PostTXError PostTXResponse)
 createAuction key =
-  postTX (CreateAuctionTXin (Key key)) >>= \(exitCode, stdOut, stdErr) ->
+  postTX (CreateAuctionTXin key) >>= \(exitCode, stdOut, stdErr) ->
     return $
     case exitCode of
       ExitSuccess ->
@@ -85,9 +85,9 @@ createAuction key =
           (createAuctionParser stdOut)
       ExitFailure _ -> Left $ TXFailed stdErr
 
-getCoin :: String -> IO (Either PostTXError PostTXResponse)
+getCoin :: Key -> IO (Either PostTXError PostTXResponse)
 getCoin key =
-  postTX (GetCoinTXin (Key key)) >>= \(exitCode, stdOut, stdErr) ->
+  postTX (GetCoinTXin key) >>= \(exitCode, stdOut, stdErr) ->
     return $
     case exitCode of
       ExitSuccess ->
@@ -98,9 +98,9 @@ getCoin key =
       ExitFailure _ -> Left $ TXFailed stdErr
 
 -- take the coins from an old cache destroy the cache staand deposit the old coins + 1 new coin to a new cache
-getMoreCoins :: String -> String -> IO (Either PostTXError PostTXResponse)
+getMoreCoins :: Key -> CoinTXID -> IO (Either PostTXError PostTXResponse)
 getMoreCoins key coinTXID =
-  postTX (GetMoreCoinsTXin (Key key) (CoinTXID coinTXID)) >>= \(exitCode, stdOut, stdErr) ->
+  postTX (GetMoreCoinsTXin key coinTXID) >>= \(exitCode, stdOut, stdErr) ->
     return $
     case exitCode of
       ExitSuccess ->
@@ -110,9 +110,9 @@ getMoreCoins key coinTXID =
           (getMoreCoinsParser stdOut)
       ExitFailure _ -> Left $ TXFailed stdErr
 
-withdraw :: String -> String -> IO (Either PostTXError PostTXResponse)
+withdraw :: Key -> AucTXID -> IO (Either PostTXError PostTXResponse)
 withdraw key aucTXID =
-  postTX (WithdrawTXin (Key key) (AucTXID aucTXID)) >>= \(exitCode, stdOut, stdErr) ->
+  postTX (WithdrawTXin key aucTXID) >>= \(exitCode, stdOut, stdErr) ->
     return $
     case exitCode of
       ExitSuccess ->
