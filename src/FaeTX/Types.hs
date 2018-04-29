@@ -48,3 +48,9 @@ data PostTXResponse
   | GetMoreCoins TXID
   | Withdraw TXID
   deriving (Show, Eq)
+
+data BidConfig = BidConfig
+  { key :: Key
+  , aucTXID :: AucTXID
+  , coinTXID :: CoinTXID
+  }

@@ -5,17 +5,20 @@
   Api for High level fae auction TXs management
 -----------------------------------------------}
 module FaeTX.Main
-  ( bid
-  , createAuction
-  , getCoin
-  , getMoreCoins
-  , withdraw
-  , PostTXResponse
-  , PostTXError
-  ) where
+  --( bid
+  --, createAuction
+  --, getCoin
+  --, getMoreCoins
+  --, withdraw
+  --, PostTXResponse
+  --, PostTXError
+ -- )
+ where
 
 import Control.Error.Util
 import Control.Monad
+import Control.Monad.Except
+import Control.Monad.Reader
 import FaeTX.Incoming.ParseTX
 import FaeTX.Incoming.Types
 import FaeTX.Outgoing.PostTX
@@ -25,6 +28,7 @@ import System.Exit
 
 import FaeTX.Types
 
+{-
 placeBid ::
      Key
   -> AucTXID
@@ -43,26 +47,35 @@ placeBid key aucTXID coinTXID coinSCID coinVersion =
              Right $ Bid txID aucTXID isWinningBid)
           (bidParser aucTXID coinTXID stdOut)
       ExitFailure _ -> Left $ TXFailed stdErr
+ -- , coinTXID :: CoinTXID
+ -}
+type TX = ExceptT PostTXError (ReaderT BidConfig IO) PostTXResponse --(exitCode, stdOut, stdErr) <- postTx =<< uncurry3 FakeBidTXin <$> ask
+
+--flip runReaderT (key, auc, coin)                                 -- access bidconfig
+getKey :: Key -> ReaderT Key IO ()
+getKey key = ReaderT $ \key -> return ()
 
 placeFakeBid ::
-     Key -> AucTXID -> CoinTXID -> IO (Either PostTXError PostTXResponse)
+     Key
+  -> AucTXID
+  -> CoinTXID
+  -> ExceptT PostTXError (ReaderT BidConfig IO) PostTXResponse
 placeFakeBid key aucTXID coinTXID -- convert to DO notation
- =
-  postTX fakeBid >>= \(exitCode, stdOut, stdErr) -- define record type instead of using an tuple
-   ->
-    return $
-    case exitCode of
-      ExitSuccess ->
-        maybe -- use fmap  and `note` instead of maybe
-          (Left $ TXBodyFailed stdOut)
-          (\(FakeBidTXout _ _ _ _ coinSCID coinVersion) ->
-             Right (FakeBid key aucTXID coinTXID coinSCID coinVersion) -- reader monad for recurring function arguments
-           )
-          (fakeBidParser key aucTXID coinTXID stdOut)
-      ExitFailure _ -> Left $ TXFailed stdErr
-  where
-    fakeBid = FakeBidTXin key aucTXID coinTXID
-
+ = do
+  (exitCode, stdOut, stdErr) <- postTX (FakeBidTXin key aucTXID coinTXID) -- define record type instead of using an tuple
+  case exitCode of
+    ExitSuccess ->
+      maybe -- use fmap  and `note` instead of maybe
+        (throwError $ TXBodyFailed stdOut)
+        (\(FakeBidTXout _ _ _ _ coinSCID coinVersion) ->
+           return (FakeBid key aucTXID coinTXID coinSCID coinVersion) -- reader monad for recurring function arguments
+         )
+        (fakeBidParser key aucTXID coinTXID stdOut)
+    ExitFailure _ -> throwError (TXFailed stdErr)
+  --  [13:09] <lyxia> so every time you have  (f key aucTXID coinTXID)  you could replace that with  f  and change the type of f from
+  --     (f :: Key -> AucTXID -> CoinTXID -> x ghci
+   --    -> IO y)   to   (f :: x -> ReaderT Env IO y)   with   (type Env = (Key, AncTXID, CoinTXID))
+   {-
 bid :: Key -> AucTXID -> CoinTXID -> IO (Either PostTXError PostTXResponse)
 bid key aucTXID coinTXID =
   placeFakeBid key aucTXID coinTXID >>=
@@ -121,3 +134,4 @@ withdraw key aucTXID =
           (\(WithdrawTXout txid) -> Right $ Withdraw txid)
           (withdrawParser stdOut)
       ExitFailure _ -> Left $ TXFailed stdErr
+-}
