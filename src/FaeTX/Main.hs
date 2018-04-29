@@ -14,6 +14,7 @@ module FaeTX.Main
   , PostTXError
   ) where
 
+import Control.Error.Util
 import Control.Monad
 import FaeTX.Incoming.ParseTX
 import FaeTX.Incoming.Types
@@ -45,15 +46,18 @@ placeBid key aucTXID coinTXID coinSCID coinVersion =
 
 placeFakeBid ::
      Key -> AucTXID -> CoinTXID -> IO (Either PostTXError PostTXResponse)
-placeFakeBid key aucTXID coinTXID =
-  postTX fakeBid >>= \(exitCode, stdOut, stdErr) ->
+placeFakeBid key aucTXID coinTXID -- convert to DO notation
+ =
+  postTX fakeBid >>= \(exitCode, stdOut, stdErr) -- define record type instead of using an tuple
+   ->
     return $
     case exitCode of
       ExitSuccess ->
-        maybe
+        maybe -- use fmap  and `note` instead of maybe
           (Left $ TXBodyFailed stdOut)
           (\(FakeBidTXout _ _ _ _ coinSCID coinVersion) ->
-             Right (FakeBid key aucTXID coinTXID coinSCID coinVersion))
+             Right (FakeBid key aucTXID coinTXID coinSCID coinVersion) -- reader monad for recurring function arguments
+           )
           (fakeBidParser key aucTXID coinTXID stdOut)
       ExitFailure _ -> Left $ TXFailed stdErr
   where

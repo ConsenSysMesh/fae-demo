@@ -30,6 +30,8 @@ dependencies:
 - time
 - regex-pcre
 - pretty-simple
+- errors
+- mtl
 
 library:
   source-dirs: src
