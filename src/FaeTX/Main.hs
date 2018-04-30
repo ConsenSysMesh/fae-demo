@@ -28,7 +28,7 @@ import System.Exit
 
 import FaeTX.Types
 
-type TX = ExceptT PostTXError (ReaderT BidConfig IO) PostTXResponse --(exitCode, stdOut, stdErr) <- postTx =<< uncurry3 FakeBidTXin <$> ask
+type TX = ExceptT PostTXError (ReaderT BidConfig IO) PostTXResponse
 
 bid :: BidConfig -> ReaderT BidConfig IO (Either PostTXError PostTXResponse)
 bid conf = do
@@ -38,7 +38,6 @@ bid conf = do
     r@(Right (FakeBid key aucTXID coinTXID coinSCID coinVersion)) ->
       runExceptT $ placeBid coinTXID coinSCID coinVersion >>= return
 
---flip runReaderT (key, auc, coin)                                 -- access bidconfig
 placeFakeBid :: ExceptT PostTXError (ReaderT BidConfig IO) PostTXResponse
 placeFakeBid = do
   bidConf@BidConfig {..} <- ask
@@ -48,8 +47,7 @@ placeFakeBid = do
       maybe
         (throwError $ TXBodyFailed stdOut)
         (\(FakeBidTXout {..}) ->
-           return $ FakeBid key aucTXID coinTXID coinSCID coinVersion -- use record type 
-         )
+           return $ FakeBid key aucTXID coinTXID coinSCID coinVersion)
         (runReaderT (fakeBidParser stdOut) bidConf)
     ExitFailure _ -> throwError (TXFailed stdErr)
 
@@ -95,7 +93,7 @@ getCoin key =
           (getCoinParser stdOut)
       ExitFailure _ -> Left $ TXFailed stdErr
 
--- take the coins from an old cache destroy the cache staand deposit the old coins + 1 new coin to a new cache
+-- take the coins from an old cache destroy the cache and deposit the old coins + 1 new coin to a new cache
 getMoreCoins :: Key -> CoinTXID -> IO (Either PostTXError PostTXResponse)
 getMoreCoins key coinTXID =
   postTX (GetMoreCoinsTXin key coinTXID) >>= \(exitCode, stdOut, stdErr) ->
