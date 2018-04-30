@@ -1,4 +1,3 @@
-{-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
 
 {----------------------------------------------
@@ -33,8 +32,7 @@ type TX = ExceptT PostTXError (ReaderT BidConfig IO) PostTXResponse
 bid :: BidConfig -> ExceptT PostTXError (ReaderT BidConfig IO) PostTXResponse
 bid conf = do
   (FakeBid key aucTXID coinTXID coinSCID coinVersion) <- placeFakeBid
-  bidResult <- placeBid coinTXID coinSCID coinVersion
-  return bidResult
+  placeBid coinTXID coinSCID coinVersion
 
 placeFakeBid :: ExceptT PostTXError (ReaderT BidConfig IO) PostTXResponse
 placeFakeBid = do
@@ -44,7 +42,7 @@ placeFakeBid = do
     ExitSuccess ->
       maybe
         (throwError $ TXBodyFailed stdOut)
-        (\(FakeBidTXout {..}) ->
+        (\FakeBidTXout {..} ->
            return $ FakeBid key aucTXID coinTXID coinSCID coinVersion)
         (runReaderT (fakeBidParser stdOut) bidConf)
     ExitFailure _ -> throwError (TXFailed stdErr)
@@ -62,7 +60,7 @@ placeBid coinTXID coinSCID coinVersion = do
     ExitSuccess ->
       maybe
         (throwError $ TXBodyFailed stdOut)
-        (\(BidTXout {..}) -> return $ Bid txid aucTXID isWinningBid)
+        (\BidTXout {..} -> return $ Bid txid aucTXID isWinningBid)
         (runReaderT (bidParser stdOut) bidConf)
     ExitFailure _ -> throwError $ TXFailed stdErr
 {-
