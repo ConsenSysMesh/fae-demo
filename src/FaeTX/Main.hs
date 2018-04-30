@@ -35,9 +35,8 @@ bid conf = do
   fakeBidResult <- runExceptT placeFakeBid
   case fakeBidResult of
     l@(Left err) -> return l
-    r@(Right (FakeBid key aucTXID coinTXID coinSCID coinVersion)) -> do
-      bidRes <- runExceptT $ placeBid coinTXID coinSCID coinVersion
-      return bidRes
+    r@(Right (FakeBid key aucTXID coinTXID coinSCID coinVersion)) ->
+      runExceptT $ placeBid coinTXID coinSCID coinVersion >>= return
 
 --flip runReaderT (key, auc, coin)                                 -- access bidconfig
 placeFakeBid :: ExceptT PostTXError (ReaderT BidConfig IO) PostTXResponse
