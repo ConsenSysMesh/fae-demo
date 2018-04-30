@@ -28,50 +28,49 @@ import System.Exit
 
 import FaeTX.Types
 
-{-
-placeBid ::
-     Key
-  -> AucTXID
-  -> CoinTXID
-  -> CoinSCID
-  -> CoinVersion
-  -> IO (Either PostTXError PostTXResponse)
-placeBid key aucTXID coinTXID coinSCID coinVersion =
-  postTX (BidTXin key aucTXID coinTXID coinSCID coinVersion) >>= \(exitCode, stdOut, stdErr) ->
-    return $
-    case exitCode of
-      ExitSuccess ->
-        maybe
-          (Left $ TXBodyFailed stdOut)
-          (\(BidTXout txID _ _ _ _ isWinningBid) ->
-             Right $ Bid txID aucTXID isWinningBid)
-          (bidParser aucTXID coinTXID stdOut)
-      ExitFailure _ -> Left $ TXFailed stdErr
- -- , coinTXID :: CoinTXID
- -}
 type TX = ExceptT PostTXError (ReaderT BidConfig IO) PostTXResponse --(exitCode, stdOut, stdErr) <- postTx =<< uncurry3 FakeBidTXin <$> ask
 
 bid :: BidConfig -> ReaderT BidConfig IO (Either PostTXError PostTXResponse)
 bid conf = do
-  postTXResult <- runExceptT placeFakeBid
-  return postTXResult
+  fakeBidResult <- runExceptT placeFakeBid
+  case fakeBidResult of
+    l@(Left err) -> return l
+    r@(Right (FakeBid key aucTXID coinTXID coinSCID coinVersion)) -> do
+      bidRes <- runExceptT $ placeBid coinTXID coinSCID coinVersion
+      return bidRes
 
 --flip runReaderT (key, auc, coin)                                 -- access bidconfig
-getKey :: Key -> ReaderT Key IO ()
-getKey key = ReaderT $ \key -> return ()
-
 placeFakeBid :: ExceptT PostTXError (ReaderT BidConfig IO) PostTXResponse
 placeFakeBid = do
   bidConf@BidConfig {..} <- ask
   (exitCode, stdOut, stdErr) <- postTX (FakeBidTXin key aucTXID coinTXID) -- define record type instead of using an tuple
   case exitCode of
     ExitSuccess ->
-      maybe -- use fmap  and `note` instead of maybe
+      maybe
         (throwError $ TXBodyFailed stdOut)
         (\(FakeBidTXout _ _ _ _ coinSCID coinVersion) ->
-           return (FakeBid key aucTXID coinTXID coinSCID coinVersion))
+           return $ FakeBid key aucTXID coinTXID coinSCID coinVersion -- use record type 
+         )
         (runReaderT (fakeBidParser stdOut) bidConf)
     ExitFailure _ -> throwError (TXFailed stdErr)
+
+placeBid ::
+     CoinTXID
+  -> CoinSCID
+  -> CoinVersion
+  -> ExceptT PostTXError (ReaderT BidConfig IO) PostTXResponse
+placeBid coinTXID coinSCID coinVersion = do
+  bidConf@BidConfig {..} <- ask
+  (exitCode, stdOut, stdErr) <-
+    postTX (BidTXin key aucTXID coinTXID coinSCID coinVersion)
+  case exitCode of
+    ExitSuccess ->
+      maybe
+        (throwError $ TXBodyFailed stdOut)
+        (\(BidTXout txID _ _ _ _ isWinningBid) ->
+           return $ Bid txID aucTXID isWinningBid)
+        (runReaderT (bidParser stdOut) bidConf)
+    ExitFailure _ -> throwError $ TXFailed stdErr
 {-
 --main = undefined
 --  [13:09] <lyxia> so every time you have  (f key aucTXID coinTXID)  you could replace that with  f  and change the type of f from

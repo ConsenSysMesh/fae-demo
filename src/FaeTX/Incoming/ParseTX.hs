@@ -95,19 +95,19 @@ fakeBidParser txOut = do
        (CoinSCID coinSCID)
        (CoinVersion coinVersion))
 
-bidParser :: AucTXID -> CoinTXID -> String -> Maybe AuctionTXout
-bidParser aucTXID coinTXID txOut =
-  case exceptionParser txOut of
-    (Just _) -> Nothing
-    _ ->
-      coinSCIDparser txOut >>= \coinSCID ->
-        coinVersionParser txOut >>= \coinVersion ->
-          txidParser txOut >>= \txid ->
-            return
-              (BidTXout
-                 (TXID txid)
-                 aucTXID
-                 coinTXID
-                 (CoinSCID coinSCID)
-                 (CoinVersion coinVersion)
-                 (hasWonAuction txOut))
+bidParser :: String -> ReaderT BidConfig Maybe AuctionTXout
+bidParser txOut = do
+  BidConfig {..} <- ask
+  exception <- lift $ exceptionParser txOut
+  coinSCID <- lift $ coinSCIDparser txOut
+  coinVersion <- lift $ coinVersionParser txOut
+  coinSCID <- lift $ coinSCIDparser txOut
+  txid <- lift $ txidParser txOut
+  return
+    (BidTXout
+       (TXID txid)
+       aucTXID
+       coinTXID
+       (CoinSCID coinSCID)
+       (CoinVersion coinVersion)
+       (hasWonAuction txOut))
