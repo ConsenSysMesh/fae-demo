@@ -51,14 +51,17 @@ placeBid key aucTXID coinTXID coinSCID coinVersion =
  -}
 type TX = ExceptT PostTXError (ReaderT BidConfig IO) PostTXResponse --(exitCode, stdOut, stdErr) <- postTx =<< uncurry3 FakeBidTXin <$> ask
 
+bid :: BidConfig -> ReaderT BidConfig IO (Either PostTXError PostTXResponse)
+bid conf = do
+  postTXResult <- runExceptT placeFakeBid
+  return postTXResult
+
 --flip runReaderT (key, auc, coin)                                 -- access bidconfig
 getKey :: Key -> ReaderT Key IO ()
 getKey key = ReaderT $ \key -> return ()
 
-placeFakeBid ::
-     ReaderT BidConfig IO ()
-  -> ExceptT PostTXError (ReaderT BidConfig IO) PostTXResponse
-placeFakeBid conf = do
+placeFakeBid :: ExceptT PostTXError (ReaderT BidConfig IO) PostTXResponse
+placeFakeBid = do
   bidConf@BidConfig {..} <- ask
   (exitCode, stdOut, stdErr) <- postTX (FakeBidTXin key aucTXID coinTXID) -- define record type instead of using an tuple
   case exitCode of
