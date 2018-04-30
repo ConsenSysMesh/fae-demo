@@ -47,7 +47,7 @@ placeFakeBid = do
     ExitSuccess ->
       maybe
         (throwError $ TXBodyFailed stdOut)
-        (\(FakeBidTXout _ _ _ _ coinSCID coinVersion) ->
+        (\(FakeBidTXout {..}) ->
            return $ FakeBid key aucTXID coinTXID coinSCID coinVersion -- use record type 
          )
         (runReaderT (fakeBidParser stdOut) bidConf)
@@ -71,22 +71,6 @@ placeBid coinTXID coinSCID coinVersion = do
         (runReaderT (bidParser stdOut) bidConf)
     ExitFailure _ -> throwError $ TXFailed stdErr
 {-
---main = undefined
---  [13:09] <lyxia> so every time you have  (f key aucTXID coinTXID)  you could replace that with  f  and change the type of f from
---     (f :: Key -> AucTXID -> CoinTXID -> x ghci
---    -> IO y)   to   (f :: x -> ReaderT Env IO y)   with   (type Env = (Key, AncTXID, CoinTXID))
--}
-   {-
-bid :: Key -> AucTXID -> CoinTXID -> IO (Either PostTXError PostTXResponse)
-bid key aucTXID coinTXID =
-  placeFakeBid key aucTXID coinTXID >>=
-  (\fakeBidOutput ->
-     (either
-        (pure . Left)
-        (\(FakeBid _ _ _ coinSCID coinVersion) ->
-           placeBid key aucTXID coinTXID coinSCID coinVersion)
-        fakeBidOutput))
-
 createAuction :: Key -> IO (Either PostTXError PostTXResponse)
 createAuction key =
   postTX (CreateAuctionTXin key) >>= \(exitCode, stdOut, stdErr) ->
