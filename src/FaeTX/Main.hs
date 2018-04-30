@@ -30,13 +30,11 @@ import FaeTX.Types
 
 type TX = ExceptT PostTXError (ReaderT BidConfig IO) PostTXResponse
 
-bid :: BidConfig -> ReaderT BidConfig IO (Either PostTXError PostTXResponse)
+bid :: BidConfig -> ExceptT PostTXError (ReaderT BidConfig IO) PostTXResponse
 bid conf = do
-  fakeBidResult <- runExceptT placeFakeBid
-  case fakeBidResult of
-    l@(Left err) -> return l
-    r@(Right (FakeBid key aucTXID coinTXID coinSCID coinVersion)) ->
-      runExceptT $ placeBid coinTXID coinSCID coinVersion >>= return
+  (FakeBid key aucTXID coinTXID coinSCID coinVersion) <- placeFakeBid
+  bidResult <- placeBid coinTXID coinSCID coinVersion
+  return bidResult
 
 placeFakeBid :: ExceptT PostTXError (ReaderT BidConfig IO) PostTXResponse
 placeFakeBid = do
