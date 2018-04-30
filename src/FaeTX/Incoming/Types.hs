@@ -21,7 +21,7 @@ data BidTXout = BidTXout
   , coinTXID :: CoinTXID
   , coinSCID :: CoinSCID
   , coinVersion :: CoinVersion
-  , isWinnindBid :: IsWinningBid
+  , isWinningBid :: IsWinningBid
   }
 
 data AuctionTXout

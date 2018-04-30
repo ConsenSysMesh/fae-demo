@@ -62,8 +62,7 @@ placeBid coinTXID coinSCID coinVersion = do
     ExitSuccess ->
       maybe
         (throwError $ TXBodyFailed stdOut)
-        (\(BidTXout txID _ _ _ _ isWinningBid) ->
-           return $ Bid txID aucTXID isWinningBid)
+        (\(BidTXout {..}) -> return $ Bid txid aucTXID isWinningBid)
         (runReaderT (bidParser stdOut) bidConf)
     ExitFailure _ -> throwError $ TXFailed stdErr
 {-
