@@ -4,6 +4,8 @@
 module FaeTX.Incoming.ParseTX where
 
 import Control.Monad
+import Control.Monad.Reader
+import Control.Monad.Trans
 import Data.Maybe
 import Debug.Trace
 import FaeTX.Incoming.Types
@@ -78,11 +80,12 @@ withdrawParser txOut =
     Nothing -> Nothing
 
 -- fake bids postTX output has exceptions so don't use exception parser
-fakeBidParser :: Key -> AucTXID -> CoinTXID -> String -> Maybe AuctionTXout
-fakeBidParser key aucTXID coinTXID txOut = do
-  coinSCID <- coinSCIDparser txOut
-  coinVersion <- coinVersionParser txOut
-  txid <- txidParser txOut
+fakeBidParser :: String -> ReaderT BidConfig Maybe AuctionTXout
+fakeBidParser txOut = do
+  BidConfig {..} <- ask
+  coinSCID <- lift $ coinSCIDparser txOut
+  coinVersion <- lift $ coinVersionParser txOut
+  txid <- lift $ txidParser txOut
   return
     (FakeBidTXout
        key

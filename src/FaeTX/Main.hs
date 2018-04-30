@@ -56,25 +56,25 @@ getKey :: Key -> ReaderT Key IO ()
 getKey key = ReaderT $ \key -> return ()
 
 placeFakeBid ::
-     Key
-  -> AucTXID
-  -> CoinTXID
+     ReaderT BidConfig IO ()
   -> ExceptT PostTXError (ReaderT BidConfig IO) PostTXResponse
-placeFakeBid key aucTXID coinTXID -- convert to DO notation
- = do
+placeFakeBid conf = do
+  bidConf@BidConfig {..} <- ask
   (exitCode, stdOut, stdErr) <- postTX (FakeBidTXin key aucTXID coinTXID) -- define record type instead of using an tuple
   case exitCode of
     ExitSuccess ->
       maybe -- use fmap  and `note` instead of maybe
         (throwError $ TXBodyFailed stdOut)
         (\(FakeBidTXout _ _ _ _ coinSCID coinVersion) ->
-           return (FakeBid key aucTXID coinTXID coinSCID coinVersion) -- reader monad for recurring function arguments
-         )
-        (fakeBidParser key aucTXID coinTXID stdOut)
+           return (FakeBid key aucTXID coinTXID coinSCID coinVersion))
+        (runReaderT (fakeBidParser stdOut) bidConf)
     ExitFailure _ -> throwError (TXFailed stdErr)
-  --  [13:09] <lyxia> so every time you have  (f key aucTXID coinTXID)  you could replace that with  f  and change the type of f from
-  --     (f :: Key -> AucTXID -> CoinTXID -> x ghci
-   --    -> IO y)   to   (f :: x -> ReaderT Env IO y)   with   (type Env = (Key, AncTXID, CoinTXID))
+{-
+--main = undefined
+--  [13:09] <lyxia> so every time you have  (f key aucTXID coinTXID)  you could replace that with  f  and change the type of f from
+--     (f :: Key -> AucTXID -> CoinTXID -> x ghci
+--    -> IO y)   to   (f :: x -> ReaderT Env IO y)   with   (type Env = (Key, AncTXID, CoinTXID))
+-}
    {-
 bid :: Key -> AucTXID -> CoinTXID -> IO (Either PostTXError PostTXResponse)
 bid key aucTXID coinTXID =
