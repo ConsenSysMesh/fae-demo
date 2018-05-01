@@ -10,17 +10,8 @@ import Data.Text (Text)
 import qualified Network.WebSockets as WS
 import Prelude
 
-import Control.Exception (finally)
-import Data.Aeson
-import qualified Data.ByteString.Lazy.Char8 as C
-import Data.Foldable
 import Data.IntMap.Lazy (IntMap)
 import qualified Data.IntMap.Lazy as IntMap
-import Data.Maybe
-import qualified Data.Text as T
-import qualified Data.Text.Lazy as X
-import qualified Data.Text.Lazy.Encoding as D
-import Text.Pretty.Simple (pPrint)
 
 import Auction
 import ClientMsg.Outgoing
@@ -33,13 +24,13 @@ addClient :: Client -> [Client] -> [Client]
 addClient client clients = client : clients
 
 removeClient :: Client -> [Client] -> [Client]
-removeClient client clients = filter (/= client) clients
+removeClient client = filter (/= client)
 
 getClientConn :: Client -> WS.Connection
 getClientConn (Client (_, conn)) = conn
 
 getClientWsConns :: [Client] -> [WS.Connection]
-getClientWsConns clients = Prelude.map getClientConn clients
+getClientWsConns = Prelude.map getClientConn
 
 sendMsgs :: Text -> [WS.Connection] -> IO ()
 sendMsgs msg connections = forM_ connections $ \conn -> WS.sendTextData conn msg

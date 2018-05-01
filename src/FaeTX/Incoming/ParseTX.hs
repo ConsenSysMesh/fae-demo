@@ -1,17 +1,13 @@
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE RecordWildCards #-}
 
 module FaeTX.Incoming.ParseTX where
 
 import Control.Monad
 import Control.Monad.Reader
-import Control.Monad.Trans
 import Data.Maybe
-import Debug.Trace
 import FaeTX.Incoming.Types
 import FaeTX.Types
 import Prelude
-import Text.Pretty.Simple (pPrint)
 import Text.Regex.PCRE
 
 exceptionRegex :: String
@@ -75,7 +71,7 @@ getMoreCoinsParser txOut =
 
 withdrawParser :: String -> Maybe AuctionTXout
 withdrawParser txOut =
-  case (txidParser) txOut of
+  case txidParser txOut of
     Just txid -> Just (WithdrawTXout (TXID txid))
     Nothing -> Nothing
 

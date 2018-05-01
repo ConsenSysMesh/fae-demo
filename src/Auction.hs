@@ -9,17 +9,10 @@ module Auction where
 import Control.Concurrent (MVar, modifyMVar, modifyMVar_, newMVar, readMVar)
 import Control.Exception (finally)
 import Control.Monad (forM_, forever)
-import Data.Aeson
 import Data.IntMap.Lazy (IntMap)
 import qualified Data.IntMap.Lazy as IntMap
 import qualified Data.List as Li
 import Data.Monoid
-import Data.Text (Text)
-import qualified Data.Text as T
-import qualified Data.Text.IO as T
-import qualified Data.Text.Lazy as X
-import qualified Data.Text.Lazy.Encoding as D
-import qualified Network.WebSockets as WS
 import Prelude
 import Types
 
@@ -28,7 +21,6 @@ validBid Bid {..} a@Auction {..} =
   bidValue > (currentBidValue a) && numBids < maxNumBids
   where
     numBids = length bids
-    -- the output of PostTX should decide this
 
 bidOnAuction :: AuctionId -> Bid -> IntMap Auction -> IntMap Auction
 bidOnAuction key (bid@Bid {..}) =
@@ -52,7 +44,7 @@ getNextAuctionKey a =
 
 auctionStatus :: Auction -> String
 auctionStatus auc@Auction {..}
-  | (numBids auc) < maxNumBids = highBidder <> "is Winning"
+  | numBids auc < maxNumBids = highBidder <> "is Winning"
   | numBids auc == 0 = "No Bids yet"
   | otherwise = highBidder <> " Has Won!"
   where

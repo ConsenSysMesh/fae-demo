@@ -29,12 +29,15 @@ executeContract conf@GetCoinConfig {} = execute getCoin conf
 executeContract conf@GetMoreCoinsConfig {} = execute getMoreCoins conf
 executeContract conf@WithdrawConfig {} = execute withdraw conf
 
+execute ::
+     ExceptT PostTXError (ReaderT TXConfig IO) PostTXResponse
+  -> TXConfig
+  -> IO (Either PostTXError PostTXResponse)
 execute = runReaderT . runExceptT
 
 bid :: ExceptT PostTXError (ReaderT TXConfig IO) PostTXResponse
 bid = do
-  (BidConfig key aucTXID coinTXID) <- ask
-  (FakeBid key aucTXID coinTXID coinSCID coinVersion) <- placeFakeBid
+  (FakeBid _ _ coinTXID coinSCID coinVersion) <- placeFakeBid
   placeBid coinTXID coinSCID coinVersion
 
 placeFakeBid :: ExceptT PostTXError (ReaderT TXConfig IO) PostTXResponse
@@ -69,7 +72,7 @@ placeBid coinTXID coinSCID coinVersion = do
 
 createAuction :: ExceptT PostTXError (ReaderT TXConfig IO) PostTXResponse
 createAuction = do
-  config@(CreateAuctionConfig key) <- ask
+  (CreateAuctionConfig key) <- ask
   (exitCode, stdOut, stdErr) <- postTX (CreateAuctionTXin key)
   case exitCode of
     ExitSuccess ->
@@ -81,7 +84,7 @@ createAuction = do
 
 getCoin :: ExceptT PostTXError (ReaderT TXConfig IO) PostTXResponse
 getCoin = do
-  config@(GetCoinConfig key) <- ask
+  (GetCoinConfig key) <- ask
   (exitCode, stdOut, stdErr) <- postTX (GetCoinTXin key)
   case exitCode of
     ExitSuccess ->
@@ -94,7 +97,7 @@ getCoin = do
 -- take the coins from an old cache destroy the cache and deposit the old coins + 1 new coin to a new cache
 getMoreCoins :: ExceptT PostTXError (ReaderT TXConfig IO) PostTXResponse
 getMoreCoins = do
-  config@(GetMoreCoinsConfig key coinTXID) <- ask
+  (GetMoreCoinsConfig key coinTXID) <- ask
   (exitCode, stdOut, stdErr) <- postTX (GetMoreCoinsTXin key coinTXID)
   case exitCode of
     ExitSuccess ->
@@ -106,7 +109,7 @@ getMoreCoins = do
 
 withdraw :: ExceptT PostTXError (ReaderT TXConfig IO) PostTXResponse
 withdraw = do
-  config@(WithdrawConfig key aucTXID) <- ask
+  (WithdrawConfig key aucTXID) <- ask
   (exitCode, stdOut, stdErr) <- postTX (WithdrawTXin key aucTXID)
   case exitCode of
     ExitSuccess ->
