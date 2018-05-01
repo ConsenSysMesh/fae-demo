@@ -10,8 +10,6 @@ module FaeTX.Main
   , PostTXError
   ) where
 
---  , getMoreCoins
---  , withdraw
 import Control.Error.Util
 import Control.Monad
 import Control.Monad.Except
