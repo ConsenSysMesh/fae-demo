@@ -84,8 +84,9 @@ placeBid coinTXID coinSCID coinVersion = do
         (runReaderT (bidParser stdOut) config)
     ExitFailure _ -> throwError $ TXFailed stdErr
 
-createAuction :: Key -> ExceptT PostTXError (ReaderT TXConfig IO) PostTXResponse
-createAuction key = do
+createAuction :: ExceptT PostTXError (ReaderT TXConfig IO) PostTXResponse
+createAuction = do
+  config@(CreateAuctionConfig key) <- ask
   (exitCode, stdOut, stdErr) <- postTX (CreateAuctionTXin key)
   case exitCode of
     ExitSuccess ->
@@ -95,8 +96,9 @@ createAuction key = do
         (createAuctionParser stdOut)
     ExitFailure _ -> throwError $ TXFailed stdErr
 
-getCoin :: Key -> ExceptT PostTXError (ReaderT TXConfig IO) PostTXResponse
-getCoin key = do
+getCoin :: ExceptT PostTXError (ReaderT TXConfig IO) PostTXResponse
+getCoin = do
+  config@(GetCoinConfig key) <- ask
   (exitCode, stdOut, stdErr) <- postTX (GetCoinTXin key)
   case exitCode of
     ExitSuccess ->
@@ -107,9 +109,9 @@ getCoin key = do
     ExitFailure _ -> throwError $ TXFailed stdErr
 
 -- take the coins from an old cache destroy the cache and deposit the old coins + 1 new coin to a new cache
-getMoreCoins ::
-     Key -> CoinTXID -> ExceptT PostTXError (ReaderT TXConfig IO) PostTXResponse
-getMoreCoins key coinTXID = do
+getMoreCoins :: ExceptT PostTXError (ReaderT TXConfig IO) PostTXResponse
+getMoreCoins = do
+  config@(GetMoreCoinsConfig key coinTXID) <- ask
   (exitCode, stdOut, stdErr) <- postTX (GetMoreCoinsTXin key coinTXID)
   case exitCode of
     ExitSuccess ->
@@ -119,9 +121,9 @@ getMoreCoins key coinTXID = do
         (getMoreCoinsParser stdOut)
     ExitFailure _ -> throwError $ TXFailed stdErr
 
-withdraw ::
-     Key -> AucTXID -> ExceptT PostTXError (ReaderT TXConfig IO) PostTXResponse
-withdraw key aucTXID = do
+withdraw :: ExceptT PostTXError (ReaderT TXConfig IO) PostTXResponse
+withdraw = do
+  config@(WithdrawConfig key aucTXID) <- ask
   (exitCode, stdOut, stdErr) <- postTX (WithdrawTXin key aucTXID)
   case exitCode of
     ExitSuccess ->
