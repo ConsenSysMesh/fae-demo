@@ -4,9 +4,8 @@
   Api for High level fae auction TXs management
 -----------------------------------------------}
 module FaeTX.Main
-  ( bid
- -- , createAuction
- -- , getCoin
+  ( executeContract
+  , TXConfig
   , PostTXResponse
   , PostTXError
   ) where
@@ -26,7 +25,6 @@ import System.Exit
 
 import FaeTX.Types
 
---execute = runExceptT . flip runReaderT
 executeContract :: TXConfig -> IO (Either PostTXError PostTXResponse)
 executeContract conf@BidConfig {} = runReaderT (runExceptT bid) conf
 executeContract conf@CreateAuctionConfig {} =
@@ -36,6 +34,7 @@ executeContract conf@GetMoreCoinsConfig {} =
   runReaderT (runExceptT getMoreCoins) conf
 executeContract conf@WithdrawConfig {} = runReaderT (runExceptT withdraw) conf
 
+--execute = runExceptT . flip runReaderT
 bid :: ExceptT PostTXError (ReaderT TXConfig IO) PostTXResponse
 bid = do
   (BidConfig key aucTXID coinTXID) <- ask
