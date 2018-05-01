@@ -73,9 +73,8 @@ placeBid coinTXID coinSCID coinVersion = do
         (\BidTXout {..} -> return $ Bid txid aucTXID isWinningBid)
         (runReaderT (bidParser stdOut) config)
     ExitFailure _ -> throwError $ TXFailed stdErr
-{-
-createAuction ::
-     Key -> ExceptT PostTXError (ReaderT TXConfig IO) PostTXResponse
+
+createAuction :: Key -> ExceptT PostTXError (ReaderT TXConfig IO) PostTXResponse
 createAuction key = do
   (exitCode, stdOut, stdErr) <- postTX (CreateAuctionTXin key)
   case exitCode of
@@ -99,9 +98,7 @@ getCoin key = do
 
 -- take the coins from an old cache destroy the cache and deposit the old coins + 1 new coin to a new cache
 getMoreCoins ::
-     Key
-  -> CoinTXID
-  -> ExceptT PostTXError (ReaderT TXConfig IO) PostTXResponse
+     Key -> CoinTXID -> ExceptT PostTXError (ReaderT TXConfig IO) PostTXResponse
 getMoreCoins key coinTXID = do
   (exitCode, stdOut, stdErr) <- postTX (GetMoreCoinsTXin key coinTXID)
   case exitCode of
@@ -123,4 +120,3 @@ withdraw key aucTXID = do
         (\(WithdrawTXout txid) -> return $ Withdraw txid)
         (withdrawParser stdOut)
     ExitFailure _ -> throwError $ TXFailed stdErr
--}
