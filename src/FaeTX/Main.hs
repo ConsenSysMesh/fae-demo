@@ -4,15 +4,14 @@
   Api for High level fae auction TXs management
 -----------------------------------------------}
 module FaeTX.Main
-  --( bid
-  --, createAuction
-  --, getCoin
-  --, getMoreCoins
-  --, withdraw
-  --, PostTXResponse
-  --, PostTXError
- -- )
- where
+  ( bid
+  , createAuction
+  , getCoin
+  , getMoreCoins
+  , withdraw
+  , PostTXResponse
+  , PostTXError
+  ) where
 
 import Control.Error.Util
 import Control.Monad
@@ -30,12 +29,16 @@ import FaeTX.Types
 type TX = ExceptT PostTXError (ReaderT BidConfig IO) PostTXResponse
 
 aid = AucTXID "b65604d5753896b49e9499bb214c5b8107ec5ce3bd5512534a060f9ba9111cef"
-cid = CoinTXID "3eee5c0fc994fa766f653b60033040040e157ee7d0af20400dd54deb39a6e138"
+
+cid =
+  CoinTXID "3eee5c0fc994fa766f653b60033040040e157ee7d0af20400dd54deb39a6e138"
+
 key1 = Key "bidder1"
 
 runBid :: Key -> AucTXID -> CoinTXID -> IO (Either PostTXError PostTXResponse)
-runBid key aucTXID coinTXID = runReaderT (runExceptT bid) bidConfig 
-   where bidConfig = BidConfig {..}
+runBid key aucTXID coinTXID = runReaderT (runExceptT bid) bidConfig
+  where
+    bidConfig = BidConfig {..}
 
 bid :: ExceptT PostTXError (ReaderT BidConfig IO) PostTXResponse
 bid = do
@@ -46,7 +49,7 @@ bid = do
 placeFakeBid :: ExceptT PostTXError (ReaderT BidConfig IO) PostTXResponse
 placeFakeBid = do
   bidConf@BidConfig {..} <- ask
-  (exitCode, stdOut, stdErr) <- postTX (FakeBidTXin key aucTXID coinTXID) -- define record type instead of using an tuple
+  (exitCode, stdOut, stdErr) <- postTX (FakeBidTXin key aucTXID coinTXID)
   case exitCode of
     ExitSuccess ->
       maybe
@@ -72,53 +75,53 @@ placeBid coinTXID coinSCID coinVersion = do
         (\BidTXout {..} -> return $ Bid txid aucTXID isWinningBid)
         (runReaderT (bidParser stdOut) bidConf)
     ExitFailure _ -> throwError $ TXFailed stdErr
-{-
-createAuction :: Key -> IO (Either PostTXError PostTXResponse)
-createAuction key =
-  postTX (CreateAuctionTXin key) >>= \(exitCode, stdOut, stdErr) ->
-    return $
-    case exitCode of
-      ExitSuccess ->
-        maybe
-          (Left $ TXBodyFailed stdOut)
-          (\(CreateAuctionTXout txid) -> Right $ CreateAuction txid)
-          (createAuctionParser stdOut)
-      ExitFailure _ -> Left $ TXFailed stdErr
 
-getCoin :: Key -> IO (Either PostTXError PostTXResponse)
-getCoin key =
-  postTX (GetCoinTXin key) >>= \(exitCode, stdOut, stdErr) ->
-    return $
-    case exitCode of
-      ExitSuccess ->
-        maybe
-          (Left $ TXBodyFailed stdOut)
-          (\(GetCoinTXout txid) -> Right $ GetCoin txid)
-          (getCoinParser stdOut)
-      ExitFailure _ -> Left $ TXFailed stdErr
+createAuction ::
+     Key -> ExceptT PostTXError (ReaderT BidConfig IO) PostTXResponse
+createAuction key = do
+  (exitCode, stdOut, stdErr) <- postTX (CreateAuctionTXin key)
+  case exitCode of
+    ExitSuccess ->
+      maybe
+        (throwError $ TXBodyFailed stdOut)
+        (\(CreateAuctionTXout txid) -> return $ CreateAuction txid)
+        (createAuctionParser stdOut)
+    ExitFailure _ -> throwError $ TXFailed stdErr
+
+getCoin :: Key -> ExceptT PostTXError (ReaderT BidConfig IO) PostTXResponse
+getCoin key = do
+  (exitCode, stdOut, stdErr) <- postTX (GetCoinTXin key)
+  case exitCode of
+    ExitSuccess ->
+      maybe
+        (throwError $ TXBodyFailed stdOut)
+        (\(GetCoinTXout txid) -> return $ GetCoin txid)
+        (getCoinParser stdOut)
+    ExitFailure _ -> throwError $ TXFailed stdErr
 
 -- take the coins from an old cache destroy the cache and deposit the old coins + 1 new coin to a new cache
-getMoreCoins :: Key -> CoinTXID -> IO (Either PostTXError PostTXResponse)
-getMoreCoins key coinTXID =
-  postTX (GetMoreCoinsTXin key coinTXID) >>= \(exitCode, stdOut, stdErr) ->
-    return $
-    case exitCode of
-      ExitSuccess ->
-        maybe
-          (Left $ TXBodyFailed stdOut)
-          (\(GetMoreCoinsTXout txid) -> Right $ GetMoreCoins txid)
-          (getMoreCoinsParser stdOut)
-      ExitFailure _ -> Left $ TXFailed stdErr
+getMoreCoins ::
+     Key
+  -> CoinTXID
+  -> ExceptT PostTXError (ReaderT BidConfig IO) PostTXResponse
+getMoreCoins key coinTXID = do
+  (exitCode, stdOut, stdErr) <- postTX (GetMoreCoinsTXin key coinTXID)
+  case exitCode of
+    ExitSuccess ->
+      maybe
+        (throwError $ TXBodyFailed stdOut)
+        (\(GetMoreCoinsTXout txid) -> return $ GetMoreCoins txid)
+        (getMoreCoinsParser stdOut)
+    ExitFailure _ -> throwError $ TXFailed stdErr
 
-withdraw :: Key -> AucTXID -> IO (Either PostTXError PostTXResponse)
-withdraw key aucTXID =
-  postTX (WithdrawTXin key aucTXID) >>= \(exitCode, stdOut, stdErr) ->
-    return $
-    case exitCode of
-      ExitSuccess ->
-        maybe
-          (Left $ TXBodyFailed stdOut)
-          (\(WithdrawTXout txid) -> Right $ Withdraw txid)
-          (withdrawParser stdOut)
-      ExitFailure _ -> Left $ TXFailed stdErr
--}
+withdraw ::
+     Key -> AucTXID -> ExceptT PostTXError (ReaderT BidConfig IO) PostTXResponse
+withdraw key aucTXID = do
+  (exitCode, stdOut, stdErr) <- postTX (WithdrawTXin key aucTXID)
+  case exitCode of
+    ExitSuccess ->
+      maybe
+        (throwError $ TXBodyFailed stdOut)
+        (\(WithdrawTXout txid) -> return $ Withdraw txid)
+        (withdrawParser stdOut)
+    ExitFailure _ -> throwError $ TXFailed stdErr
