@@ -18,7 +18,7 @@ import System.Process
 
 postTX ::
      AuctionTXin
-  -> ExceptT PostTXError (ReaderT BidConfig IO) (ExitCode, String, String)
+  -> ExceptT PostTXError (ReaderT TXConfig IO) (ExitCode, String, String)
 postTX tx = do
   (exitCode, stdOut, stdErr) <- liftIO $ readProcessWithExitCode path args []
   liftIO $ System.IO.putStrLn stdOut

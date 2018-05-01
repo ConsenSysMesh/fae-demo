@@ -49,8 +49,13 @@ data PostTXResponse
   | Withdraw TXID
   deriving (Show, Eq)
 
-data BidConfig = BidConfig
-  { key :: Key
-  , aucTXID :: AucTXID
-  , coinTXID :: CoinTXID
-  }
+data TXConfig
+  = BidConfig Key
+              AucTXID
+              CoinTXID
+  | CreateAuctionConfig Key
+  | GetCoinConfig Key
+  | GetMoreCoinsConfig Key
+                       CoinTXID
+  | WithdrawConfig Key
+                   AucTXID

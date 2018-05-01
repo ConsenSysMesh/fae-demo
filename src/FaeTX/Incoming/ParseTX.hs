@@ -80,9 +80,9 @@ withdrawParser txOut =
     Nothing -> Nothing
 
 -- fake bids postTX output has exceptions so don't use exception parser
-fakeBidParser :: String -> ReaderT BidConfig Maybe FakeBidTXout
+fakeBidParser :: String -> ReaderT TXConfig Maybe FakeBidTXout
 fakeBidParser txOut = do
-  BidConfig {..} <- ask
+  (BidConfig key aucTXID coinTXID) <- ask
   coinSCID <- lift $ coinSCIDparser txOut
   coinVersion <- lift $ coinVersionParser txOut
   txid <- lift $ txidParser txOut
@@ -95,9 +95,9 @@ fakeBidParser txOut = do
        (CoinSCID coinSCID)
        (CoinVersion coinVersion))
 
-bidParser :: String -> ReaderT BidConfig Maybe BidTXout
+bidParser :: String -> ReaderT TXConfig Maybe BidTXout
 bidParser txOut = do
-  BidConfig {..} <- ask
+  (BidConfig key aucTXID coinTXID) <- ask
   exception <- lift $ exceptionParser txOut
   coinSCID <- lift $ coinSCIDparser txOut
   coinVersion <- lift $ coinVersionParser txOut
