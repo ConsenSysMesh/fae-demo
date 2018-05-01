@@ -18,21 +18,19 @@ import FaeTX.Incoming.ParseTX
 import FaeTX.Incoming.Types
 import FaeTX.Outgoing.PostTX
 import FaeTX.Outgoing.Types
+import FaeTX.Types
 import Prelude
 import System.Exit
 
-import FaeTX.Types
-
 executeContract :: TXConfig -> IO (Either PostTXError PostTXResponse)
-executeContract conf@BidConfig {} = runReaderT (runExceptT bid) conf
-executeContract conf@CreateAuctionConfig {} =
-  runReaderT (runExceptT createAuction) conf
-executeContract conf@GetCoinConfig {} = runReaderT (runExceptT getCoin) conf
-executeContract conf@GetMoreCoinsConfig {} =
-  runReaderT (runExceptT getMoreCoins) conf
-executeContract conf@WithdrawConfig {} = runReaderT (runExceptT withdraw) conf
+executeContract conf@BidConfig {} = execute bid conf
+executeContract conf@CreateAuctionConfig {} = execute createAuction conf
+executeContract conf@GetCoinConfig {} = execute getCoin conf
+executeContract conf@GetMoreCoinsConfig {} = execute getMoreCoins conf
+executeContract conf@WithdrawConfig {} = execute withdraw conf
 
---execute = runExceptT . flip runReaderT
+execute = runReaderT . runExceptT
+
 bid :: ExceptT PostTXError (ReaderT TXConfig IO) PostTXResponse
 bid = do
   (BidConfig key aucTXID coinTXID) <- ask
