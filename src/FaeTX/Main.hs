@@ -38,6 +38,16 @@ postBid key aucTXID coinTXID = runReaderT (runExceptT bid) bidConfig
   where
     bidConfig = BidConfig key aucTXID coinTXID
 
+--execute = runExceptT . flip runReaderT
+executeContract :: TXConfig -> IO (Either PostTXError PostTXResponse)
+executeContract conf@BidConfig {} = runReaderT (runExceptT bid) conf
+executeContract conf@CreateAuctionConfig {} =
+  runReaderT (runExceptT createAuction) conf
+executeContract conf@GetCoinConfig {} = runReaderT (runExceptT getCoin) conf
+executeContract conf@GetMoreCoinsConfig {} =
+  runReaderT (runExceptT getMoreCoins) conf
+executeContract conf@WithdrawConfig {} = runReaderT (runExceptT withdraw) conf
+
 bid :: ExceptT PostTXError (ReaderT TXConfig IO) PostTXResponse
 bid = do
   (BidConfig key aucTXID coinTXID) <- ask
