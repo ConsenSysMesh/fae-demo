@@ -26,18 +26,6 @@ import System.Exit
 
 import FaeTX.Types
 
-aid = AucTXID "b65604d5753896b49e9499bb214c5b8107ec5ce3bd5512534a060f9ba9111cef"
-
-cid =
-  CoinTXID "3eee5c0fc994fa766f653b60033040040e157ee7d0af20400dd54deb39a6e138"
-
-key1 = Key "bidder1"
-
-postBid :: Key -> AucTXID -> CoinTXID -> IO (Either PostTXError PostTXResponse)
-postBid key aucTXID coinTXID = runReaderT (runExceptT bid) bidConfig
-  where
-    bidConfig = BidConfig key aucTXID coinTXID
-
 --execute = runExceptT . flip runReaderT
 executeContract :: TXConfig -> IO (Either PostTXError PostTXResponse)
 executeContract conf@BidConfig {} = runReaderT (runExceptT bid) conf
