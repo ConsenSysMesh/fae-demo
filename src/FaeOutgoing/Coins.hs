@@ -19,29 +19,29 @@ import Prelude
 import Text.Pretty.Simple (pPrint)
 import Types
 import FaeTX.Types
+import Control.Monad.Except
+import Data.Either
 
-generateCoins :: Key -> Int -> Wallet -> IO Wallet
+generateCoins :: Key -> Int -> Wallet -> ExceptT PostTXError IO Wallet
 generateCoins key numCoins (Wallet wallet) 
   | Map.null wallet && numCoins == 1 = do 
-    (Right coinTXID) <- getCoin key
-    return $ Wallet $ Map.insert coinTXID numCoins wallet
+      postTXResponse <- liftIO getCoin
+      either throwError (\(GetCoin (TXID txid)) -> return $  Wallet $  Map.insert (CoinTXID txid) numCoins wallet) postTXResponse
   | Map.null wallet && numCoins > 1  = do
-        (Right initialCoinTXID) <- getCoin key
-        (Right finalCoinTXID) <- getCoins key initialCoinTXID (numCoins -1)
-        return $ Wallet $ Map.insert finalCoinTXID numCoins wallet
-  | otherwise                = do  
-        (Right coinTXID) <- getCoins key firstCoinTXID numCoins
-        return $ Wallet $  Map.insert coinTXID numCoins wallet
-            where firstCoinTXID = fst $ head $ Map.toList wallet
+        postTXResponse1 <- liftIO  getCoin
+        either throwError (\(GetCoin (TXID txid)) -> do
+            postTXResponse2 <- liftIO $ getCoins key (CoinTXID txid) numCoins
+            (either throwError (\(GetCoin (TXID txid)) -> return $  Wallet $  Map.insert (CoinTXID txid) numCoins wallet)  postTXResponse2)) postTXResponse1
+  | otherwise   = do  
+        postTXResponse <- liftIO $ getCoins key firstCoinTXID numCoins
+        either throwError (\(GetCoin (TXID txid)) -> return $  Wallet $  Map.insert (CoinTXID txid) numCoins wallet) postTXResponse
+          where firstCoinTXID = fst $ head $ Map.toList wallet
+                getCoin = (executeContract (GetCoinConfig key))
 
-getCoins :: Key -> CoinTXID -> Int -> IO (Either PostTXError CoinTXID)
-getCoins key coinTXID numCoins | numCoins == 0 = return (Right coinTXID)
-                                    | otherwise     = do
-                                            (Right (GetMoreCoins (TXID txid))) <- getMoreCoins
+getCoins :: Key -> CoinTXID -> Int -> IO (Either PostTXError PostTXResponse)
+getCoins key coinTXID@(CoinTXID txid) numCoins | numCoins == 0 = return (Right (GetMoreCoins (TXID txid)))
+                                    | otherwise = do
+                                            (Right (GetMoreCoins (TXID txid))) <- liftIO (getMoreCoins)
                                             getCoins key (CoinTXID txid) (numCoins - 1)
     where getMoreCoins = executeContract (GetMoreCoinsConfig key coinTXID)
 
-getCoin :: Key -> IO (Either PostTXError CoinTXID)
-getCoin key = do 
-    (Right (GetCoin (TXID txid))) <- executeContract (GetCoinConfig key)
-    return (Right (CoinTXID txid))

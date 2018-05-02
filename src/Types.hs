@@ -54,5 +54,3 @@ instance Eq Client where
   -- Actions for synchronising client-server state
 
 newtype Wallet = Wallet (Map CoinTXID Int) deriving (Show, Eq)
-
-
