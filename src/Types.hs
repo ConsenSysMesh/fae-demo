@@ -5,35 +5,48 @@
 module Types where
 
 import Data.Aeson.Types
-import Data.IntMap.Lazy (IntMap)
+import Data.Map.Lazy (Map)
+import qualified Data.Map.Lazy as Map
 import Data.Text (Text)
 import Data.Time.Clock
 import GHC.Generics
 import qualified Network.WebSockets as WS
 
-type AuctionId = Int
+newtype Client = Client { 
+   name ::Text
+ , conn :: Ws.Connection
+   , wallet :: Wallet
+}
 
---We represent a client by their username and a `WS.Connection`. We will see how we
---obtain this `WS.Connection` later on.
-newtype Client =
-  Client (Text, WS.Connection) -- add wallet
+newtype Key =
+  Key String
+
+newtype AuctionID =
+  AuctionID String
 
 instance Show Client where
   show (Client (name, _)) = show name
 
 data ServerState = ServerState
   { clients :: [Client]
-  , auctions :: IntMap Auction
+  , auctions :: Map String Auction
   } deriving (Show)
 
 data Auction = Auction
-  { auctionId :: AuctionId
+  { auctionId :: String
   , bids :: [Bid]
   , createdBy :: String
   , initialValue :: Int
   , maxNumBids :: Int
   , createdTimestamp :: UTCTime
   } deriving (Show, Generic, FromJSON, ToJSON)
+
+data Msg
+  = CreateAuction
+  | Bid AuctionID
+        Int
+  | RequestCoins Int
+  deriving (Show, Generic, FromJSON, ToJSON)
 
 data Bid = Bid
   { bidValue :: Int
@@ -44,3 +57,9 @@ data Bid = Bid
 instance Eq Client where
   (Client (x, _)) == (Client (y, _)) = x == y
   -- Actions for synchronising client-server state
+
+newtype CoinCacheID =
+  CoinCacheID String
+
+newtype Wallet =
+  Wallet (Map CoinCacheID Int)

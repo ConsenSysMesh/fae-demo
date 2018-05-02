@@ -3,19 +3,37 @@
 
 module Clients where
 
-import ClientMsg.Types
 import Control.Concurrent (MVar, modifyMVar, modifyMVar_, newMVar, readMVar)
+import Control.Exception (finally)
 import Control.Monad
+import Data.Aeson
+import qualified Data.ByteString.Lazy.Char8 as C
+import Data.Foldable
+import Data.Map.Lazy (Map)
+import qualified Data.Map.Lazy as Map
+
+import Data.Maybe
 import Data.Text (Text)
+import qualified Data.Text as T
+import qualified Data.Text.Lazy as X
+import qualified Data.Text.Lazy.Encoding as D
 import qualified Network.WebSockets as WS
 import Prelude
-
-import Data.IntMap.Lazy (IntMap)
-import qualified Data.IntMap.Lazy as IntMap
+import Text.Pretty.Simple (pPrint)
 
 import Auction
-import ClientMsg.Outgoing
 import Types
+
+addMsgHandler ::
+     WS.Connection
+  -> MVar ServerState
+  -> (Msg -> WS.Connection -> ServerState -> IO a)
+  -> IO b
+addMsgHandler conn state msgHandler =
+  forever $ do
+    msg <- WS.receiveData conn
+    serverState <- readMVar state
+    for_ (parseMsg msg) $ \parsedMsg -> msgHandler parsedMsg conn serverState
 
 clientExists :: Client -> [Client] -> Bool
 clientExists client clients = client `elem` clients
@@ -45,20 +63,15 @@ broadcast serverState msg =
      sendMsgs msg (getClientWsConns clients))
      -- the output of PostTX should decide this
 
-isValidAuctionAction :: ClientMsg.Types.AuctionAction -> IntMap Auction -> Bool
-isValidAuctionAction (BidAuctionAction aucId bid) auctions =
-  case IntMap.lookup aucId auctions of
-    (Just auction) -> validBid bid auction
-    Nothing -> False
-isValidAuctionAction (CreateAuctionAction Auction {..}) auctions =
-  not $ IntMap.member auctionId auctions
-
 broadcastValidAuctionActions ::
-     MVar ServerState
-  -> IntMap Auction
-  -> ClientMsg.Types.AuctionAction
-  -> IO ()
+     MVar ServerState -> Map String Auction -> Msg -> IO ()
 broadcastValidAuctionActions state auctions aucAction =
   when (isValidAuctionAction aucAction auctions) $ broadcast state jsonMsg
   where
-    jsonMsg = encodeAuctionAction aucAction
+    jsonMsg = encodeMsg aucAction
+
+encodeMsg :: Msg -> Text
+encodeMsg a = T.pack $ show $ X.toStrict $ D.decodeUtf8 $ encode a
+
+parseMsg :: Text -> Maybe Msg
+parseMsg jsonTxt = decode $ C.pack $ T.unpack jsonTxt

@@ -1,4 +1,4 @@
-module FaeTX.Main
+module FaeTX.Post
   ( executeContract
   , TXConfig
   , PostTXResponse

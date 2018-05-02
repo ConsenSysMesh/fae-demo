@@ -12,8 +12,8 @@ import Control.Monad
 import Data.Aeson
 import qualified Data.ByteString.Lazy.Char8 as C
 import Data.Foldable
-import Data.IntMap.Lazy (IntMap)
-import qualified Data.IntMap.Lazy as IntMap
+import Data.Map.Lazy (Map)
+import qualified Data.Map.Lazy as Map
 import Data.Maybe
 import Data.Text (Text)
 import qualified Data.Text as T
@@ -24,33 +24,21 @@ import Prelude
 import Text.Pretty.Simple (pPrint)
 
 import Auction
-import ClientMsg.Incoming
-
-import ClientMsg.Outgoing
-import ClientMsg.Types
 import Clients
+import Msg
 import Types
 
 initialServerState :: ServerState
-initialServerState = ServerState {clients = [], auctions = IntMap.empty}
+initialServerState = ServerState {clients = [], auctions = Map.empty}
 
 -- update auction in serverState based on action
-updateServerState :: MVar ServerState -> ClientMsg.Types.AuctionAction -> IO ()
-updateServerState state action =
+updateServerState :: MVar ServerState -> ServerState -> IO ()
+updateServerState state newServerState =
   modifyMVar_
     state
     (\serverState@ServerState {..} -> do
-       print $ isValidAuctionAction action auctions
-       return (ClientMsg.Incoming.handleAuctionAction serverState action))
-
-talk :: WS.Connection -> MVar ServerState -> IO ()
-talk conn state =
-  forever $ do
-    msg <- WS.receiveData conn
-    ServerState {..} <- readMVar state
-    for_ (ClientMsg.Incoming.parseAuctionAction msg) $ \parsedAuctionAction -> do
-      updateServerState state parsedAuctionAction
-      broadcastValidAuctionActions state auctions parsedAuctionAction
+       print $ newServerState
+       return newServerState)
 
 runServer :: IO ()
 runServer = do
@@ -75,9 +63,9 @@ application state pending = do
             let newServerState =
                   ServerState {clients = (addClient client clients), ..}
             return newServerState
-          talk conn state
+          addMsgHandler client state msgHandler
       where clientName = T.filter (\c -> c `notElem` ['"', ' ']) msg
-            client = Client (clientName, conn)
+            client = Client {name = clientName, conn = conn, wallet = Map.empty}
             -- disconnect is called when the connection is closed.
             disconnect
                 -- Remove client and return new state
