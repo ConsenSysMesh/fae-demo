@@ -8,7 +8,7 @@ import GHC.Generics
 
 newtype TXID =
   TXID String
-  deriving (Show, Eq)
+  deriving (Show, Eq, Generic, ToJSON, FromJSON)
  -- private key for signing txs
 
 newtype Key =

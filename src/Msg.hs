@@ -30,7 +30,7 @@ import Prelude
 import Text.Pretty.Simple (pPrint)
 import Types
 import Auction
-import Coins
+import FaeOutgoing.Coins
 
 msgHandler :: Msg -> Client -> ServerState -> IO a
 msgHandler CreateAuctionMsg Client{..} ServerState{..} = undefined

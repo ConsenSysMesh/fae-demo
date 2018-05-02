@@ -27,7 +27,6 @@ import Auction
 import Clients
 import Msg
 import Types
-import Coins
 
 initialServerState :: ServerState
 initialServerState = ServerState {clients = [], auctions = Map.empty}
@@ -66,7 +65,7 @@ application state pending = do
             return newServerState
           addMsgHandler client state msgHandler
       where clientName = T.filter (\c -> c `notElem` ['"', ' ']) msg
-            client = Client {name = clientName, conn = conn, wallet = emptyWallet}
+            client = Client {name = clientName, conn = conn, wallet = Wallet Map.empty}
             -- disconnect is called when the connection is closed.
             disconnect
                 -- Remove client and return new state
