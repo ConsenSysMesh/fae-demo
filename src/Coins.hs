@@ -15,19 +15,18 @@ import qualified Data.Map.Lazy as Map
 import Data.Maybe
 import Data.Text (Text)
 import FaeTX.Post
-import FaeTX.Types
-  ( AucTXID
-  , CoinTXID
-  , Key
-  , PostTXError
-  , PostTXResponse
-  , TXConfig
-  )
 import qualified Network.WebSockets as WS
 import Prelude
 import Text.Pretty.Simple (pPrint)
 import Types
+import FaeTX.Types (Key, CoinTXID, TXConfig(GetCoinConfig))
 
 -- given a previous cache returns a new cache with requested coins
-getCoins :: Int -> Key -> CoinCacheID -> IO (Either PostTXError PostTXResponse)
-getCoins numCoins key coinCache = undefined
+getCoins :: Int -> Key -> CoinTXID -> IO (Either PostTXError PostTXResponse)
+getCoins numCoins key coinCache = executeContract (GetCoinConfig key)
+
+addCoinsToWallet :: Wallet -> CoinTXID -> Int -> Wallet
+addCoinsToWallet (Wallet wallet) coinTXID numCoins = Wallet (Map.insert  coinTXID numCoins wallet)
+
+emptyWallet :: Wallet
+emptyWallet = Wallet Map.empty

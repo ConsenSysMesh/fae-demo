@@ -17,21 +17,13 @@ import FaeTX.Types (PostTXResponse)
 import Prelude
 import Types
 
-bid = undefined
+postBid = undefined
 
-createAuction = undefined
+postCreateAuction = undefined
 
 updateAuctionState :: ServerState -> Map String Auction -> ServerState
 updateAuctionState ServerState {..} auctionState =
   ServerState {auctions = auctionState, ..}
-
-isValidAuctionAction :: Msg -> Map String Auction -> Bool
-isValidAuctionAction (BidAuctionAction aucId bid) auctions =
-  case Map.lookup aucId auctions of
-    (Just auction) -> validBid bid auction
-    Nothing -> False
-isValidAuctionAction (CreateAuctionAction Auction {..}) auctions =
-  not $ Map.member auctionId auctions
 
 validBid :: Bid -> Auction -> Bool
 validBid Bid {..} a@Auction {..} =

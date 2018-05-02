@@ -25,15 +25,15 @@ import Auction
 import Types
 
 addMsgHandler ::
-     WS.Connection
+     Client
   -> MVar ServerState
-  -> (Msg -> WS.Connection -> ServerState -> IO a)
+  -> (Msg -> Client -> ServerState -> IO a)
   -> IO b
-addMsgHandler conn state msgHandler =
+addMsgHandler client@Client{..} state msgHandler =
   forever $ do
     msg <- WS.receiveData conn
     serverState <- readMVar state
-    for_ (parseMsg msg) $ \parsedMsg -> msgHandler parsedMsg conn serverState
+    for_ (parseMsg msg) $ \parsedMsg -> msgHandler parsedMsg client serverState
 
 clientExists :: Client -> [Client] -> Bool
 clientExists client clients = client `elem` clients
@@ -45,7 +45,10 @@ removeClient :: Client -> [Client] -> [Client]
 removeClient client = filter (/= client)
 
 getClientConn :: Client -> WS.Connection
-getClientConn (Client (_, conn)) = conn
+getClientConn Client{..} = conn
+
+getClientWallet :: Client -> Wallet
+getClientWallet Client{..} = wallet 
 
 getClientWsConns :: [Client] -> [WS.Connection]
 getClientWsConns = Prelude.map getClientConn
@@ -63,12 +66,11 @@ broadcast serverState msg =
      sendMsgs msg (getClientWsConns clients))
      -- the output of PostTX should decide this
 
-broadcastValidAuctionActions ::
-     MVar ServerState -> Map String Auction -> Msg -> IO ()
-broadcastValidAuctionActions state auctions aucAction =
-  when (isValidAuctionAction aucAction auctions) $ broadcast state jsonMsg
-  where
-    jsonMsg = encodeMsg aucAction
+--broadcastValidAuctionActions ::
+--     MVar ServerState -> Map String Auction -> Msg -> IO ()
+--broadcast state auctions aucAction = broadcast state jsonMsg
+--  where
+--    jsonMsg = encodeMsg aucAction
 
 encodeMsg :: Msg -> Text
 encodeMsg a = T.pack $ show $ X.toStrict $ D.decodeUtf8 $ encode a

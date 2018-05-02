@@ -1,9 +1,9 @@
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE DeriveAnyClass #-}
+{-# LANGUAGE RecordWildCards #-}
 
 --{-# LANGUAGE DuplicateRecordFields #-}
 module Types where
-
 import Data.Aeson.Types
 import Data.Map.Lazy (Map)
 import qualified Data.Map.Lazy as Map
@@ -11,21 +11,16 @@ import Data.Text (Text)
 import Data.Time.Clock
 import GHC.Generics
 import qualified Network.WebSockets as WS
+import FaeTX.Types (AucTXID, Key, CoinTXID)
 
-newtype Client = Client { 
+data Client = Client { 
    name ::Text
- , conn :: Ws.Connection
-   , wallet :: Wallet
+ , conn :: WS.Connection
+  , wallet :: Wallet
 }
 
-newtype Key =
-  Key String
-
-newtype AuctionID =
-  AuctionID String
-
 instance Show Client where
-  show (Client (name, _)) = show name
+  show Client {..} = show name   
 
 data ServerState = ServerState
   { clients :: [Client]
@@ -33,7 +28,7 @@ data ServerState = ServerState
   } deriving (Show)
 
 data Auction = Auction
-  { auctionId :: String
+  { auctionId :: AucTXID
   , bids :: [Bid]
   , createdBy :: String
   , initialValue :: Int
@@ -42,10 +37,10 @@ data Auction = Auction
   } deriving (Show, Generic, FromJSON, ToJSON)
 
 data Msg
-  = CreateAuction
-  | Bid AuctionID
+  = CreateAuctionMsg
+  | BidMsg AucTXID
         Int
-  | RequestCoins Int
+  | RequestCoinsMsg Int
   deriving (Show, Generic, FromJSON, ToJSON)
 
 data Bid = Bid
@@ -55,11 +50,9 @@ data Bid = Bid
   } deriving (Eq, Show, Generic, FromJSON, ToJSON)
 
 instance Eq Client where
-  (Client (x, _)) == (Client (y, _)) = x == y
+  Client{name = name1} == Client{name = name2} = name1 == name2
   -- Actions for synchronising client-server state
 
-newtype CoinCacheID =
-  CoinCacheID String
+newtype Wallet = Wallet (Map CoinTXID Int) deriving (Show, Eq)
 
-newtype Wallet =
-  Wallet (Map CoinCacheID Int)
+

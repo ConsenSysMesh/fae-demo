@@ -4,7 +4,7 @@
 ---------------------------------------------------------------------------
 -- Post Transactions and Sync Server state and Broadcast msg to clients
 ---------------------------------------------------------------------------
-module Msg where
+module Msg 
   ( msgHandler
   ) where
 
@@ -23,39 +23,21 @@ import qualified Data.Text as T
 import qualified Data.Text.Lazy as X
 import qualified Data.Text.Lazy.Encoding as D
 import FaeTX.Post
-import FaeTX.Types
-  ( AucTXID
-  , CoinTXID
-  , Key
-  , PostTXError
-  , PostTXResponse
-  , TXConfig
-  )
+import FaeTX.Types (Key, CoinTXID, AucTXID)
+import Clients
 import qualified Network.WebSockets as WS
 import Prelude
 import Text.Pretty.Simple (pPrint)
 import Types
 import Auction
-import Coin
+import Coins
 
-msgHandler :: Msg -> WS.Connection -> ServerState -> IO a
-msgHandler (CreateAuction) Client{..} ServerState{..} =
-  where postTXResult = createAuction Key
-        key = 
-msgHandler (Bid aucId amount) Client{..} ServerState {..} = 
-     where postTXResult = bid key aucId amount
-           key = "bidder1"
-msgHandler (RequestCoins numCoins) Client{..} ServerState {..} = addCoinsToWallet key clientWallet amount
-     where  postTXResult = bid key aucId amount
-            key = "bidder1"
+msgHandler :: Msg -> Client -> ServerState -> IO a
+msgHandler CreateAuctionMsg Client{..} ServerState{..} = undefined
+--msgHandler (BidMsg aucId amount) Client{..} ServerState {..} = undefined
+ --    where  key = "bidder1"
+ --           postTXResult = bid key aucId amount
+--msgHandler (RequestCoinsMsg numCoins) Client{..} ServerState {..} = addCoinsToWallet key clientWallet numCoins
+--     where  key = "bidder1"
+--            clientWallet = getClientWallet
 
-callContract :: TXConfig -> IO (Either PostTXError PostTXResponse)
-callContract = executeContract
-
--- given a previous cache returns a new cache with requested coins
-getCoins :: Int -> Key -> CoinTXID -> IO (Either PostTXError PostTXResponse)
-getCoins numCoins key coinCache = undefined
-
-bid = undefined
-
-createAuction = undefined
