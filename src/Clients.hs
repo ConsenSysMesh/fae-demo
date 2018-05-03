@@ -24,16 +24,15 @@ import Text.Pretty.Simple (pPrint)
 import Auction
 import Types
 
-addMsgHandler ::
+-- call handler function for all decodable JSON Messages with client and Msg
+clientListener ::
      Client
-  -> MVar ServerState
-  -> (Msg -> Client -> ServerState -> IO a)
+  -> (Client -> Msg -> IO a)
   -> IO b
-addMsgHandler client@Client {..} state msgHandler =
+clientListener client@Client{..} msgHandler =
   forever $ do
     msg <- WS.receiveData conn
-    serverState <- readMVar state
-    for_ (parseMsg msg) $ \parsedMsg -> msgHandler parsedMsg client serverState
+    for_ (parseMsg msg) $ \parsedMsg -> msgHandler client parsedMsg
 
 clientExists :: Client -> [Client] -> Bool
 clientExists client clients = client `elem` clients

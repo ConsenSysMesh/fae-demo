@@ -33,9 +33,9 @@ import Prelude
 import Text.Pretty.Simple (pPrint)
 import Types
 
-msgHandler :: Msg -> Client -> MVar ServerState -> IO ()
-msgHandler m@RequestCoinsMsg {} client state = handleCoinRequest m client state
-msgHandler CreateAuctionMsg client@Client {..} state = undefined
+msgHandler :: MVar ServerState -> Client -> Msg -> IO ()
+msgHandler state client m@RequestCoinsMsg {}  = handleCoinRequest m client state
+msgHandler state client@Client {..} CreateAuctionMsg = undefined
  --    where  key = "bidder1"
  --           postTXResult = bid key aucId amount
 
@@ -53,20 +53,18 @@ updateServerState state newServerState =
        return newServerState)
 
 handleCoinRequest :: Msg -> Client -> MVar ServerState -> IO ()
-handleCoinRequest (RequestCoinsMsg numCoins) client state = do
+handleCoinRequest (RequestCoinsMsg numCoins) client@Client{..} state = do
   newWallet <- runExceptT $ generateCoins key numCoins wallet
-  either (sendErrMsg conn) grantCoins state client numCoins newWallet
+  either (sendErrMsg conn) (grantCoins state client numCoins) newWallet
   where
     key = Key "bidder"
 
 grantCoins :: MVar ServerState -> Client -> Int -> Wallet -> IO ()
 grantCoins state client@Client {..} numCoins newWallet = do
   ServerState {..} <- readMVar state
-  updateServerState state newState
+  updateServerState state ServerState {clients = updateClientWallet clients client newWallet, ..}
   sendMsgs (encodeMsg (CoinsGeneratedMsg numCoins)) [conn]
-  where
-    newState =
-      ServerState {clients = updateClientWallet clients client newWallet, ..}
+      
 
 sendErrMsg :: WS.Connection -> PostTXError -> IO ()
 sendErrMsg conn postTXError = sendMsgs msg [conn]
