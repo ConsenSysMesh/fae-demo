@@ -41,6 +41,7 @@ application state pending = do
   conn <- WS.acceptRequest pending
   WS.forkPingThread conn 30
   msg <- WS.receiveData conn
+  print (encodeMsg (RequestCoinsMsg 1))
   s@ServerState {..} <- readMVar state
   case msg
 --Check that the given username is not already taken:
@@ -54,7 +55,7 @@ application state pending = do
             let newServerState =
                   ServerState{clients = addClient client clients, ..}
             return newServerState
-          clientListener  client (msgHandler state) -- clean up state passing with readerT
+          clientListener state conn clientName msgHandler -- clean up state passing with readerT
       where clientName = T.filter (\c -> c `notElem` ['"', ' ']) msg
             client =
               Client {name = clientName, conn = conn, wallet = Wallet Map.empty}

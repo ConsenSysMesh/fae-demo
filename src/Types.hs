@@ -9,6 +9,7 @@ import Data.Aeson.Types
 import Data.Map.Lazy (Map)
 import qualified Data.Map.Lazy as Map
 import Data.Text (Text)
+import Data.Monoid
 import Data.Time.Clock
 import FaeTX.Types (AucTXID, CoinTXID, Key, PostTXError)
 import GHC.Generics
@@ -21,7 +22,7 @@ data Client = Client
   }
 
 instance Show Client where
-  show Client {..} = show name
+  show Client {..} = show name <> show wallet
 
 data ServerState = ServerState
   { clients :: [Client]

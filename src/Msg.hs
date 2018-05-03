@@ -32,10 +32,11 @@ import qualified Network.WebSockets as WS
 import Prelude
 import Text.Pretty.Simple (pPrint)
 import Types
+import Control.Monad.Trans.Maybe
 
-msgHandler :: MVar ServerState -> Client -> Msg -> IO ()
-msgHandler state client m@RequestCoinsMsg {}  = handleCoinRequest m client state
-msgHandler state client@Client {..} CreateAuctionMsg = undefined
+msgHandler :: MVar ServerState -> Text -> Msg -> IO ()
+msgHandler state clientName m@RequestCoinsMsg {}  = handleCoinRequest m clientName state
+msgHandler state clientName CreateAuctionMsg = undefined
  --    where  key = "bidder1"
  --           postTXResult = bid key aucId amount
 
@@ -49,24 +50,24 @@ updateServerState state newServerState =
   modifyMVar_
     state
     (\serverState@ServerState {..} -> do
-       print $ newServerState
+       pPrint $ newServerState
        return newServerState)
 
-handleCoinRequest :: Msg -> Client -> MVar ServerState -> IO ()
-handleCoinRequest (RequestCoinsMsg numCoins) client@Client{..} state = do
+handleCoinRequest :: Msg -> Text -> MVar ServerState -> IO ()
+handleCoinRequest (RequestCoinsMsg numCoins) clientName state = do
+  ServerState{..} <- readMVar state
+  let Client{..} = fromJust $ getClient clients clientName
+  pPrint (show wallet ++ "clients wallet before generating coins")
   newWallet <- runExceptT $ generateCoins key numCoins wallet
-  either (sendErrMsg conn) (grantCoins state client numCoins) newWallet
+  either  (sendErrMsg conn) (grantCoins state clientName numCoins) newWallet
   where
     key = Key "bidder"
+    sendErrMsg conn postTXErr = sendMsg (encodeMsg $ ErrMsg postTXErr) conn
 
-grantCoins :: MVar ServerState -> Client -> Int -> Wallet -> IO ()
-grantCoins state client@Client {..} numCoins newWallet = do
+grantCoins :: MVar ServerState -> Text -> Int -> Wallet -> IO ()
+grantCoins state clientName numCoins newWallet = do
   ServerState {..} <- readMVar state
+  let client@Client{..} = fromJust $ getClient clients clientName
   updateServerState state ServerState {clients = updateClientWallet clients client newWallet, ..}
-  sendMsgs (encodeMsg (CoinsGeneratedMsg numCoins)) [conn]
-      
+  sendMsg (encodeMsg (CoinsGeneratedMsg numCoins)) conn
 
-sendErrMsg :: WS.Connection -> PostTXError -> IO ()
-sendErrMsg conn postTXError = sendMsgs msg [conn]
-  where
-    msg = encodeMsg $ ErrMsg postTXError

@@ -25,14 +25,18 @@ import Auction
 import Types
 
 -- call handler function for all decodable JSON Messages with client and Msg
-clientListener ::
-     Client
-  -> (Client -> Msg -> IO a)
+clientListener :: MVar ServerState -> 
+     WS.Connection -> Text
+  -> (MVar ServerState -> Text -> Msg -> IO a)
   -> IO b
-clientListener client@Client{..} msgHandler =
+clientListener state conn clientName msgCallback =
   forever $ do
     msg <- WS.receiveData conn
-    for_ (parseMsg msg) $ \parsedMsg -> msgHandler client parsedMsg
+    print msg
+    sendMsg (encodeMsg (RequestCoinsMsg 1)) conn
+    for_ (parseMsg msg) $ \parsedMsg -> do
+      pPrint $ (show msg) ++ "parsedmsg"
+      msgCallback state clientName parsedMsg
 
 clientExists :: Client -> [Client] -> Bool
 clientExists client clients = client `elem` clients
@@ -46,8 +50,13 @@ removeClient client = filter (/= client)
 getClientConn :: Client -> WS.Connection
 getClientConn Client {..} = conn
 
-getClientWallet :: Client -> Wallet
-getClientWallet Client {..} = wallet
+getClient :: [Client] -> Text -> Maybe Client
+getClient clients clientName = find (\Client{..} -> name == clientName) clients
+
+getClientWallet :: [Client] -> Text -> Maybe Wallet
+getClientWallet clients clientName = do 
+  Client{..} <- getClient clients clientName
+  return wallet
 
 updateClientWallet :: [Client] -> Client -> Wallet -> [Client]
 updateClientWallet clients client@Client {..} newWallet =
@@ -63,6 +72,9 @@ getClientWsConns = Prelude.map getClientConn
 
 sendMsgs :: Text -> [WS.Connection] -> IO ()
 sendMsgs msg connections = forM_ connections $ \conn -> WS.sendTextData conn msg
+
+sendMsg :: Text -> WS.Connection -> IO ()
+sendMsg msg conn = WS.sendTextData conn msg
 
 broadcast :: MVar ServerState -> Text -> IO ()
 broadcast serverState msg =
