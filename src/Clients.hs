@@ -32,7 +32,11 @@ clientListener ::
 clientListener client@Client{..} msgHandler =
   forever $ do
     msg <- WS.receiveData conn
-    for_ (parseMsg msg) $ \parsedMsg -> msgHandler client parsedMsg
+    print msg
+    sendMsgs (encodeMsg (RequestCoinsMsg 1)) [conn]
+    for_ (parseMsg msg) $ \parsedMsg -> do
+      pPrint $ (show msg) ++ "parsedmsg"
+      msgHandler client parsedMsg
 
 clientExists :: Client -> [Client] -> Bool
 clientExists client clients = client `elem` clients

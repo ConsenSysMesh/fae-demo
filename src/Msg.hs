@@ -49,7 +49,7 @@ updateServerState state newServerState =
   modifyMVar_
     state
     (\serverState@ServerState {..} -> do
-       print $ newServerState
+       pPrint $ newServerState
        return newServerState)
 
 handleCoinRequest :: Msg -> Client -> MVar ServerState -> IO ()

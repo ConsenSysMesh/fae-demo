@@ -28,10 +28,11 @@ generateCoins :: Key -> Int -> Wallet -> ExceptT PostTXError IO Wallet
 generateCoins key numCoins w@(Wallet wallet)
   | Map.null wallet && numCoins == 1 = depositCoin key w
   | Map.null wallet && numCoins > 1 = do
-    oneW@(Wallet oneCoinWallet) <- depositCoin key w
-    let coinTXID = fst $ head $ Map.toList oneCoinWallet
-    depositCoins key oneW numCoins coinTXID
-  | otherwise = depositCoins key w numCoins firstCoinTXID
+      postTXResult <- lift $ getCoin key
+      either
+        throwError
+        (\(GetCoin (TXID txid)) -> depositCoins key w numCoins (CoinTXID txid)) postTXResult
+  | otherwise = depositCoins key w numCoins firstCoinTXID -- todo instead - call getmorecoins on previous cache and then updatewallet int is sum of old and new coins
   where
     firstCoinTXID = fst $ head $ Map.toList wallet
 
@@ -41,7 +42,7 @@ depositCoins key wallet numCoins coinTXID = do
   postTXResponse <- liftIO (getCoins key coinTXID numCoins)
   either
     throwError
-    (\(GetCoin (TXID txid)) -> return $ depositCoins (CoinTXID txid))
+    (\(GetMoreCoins (TXID txid)) -> return $ depositCoins (CoinTXID txid))
     postTXResponse
   where
     depositCoins = deposit wallet numCoins
