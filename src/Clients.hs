@@ -29,7 +29,7 @@ addMsgHandler ::
   -> MVar ServerState
   -> (Msg -> Client -> ServerState -> IO a)
   -> IO b
-addMsgHandler client@Client{..} state msgHandler =
+addMsgHandler client@Client {..} state msgHandler =
   forever $ do
     msg <- WS.receiveData conn
     serverState <- readMVar state
@@ -45,10 +45,19 @@ removeClient :: Client -> [Client] -> [Client]
 removeClient client = filter (/= client)
 
 getClientConn :: Client -> WS.Connection
-getClientConn Client{..} = conn
+getClientConn Client {..} = conn
 
 getClientWallet :: Client -> Wallet
-getClientWallet Client{..} = wallet 
+getClientWallet Client {..} = wallet
+
+updateClientWallet :: [Client] -> Client -> Wallet -> [Client]
+updateClientWallet clients client@Client {..} newWallet =
+  map
+    (\c@Client {..} ->
+       if c == client
+         then Client {wallet = newWallet, ..}
+         else c)
+    clients
 
 getClientWsConns :: [Client] -> [WS.Connection]
 getClientWsConns = Prelude.map getClientConn
@@ -71,7 +80,6 @@ broadcast serverState msg =
 --broadcast state auctions aucAction = broadcast state jsonMsg
 --  where
 --    jsonMsg = encodeMsg aucAction
-
 encodeMsg :: Msg -> Text
 encodeMsg a = T.pack $ show $ X.toStrict $ D.decodeUtf8 $ encode a
 

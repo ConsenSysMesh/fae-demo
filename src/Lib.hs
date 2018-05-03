@@ -31,15 +31,6 @@ import Types
 initialServerState :: ServerState
 initialServerState = ServerState {clients = [], auctions = Map.empty}
 
--- update auction in serverState based on action
-updateServerState :: MVar ServerState -> ServerState -> IO ()
-updateServerState state newServerState =
-  modifyMVar_
-    state
-    (\serverState@ServerState {..} -> do
-       print $ newServerState
-       return newServerState)
-
 runServer :: IO ()
 runServer = do
   state <- newMVar initialServerState
@@ -50,7 +41,7 @@ application state pending = do
   conn <- WS.acceptRequest pending
   WS.forkPingThread conn 30
   msg <- WS.receiveData conn
-  ServerState {..} <- readMVar state
+  s@ServerState {..} <- readMVar state
   case msg
 --Check that the given username is not already taken:
         of
@@ -65,7 +56,8 @@ application state pending = do
             return newServerState
           addMsgHandler client state msgHandler
       where clientName = T.filter (\c -> c `notElem` ['"', ' ']) msg
-            client = Client {name = clientName, conn = conn, wallet = Wallet Map.empty}
+            client =
+              Client {name = clientName, conn = conn, wallet = Wallet Map.empty}
             -- disconnect is called when the connection is closed.
             disconnect
                 -- Remove client and return new state

@@ -4,23 +4,24 @@
 
 --{-# LANGUAGE DuplicateRecordFields #-}
 module Types where
+
 import Data.Aeson.Types
 import Data.Map.Lazy (Map)
 import qualified Data.Map.Lazy as Map
 import Data.Text (Text)
 import Data.Time.Clock
+import FaeTX.Types (AucTXID, CoinTXID, Key, PostTXError)
 import GHC.Generics
 import qualified Network.WebSockets as WS
-import FaeTX.Types (AucTXID, Key, CoinTXID)
 
-data Client = Client { 
-   name ::Text
- , conn :: WS.Connection
+data Client = Client
+  { name :: Text
+  , conn :: WS.Connection
   , wallet :: Wallet
-}
+  }
 
 instance Show Client where
-  show Client {..} = show name   
+  show Client {..} = show name
 
 data ServerState = ServerState
   { clients :: [Client]
@@ -39,8 +40,10 @@ data Auction = Auction
 data Msg
   = CreateAuctionMsg
   | BidMsg AucTXID
-        Int
+           Int
   | RequestCoinsMsg Int
+  | CoinsGeneratedMsg Int
+  | ErrMsg PostTXError
   deriving (Show, Generic, FromJSON, ToJSON)
 
 data Bid = Bid
@@ -50,7 +53,9 @@ data Bid = Bid
   } deriving (Eq, Show, Generic, FromJSON, ToJSON)
 
 instance Eq Client where
-  Client{name = name1} == Client{name = name2} = name1 == name2
+  Client {name = name1} == Client {name = name2} = name1 == name2
   -- Actions for synchronising client-server state
 
-newtype Wallet = Wallet (Map CoinTXID Int) deriving (Show, Eq)
+newtype Wallet =
+  Wallet (Map CoinTXID Int)
+  deriving (Show, Eq)

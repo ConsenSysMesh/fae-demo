@@ -13,7 +13,7 @@ newtype TXID =
 
 newtype Key =
   Key String
-  deriving  (Show, Eq, Generic, ToJSON, FromJSON)
+  deriving (Show, Eq, Generic, ToJSON, FromJSON)
 
 -- hash of the coin
 newtype CoinSCID =
@@ -27,18 +27,18 @@ newtype CoinVersion =
 -- id of tx which created coin
 newtype CoinTXID =
   CoinTXID String
-  deriving  (Show, Eq, Generic, ToJSON, FromJSON, Ord)
+  deriving (Show, Eq, Generic, ToJSON, FromJSON, Ord)
 
 -- id of the tx which created auction
 newtype AucTXID =
   AucTXID String
-  deriving  (Show, Eq, Generic, ToJSON, FromJSON) -- Int represents the number of the argument that failed
+  deriving (Show, Eq, Generic, ToJSON, FromJSON) -- Int represents the number of the argument that failed
 
 data PostTXError
   = TXFailed String
   | TXBodyFailed String
   | TXInputFailed Int
-  deriving (Show, Eq)
+  deriving (Show, Eq, Generic, ToJSON, FromJSON)
 
 data PostTXResponse
   = CreateAuction TXID
