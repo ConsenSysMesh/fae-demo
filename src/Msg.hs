@@ -19,24 +19,33 @@ import qualified Data.Map.Lazy as Map
 
 import Auction
 import Clients
+import Coins
 import Control.Monad.Except
 import Data.Maybe
 import Data.Text (Text)
 import qualified Data.Text as T
 import qualified Data.Text.Lazy as X
 import qualified Data.Text.Lazy.Encoding as D
-import FaeOutgoing.Coins
 import FaeTX.Post
 import FaeTX.Types
 import qualified Network.WebSockets as WS
 import Prelude
 import Text.Pretty.Simple (pPrint)
 import Types
+<<<<<<< HEAD
 import Control.Monad.Trans.Maybe
 
 msgHandler :: MVar ServerState -> Text -> Msg -> IO ()
 msgHandler state clientName m@RequestCoinsMsg {}  = handleCoinRequest m clientName state
 msgHandler state clientName CreateAuctionMsg = undefined
+=======
+import Utils
+
+-- route msgs to modules
+msgHandler :: MVar ServerState -> Client -> Msg -> IO ()
+msgHandler state client m@RequestCoinsMsg {} = handleCoinRequest m client state
+msgHandler state client@Client {..} CreateAuctionMsg = undefined
+>>>>>>> 8fca977b38a5d04294775fce75a9e34a01912522
  --    where  key = "bidder1"
  --           postTXResult = bid key aucId amount
 
@@ -50,14 +59,24 @@ updateServerState state newServerState =
   modifyMVar_
     state
     (\serverState@ServerState {..} -> do
-       pPrint $ newServerState
+       print $ newServerState
        return newServerState)
 
+<<<<<<< HEAD
 handleCoinRequest :: Msg -> Text -> MVar ServerState -> IO ()
 handleCoinRequest (RequestCoinsMsg numCoins) clientName state = do
   ServerState{..} <- readMVar state
   let Client{..} = fromJust $ getClient clients clientName
   pPrint (show wallet ++ "clients wallet before generating coins")
+=======
+sendErrMsg :: WS.Connection -> PostTXError -> IO ()
+sendErrMsg conn postTXError = sendMsgs msg [conn]
+  where
+    msg = encodeMsg $ ErrMsg postTXError
+
+handleCoinRequest :: Msg -> Client -> MVar ServerState -> IO ()
+handleCoinRequest (RequestCoinsMsg numCoins) client@Client {..} state = do
+>>>>>>> 8fca977b38a5d04294775fce75a9e34a01912522
   newWallet <- runExceptT $ generateCoins key numCoins wallet
   either  (sendErrMsg conn) (grantCoins state clientName numCoins) newWallet
   where
@@ -67,7 +86,14 @@ handleCoinRequest (RequestCoinsMsg numCoins) clientName state = do
 grantCoins :: MVar ServerState -> Text -> Int -> Wallet -> IO ()
 grantCoins state clientName numCoins newWallet = do
   ServerState {..} <- readMVar state
+<<<<<<< HEAD
   let client@Client{..} = fromJust $ getClient clients clientName
   updateServerState state ServerState {clients = updateClientWallet clients client newWallet, ..}
   sendMsg (encodeMsg (CoinsGeneratedMsg numCoins)) conn
 
+=======
+  updateServerState
+    state
+    ServerState {clients = updateClientWallet clients client newWallet, ..}
+  sendMsgs (encodeMsg (CoinsGeneratedMsg numCoins)) [conn]
+>>>>>>> 8fca977b38a5d04294775fce75a9e34a01912522

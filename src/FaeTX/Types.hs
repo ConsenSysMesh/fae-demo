@@ -8,7 +8,7 @@ import GHC.Generics
 
 newtype TXID =
   TXID String
-  deriving (Show, Eq, Generic, ToJSON, FromJSON)
+  deriving (Show, Eq, Generic, ToJSON, FromJSON, Ord)
  -- private key for signing txs
 
 newtype Key =
@@ -32,7 +32,7 @@ newtype CoinTXID =
 -- id of the tx which created auction
 newtype AucTXID =
   AucTXID String
-  deriving (Show, Eq, Generic, ToJSON, FromJSON) -- Int represents the number of the argument that failed
+  deriving (Show, Eq, Generic, ToJSON, FromJSON, Ord) -- Int represents the number of the argument that failed
 
 data PostTXError
   = TXFailed String

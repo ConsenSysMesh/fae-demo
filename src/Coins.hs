@@ -1,4 +1,6 @@
-module FaeOutgoing.Coins
+{-# LANGUAGE RecordWildCards #-}
+
+module Coins
   ( generateCoins
   ) where
 
@@ -23,6 +25,7 @@ import qualified Network.WebSockets as WS
 import Prelude
 import Text.Pretty.Simple (pPrint)
 import Types
+import Utils
 
 generateCoins :: Key -> Int -> Wallet -> ExceptT PostTXError IO Wallet
 generateCoins key numCoins w@(Wallet wallet)
@@ -51,11 +54,7 @@ depositCoins key wallet numCoins coinTXID = do
   postTXResponse <- liftIO (getCoins key coinTXID numCoins)
   either
     throwError
-<<<<<<< HEAD
     (\(GetMoreCoins (TXID txid)) -> return $ depositCoins (CoinTXID txid))
-=======
-    (\(GetMoreCoins (TXID txid)) -> return $ deposit wallet numCoins (CoinTXID txid))
->>>>>>> aggregate-prev-coin-caches
     postTXResponse
 
 depositCoin :: Key -> Wallet -> ExceptT PostTXError IO Wallet

@@ -8,10 +8,10 @@ module Types where
 import Data.Aeson.Types
 import Data.Map.Lazy (Map)
 import qualified Data.Map.Lazy as Map
-import Data.Text (Text)
 import Data.Monoid
+import Data.Text (Text)
 import Data.Time.Clock
-import FaeTX.Types (AucTXID, CoinTXID, Key, PostTXError)
+import FaeTX.Post
 import GHC.Generics
 import qualified Network.WebSockets as WS
 
@@ -26,7 +26,7 @@ instance Show Client where
 
 data ServerState = ServerState
   { clients :: [Client]
-  , auctions :: Map String Auction
+  , auctions :: Map AucTXID Auction
   } deriving (Show)
 
 data Auction = Auction
@@ -55,8 +55,7 @@ data Bid = Bid
 
 instance Eq Client where
   Client {name = name1} == Client {name = name2} = name1 == name2
-  -- Actions for synchronising client-server state
 
 newtype Wallet =
-  Wallet (Map CoinTXID Int)
+  Wallet (Map CoinTXID Int) -- Int is balance for coin cache
   deriving (Show, Eq)
