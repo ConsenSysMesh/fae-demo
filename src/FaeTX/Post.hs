@@ -1,6 +1,9 @@
 module FaeTX.Post
   ( executeContract
-  , TXConfig
+  , TXConfig(..)
+  , Key
+  , CoinTXID
+  , AucTXID
   , PostTXResponse
   , PostTXError
   ) where

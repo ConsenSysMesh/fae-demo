@@ -22,11 +22,13 @@ import qualified Data.Text.Lazy.Encoding as D
 import qualified Network.WebSockets as WS
 import Prelude
 import Text.Pretty.Simple (pPrint)
+import Utils
 
 import Auction
 import Clients
 import Msg
 import Types
+import Utils
 
 initialServerState :: ServerState
 initialServerState = ServerState {clients = [], auctions = Map.empty}
@@ -53,9 +55,9 @@ application state pending = do
         flip finally disconnect $ do
           modifyMVar_ state $ \ServerState {..} -> do
             let newServerState =
-                  ServerState{clients = addClient client clients, ..}
+                  ServerState {clients = addClient client clients, ..}
             return newServerState
-          clientListener  client (msgHandler state) -- clean up state passing with readerT
+          clientListener client (msgHandler state) -- clean up state passing with readerT
           print (encodeMsg (RequestCoinsMsg 1))
       where clientName = T.filter (\c -> c `notElem` ['"', ' ']) msg
             client =

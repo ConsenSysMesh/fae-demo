@@ -20,16 +20,14 @@ import qualified Data.Text.Lazy.Encoding as D
 import qualified Network.WebSockets as WS
 import Prelude
 import Text.Pretty.Simple (pPrint)
+import Utils
 
 import Auction
 import Types
 
 -- call handler function for all decodable JSON Messages with client and Msg
-clientListener ::
-     Client
-  -> (Client -> Msg -> IO a)
-  -> IO b
-clientListener client@Client{..} msgHandler =
+clientListener :: Client -> (Client -> Msg -> IO a) -> IO b
+clientListener client@Client {..} msgHandler =
   forever $ do
     msg <- WS.receiveData conn
     print msg
@@ -77,14 +75,8 @@ broadcast serverState msg =
         (show clients) ++ " ] ---------------> " ++ (show msg))
      sendMsgs msg (getClientWsConns clients))
      -- the output of PostTX should decide this
-
 --broadcastValidAuctionActions ::
 --     MVar ServerState -> Map String Auction -> Msg -> IO ()
 --broadcast state auctions aucAction = broadcast state jsonMsg
 --  where
 --    jsonMsg = encodeMsg aucAction
-encodeMsg :: Msg -> Text
-encodeMsg a = T.pack $ show $ X.toStrict $ D.decodeUtf8 $ encode a
-
-parseMsg :: Text -> Maybe Msg
-parseMsg jsonTxt = decode $ C.pack $ T.unpack jsonTxt

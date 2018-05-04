@@ -1,4 +1,6 @@
-module FaeOutgoing.Coins
+{-# LANGUAGE RecordWildCards #-}
+
+module Coins
   ( generateCoins
   ) where
 
@@ -23,15 +25,17 @@ import qualified Network.WebSockets as WS
 import Prelude
 import Text.Pretty.Simple (pPrint)
 import Types
+import Utils
 
 generateCoins :: Key -> Int -> Wallet -> ExceptT PostTXError IO Wallet
 generateCoins key numCoins w@(Wallet wallet)
   | Map.null wallet && numCoins == 1 = depositCoin key w
   | Map.null wallet && numCoins > 1 = do
-      postTXResult <- lift $ getCoin key
-      either
-        throwError
-        (\(GetCoin (TXID txid)) -> depositCoins key w numCoins (CoinTXID txid)) postTXResult
+    postTXResult <- lift $ getCoin key
+    either
+      throwError
+      (\(GetCoin (TXID txid)) -> depositCoins key w numCoins (CoinTXID txid))
+      postTXResult
   | otherwise = depositCoins key w numCoins firstCoinTXID -- todo instead - call getmorecoins on previous cache and then updatewallet int is sum of old and new coins
   where
     firstCoinTXID = fst $ head $ Map.toList wallet

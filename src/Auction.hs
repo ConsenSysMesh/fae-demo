@@ -13,37 +13,27 @@ import qualified Data.List as Li
 import Data.Map.Lazy (Map)
 import qualified Data.Map.Lazy as Map
 import Data.Monoid
-import FaeTX.Types (PostTXResponse)
+import FaeTX.Post
+
 import Prelude
 import Types
 
-postBid = undefined
-
-postCreateAuction = undefined
-
-updateAuctionState :: ServerState -> Map String Auction -> ServerState
+updateAuctionState :: ServerState -> Map AucTXID Auction -> ServerState
 updateAuctionState ServerState {..} auctionState =
   ServerState {auctions = auctionState, ..}
 
-validBid :: Bid -> Auction -> Bool
-validBid Bid {..} a@Auction {..} =
-  bidValue > (currentBidValue a) && numBids < maxNumBids
-  where
-    numBids = length bids
+updateAuctionWithBid ::
+     AucTXID -> Bid -> Map AucTXID Auction -> Map AucTXID Auction
+updateAuctionWithBid aucTXID (bid@Bid {..}) =
+  Map.adjust (\auction@Auction {..} -> Auction {bids = bid : bids, ..}) aucTXID
 
-bidOnAuction :: String -> Bid -> Map String Auction -> Map String Auction
-bidOnAuction aucId (bid@Bid {..}) =
-  Map.adjust
-    (\auction@Auction {..} ->
-       case validBid bid auction of
-         True -> Auction {bids = bid : bids, ..}
-         False -> auction)
-    key
-  where
-    key = aucId
+postCreateAuctionTX :: Key -> IO (Either PostTXError PostTXResponse)
+postCreateAuctionTX key = executeContract (CreateAuctionConfig key)
 
-createAuction :: PostTXResponse -> Map String Auction -> Map String Auction
-createAuction auction auctionsMap = undefined
+postBidTX ::
+     Key -> AucTXID -> CoinTXID -> IO (Either PostTXError PostTXResponse)
+postBidTX key aucTXID coinTXID =
+  executeContract (BidConfig key aucTXID coinTXID)
 
 auctionStatus :: Auction -> String
 auctionStatus auc@Auction {..}
