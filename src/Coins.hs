@@ -54,7 +54,7 @@ depositCoins key wallet numCoins coinTXID = do
   postTXResponse <- liftIO (getCoins key coinTXID numCoins)
   either
     throwError
-    (\(GetMoreCoins (TXID txid)) -> return $ depositCoins (CoinTXID txid))
+    (\(GetMoreCoins (TXID txid)) -> return $ deposit wallet numCoins (CoinTXID txid))
     postTXResponse
 
 depositCoin :: Key -> Wallet -> ExceptT PostTXError IO Wallet
