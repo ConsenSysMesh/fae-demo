@@ -39,12 +39,15 @@ data Auction = Auction
   } deriving (Show, Generic, FromJSON, ToJSON)
 
 data Msg
-  = CreateAuctionMsg
-  | BidMsg AucTXID
-           Int
-  | RequestCoinsMsg Int
-  | CoinsGeneratedMsg Int
-  | ErrMsg PostTXError
+  = CreateAuctionRequest -- incoming
+  | BidRequest AucTXID -- incoming
+               Int
+  | BidSubmitted AucTXID -- outgoing
+                 Bid
+  | AuctionCreated Auction -- outgoing
+  | RequestCoins Int -- incoming 
+  | CoinsGenerated Int -- outgoing 
+  | ErrMsg PostTXError -- outgoing
   deriving (Show, Generic, FromJSON, ToJSON)
 
 data Bid = Bid

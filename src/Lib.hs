@@ -7,28 +7,17 @@ module Lib
 
 import Control.Concurrent (MVar, modifyMVar, modifyMVar_, newMVar, readMVar)
 import Control.Exception (finally)
-import Control.Monad (forM_, forever)
-import Control.Monad
-import Data.Aeson
-import qualified Data.ByteString.Lazy.Char8 as C
 import Data.Foldable
-import Data.Map.Lazy (Map)
 import qualified Data.Map.Lazy as Map
-import Data.Maybe
 import Data.Text (Text)
 import qualified Data.Text as T
-import qualified Data.Text.Lazy as X
-import qualified Data.Text.Lazy.Encoding as D
 import qualified Network.WebSockets as WS
 import Prelude
 import Text.Pretty.Simple (pPrint)
-import Utils
 
-import Auction
 import Clients
 import Msg
 import Types
-import Utils
 
 initialServerState :: ServerState
 initialServerState = ServerState {clients = [], auctions = Map.empty}
@@ -43,8 +32,7 @@ application state pending = do
   conn <- WS.acceptRequest pending
   WS.forkPingThread conn 30
   msg <- WS.receiveData conn
-  print (encodeMsg (RequestCoinsMsg 1))
-  s@ServerState {..} <- readMVar state
+  ServerState {..} <- readMVar state
   case msg
 --Check that the given username is not already taken:
         of
@@ -70,4 +58,4 @@ application state pending = do
                   let s' =
                         ServerState {clients = removeClient client clients, ..}
                    in return (s', s')
-              sendMsgs (clientName `mappend` " disconnected") [conn]
+              return ()

@@ -8,43 +8,32 @@ module Msg
   ( msgHandler
   ) where
 
-import Control.Concurrent (MVar, modifyMVar, modifyMVar_, newMVar, readMVar)
-import Control.Exception (finally)
-import Control.Monad
-import Data.Aeson
-import qualified Data.ByteString.Lazy.Char8 as C
-import Data.Foldable
-import Data.Map.Lazy (Map)
-import qualified Data.Map.Lazy as Map
-
 import Auction
 import Clients
 import Coins
+import Control.Concurrent (MVar, modifyMVar, modifyMVar_, newMVar, readMVar)
+import Control.Exception (finally)
+import Control.Monad
 import Control.Monad.Except
 import Data.Maybe
 import Data.Text (Text)
 import qualified Data.Text as T
-import qualified Data.Text.Lazy as X
-import qualified Data.Text.Lazy.Encoding as D
-import FaeTX.Post
-import FaeTX.Types
-import qualified Network.WebSockets as WS
+import Data.Time.Calendar
+import Data.Time.Clock
+import FaeTX.Types hiding (Bid)
 import Prelude
 import Text.Pretty.Simple (pPrint)
 import Types
 import Utils
 
 msgHandler :: MVar ServerState -> Text -> Msg -> IO ()
-msgHandler state clientName m@RequestCoinsMsg {}  = handleCoinRequest m clientName state
-msgHandler state clientName CreateAuctionMsg = undefined
- --    where  key = "bidder1"
- --           postTXResult = bid key aucId amount
+msgHandler state clientName (RequestCoins numCoins) =
+  handleCoinRequest numCoins clientName state
+msgHandler state clientName m@CreateAuctionRequest =
+  handleAuctionMsg clientName state m
+msgHandler state clientName m@BidRequest {} =
+  handleAuctionMsg clientName state m
 
---msgHandler (BidMsg aucId amount) Client{..} ServerState {..} = undefined
---msgHandler (RequestCoinsMsg numCoins) client state ServerState {..} = getCoinsRequestHandler numCoins client state
---     where  key = "bidder1"
---            clientWallet = getClientWallet
--- update auction in serverState based on action
 updateServerState :: MVar ServerState -> ServerState -> IO ()
 updateServerState state newServerState =
   modifyMVar_
@@ -53,21 +42,49 @@ updateServerState state newServerState =
        pPrint $ newServerState
        return newServerState)
 
-handleCoinRequest :: Msg -> Text -> MVar ServerState -> IO ()
-handleCoinRequest (RequestCoinsMsg numCoins) clientName state = do
-  ServerState{..} <- readMVar state
-  let Client{..} = fromJust $ getClient clients clientName
+handleAuctionMsg :: Text -> MVar ServerState -> Msg -> IO ()
+handleAuctionMsg clientName state msg = do
+  postTXResponse <- postCreateAuctionTX key
+  ServerState {..} <- readMVar state
+  let Client {..} = fromJust $ getClient clients clientName
+  either
+    (\a -> sendMsg conn (ErrMsg a))
+    (updateAuction state (T.unpack clientName) msg)
+    postTXResponse
+  where
+    key = Key "bidder1"
+
+updateAuction :: MVar ServerState -> String -> Msg -> PostTXResponse -> IO ()
+updateAuction state bidderName (BidRequest aucTXID amount) _ = do
+  ServerState {..} <- readMVar state
+  let updatedAuctions = updateAuctionWithBid aucTXID newBid auctions
+  updateServerState state ServerState {auctions = updatedAuctions, ..}
+  broadcast state outgoingMsg
+  where
+    timestamp = UTCTime (ModifiedJulianDay 0) (secondsToDiffTime 0)
+    newBid =
+      Bid {bidder = bidderName, bidValue = amount, bidTimestamp = timestamp}
+    outgoingMsg = BidSubmitted aucTXID newBid
+
+--updateAuction state CreateAuction (Create txid)
+handleCoinRequest :: Int -> Text -> MVar ServerState -> IO ()
+handleCoinRequest numCoins clientName state = do
+  ServerState {..} <- readMVar state
+  let Client {..} = fromJust $ getClient clients clientName
   pPrint (show wallet ++ "clients wallet before generating coins")
   newWallet <- runExceptT $ generateCoins key numCoins wallet
-  either  (sendErrMsg conn) (grantCoins state clientName numCoins) newWallet
+  either
+    (sendMsg conn . ErrMsg)
+    (grantCoins state clientName numCoins)
+    newWallet
   where
     key = Key "bidder"
-    sendErrMsg conn postTXErr = sendMsg (encodeMsg $ ErrMsg postTXErr) conn
 
 grantCoins :: MVar ServerState -> Text -> Int -> Wallet -> IO ()
 grantCoins state clientName numCoins newWallet = do
   ServerState {..} <- readMVar state
-  let client@Client{..} = fromJust $ getClient clients clientName
-  updateServerState state ServerState {clients = updateClientWallet clients client newWallet, ..}
-  sendMsg (encodeMsg (CoinsGeneratedMsg numCoins)) conn
-
+  let client@Client {..} = fromJust $ getClient clients clientName
+  updateServerState
+    state
+    ServerState {clients = updateClientWallet clients client newWallet, ..}
+  sendMsg conn $ CoinsGenerated numCoins

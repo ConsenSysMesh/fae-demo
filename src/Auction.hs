@@ -6,15 +6,11 @@
 ----------------------------------------------
 module Auction where
 
-import Control.Concurrent (MVar, modifyMVar, modifyMVar_, newMVar, readMVar)
-import Control.Exception (finally)
-import Control.Monad (forM_, forever)
 import qualified Data.List as Li
 import Data.Map.Lazy (Map)
 import qualified Data.Map.Lazy as Map
 import Data.Monoid
 import FaeTX.Post
-
 import Prelude
 import Types
 
@@ -24,8 +20,8 @@ updateAuctionState ServerState {..} auctionState =
 
 updateAuctionWithBid ::
      AucTXID -> Bid -> Map AucTXID Auction -> Map AucTXID Auction
-updateAuctionWithBid aucTXID (bid@Bid {..}) =
-  Map.adjust (\auction@Auction {..} -> Auction {bids = bid : bids, ..}) aucTXID
+updateAuctionWithBid aucTXID bid =
+  Map.adjust (\Auction {..} -> Auction {bids = bid : bids, ..}) aucTXID
 
 postCreateAuctionTX :: Key -> IO (Either PostTXError PostTXResponse)
 postCreateAuctionTX key = executeContract (CreateAuctionConfig key)
