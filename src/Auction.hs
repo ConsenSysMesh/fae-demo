@@ -11,6 +11,7 @@ import Data.Map.Lazy (Map)
 import qualified Data.Map.Lazy as Map
 import Data.Monoid
 import FaeTX.Post
+import FaeTX.Types (AucTXID)
 import Prelude
 import Types
 
@@ -23,6 +24,10 @@ updateAuctionWithBid ::
 updateAuctionWithBid aucTXID bid =
   Map.adjust (\Auction {..} -> Auction {bids = bid : bids, ..}) aucTXID
 
+createAuction ::
+     AucTXID -> Auction -> Map AucTXID Auction -> Map AucTXID Auction
+createAuction = Map.insert
+
 postCreateAuctionTX :: Key -> IO (Either PostTXError PostTXResponse)
 postCreateAuctionTX key = executeContract (CreateAuctionConfig key)
 
@@ -33,7 +38,7 @@ postBidTX key aucTXID coinTXID =
 
 auctionStatus :: Auction -> String
 auctionStatus auc@Auction {..}
-  | numBids auc < maxNumBids = highBidder <> "is Winning"
+  | numBids auc < 4 = highBidder <> "is Winning"
   | numBids auc == 0 = "No Bids yet"
   | otherwise = highBidder <> " Has Won!"
   where
@@ -43,15 +48,15 @@ getBidValue :: Bid -> Int
 getBidValue Bid {..} = bidValue
 
 numBids :: Auction -> Int
-numBids Auction {..} = Prelude.length bids
+numBids Auction {..} = length bids
 
 getBidder :: Bid -> String
 getBidder Bid {..} = bidder
 
 currentBidValue :: Auction -> Int
 currentBidValue Auction {..}
-  | length bids > 0 = (getBidValue . Li.last) bids
-  | otherwise = initialValue
+  | length bids > 0 = (getBidValue . last) bids
+  | otherwise = 0
 
 highestBidder :: Auction -> String
 highestBidder Auction {..}

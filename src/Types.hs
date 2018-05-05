@@ -7,7 +7,6 @@ module Types where
 
 import Data.Aeson.Types
 import Data.Map.Lazy (Map)
-import qualified Data.Map.Lazy as Map
 import Data.Monoid
 import Data.Text (Text)
 import Data.Time.Clock
@@ -30,11 +29,8 @@ data ServerState = ServerState
   } deriving (Show)
 
 data Auction = Auction
-  { auctionId :: AucTXID
-  , bids :: [Bid]
+  { bids :: [Bid]
   , createdBy :: String
-  , initialValue :: Int
-  , maxNumBids :: Int
   , createdTimestamp :: UTCTime
   } deriving (Show, Generic, FromJSON, ToJSON)
 
@@ -44,7 +40,8 @@ data Msg
                Int
   | BidSubmitted AucTXID -- outgoing
                  Bid
-  | AuctionCreated Auction -- outgoing
+  | AuctionCreated AucTXID
+                   Auction -- outgoing
   | RequestCoins Int -- incoming 
   | CoinsGenerated Int -- outgoing 
   | ErrMsg PostTXError -- outgoing

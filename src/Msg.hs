@@ -55,7 +55,7 @@ handleAuctionMsg clientName state msg = do
     key = Key "bidder1"
 
 updateAuction :: MVar ServerState -> String -> Msg -> PostTXResponse -> IO ()
-updateAuction state bidderName (BidRequest aucTXID amount) _ = do
+updateAuction state clientName (BidRequest aucTXID amount) _ = do
   ServerState {..} <- readMVar state
   let updatedAuctions = updateAuctionWithBid aucTXID newBid auctions
   updateServerState state ServerState {auctions = updatedAuctions, ..}
@@ -63,10 +63,20 @@ updateAuction state bidderName (BidRequest aucTXID amount) _ = do
   where
     timestamp = UTCTime (ModifiedJulianDay 0) (secondsToDiffTime 0)
     newBid =
-      Bid {bidder = bidderName, bidValue = amount, bidTimestamp = timestamp}
+      Bid {bidder = clientName, bidValue = amount, bidTimestamp = timestamp}
     outgoingMsg = BidSubmitted aucTXID newBid
+updateAuction state clientName CreateAuctionRequest (CreateAuction (TXID txid)) = do
+  ServerState {..} <- readMVar state
+  let updatedAuctions = createAuction auctionId newAuction auctions
+  updateServerState state ServerState {auctions = updatedAuctions, ..}
+  broadcast state outgoingMsg
+  where
+    auctionId = AucTXID txid
+    timestamp = UTCTime (ModifiedJulianDay 0) (secondsToDiffTime 0)
+    newAuction =
+      Auction {createdBy = clientName, bids = [], createdTimestamp = timestamp}
+    outgoingMsg = AuctionCreated auctionId newAuction
 
---updateAuction state CreateAuction (Create txid)
 handleCoinRequest :: Int -> Text -> MVar ServerState -> IO ()
 handleCoinRequest numCoins clientName state = do
   ServerState {..} <- readMVar state
