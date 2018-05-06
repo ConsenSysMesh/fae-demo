@@ -18,8 +18,6 @@ import Control.Monad.Except
 import Data.Maybe
 import Data.Text (Text)
 import qualified Data.Text as T
-import Data.Time.Calendar
-import Data.Time.Clock
 import FaeTX.Types hiding (Bid)
 import Prelude
 import Text.Pretty.Simple (pPrint)
@@ -48,7 +46,7 @@ handleAuctionMsg clientName state msg = do
   ServerState {..} <- readMVar state
   let Client {..} = fromJust $ getClient clients clientName
   either
-    (\a -> sendMsg conn (ErrMsg a))
+    (sendMsg conn . ErrMsg)
     (updateAuction state (T.unpack clientName) msg)
     postTXResponse
   where
@@ -61,9 +59,8 @@ updateAuction state clientName (BidRequest aucTXID amount) _ = do
   updateServerState state ServerState {auctions = updatedAuctions, ..}
   broadcast state outgoingMsg
   where
-    timestamp = UTCTime (ModifiedJulianDay 0) (secondsToDiffTime 0)
     newBid =
-      Bid {bidder = clientName, bidValue = amount, bidTimestamp = timestamp}
+      Bid {bidder = clientName, bidValue = amount, bidTimestamp = getTimestamp}
     outgoingMsg = BidSubmitted aucTXID newBid
 updateAuction state clientName CreateAuctionRequest (CreateAuction (TXID txid)) = do
   ServerState {..} <- readMVar state
@@ -72,9 +69,9 @@ updateAuction state clientName CreateAuctionRequest (CreateAuction (TXID txid)) 
   broadcast state outgoingMsg
   where
     auctionId = AucTXID txid
-    timestamp = UTCTime (ModifiedJulianDay 0) (secondsToDiffTime 0)
     newAuction =
-      Auction {createdBy = clientName, bids = [], createdTimestamp = timestamp}
+      Auction
+        {createdBy = clientName, bids = [], createdTimestamp = getTimestamp}
     outgoingMsg = AuctionCreated auctionId newAuction
 
 handleCoinRequest :: Int -> Text -> MVar ServerState -> IO ()
