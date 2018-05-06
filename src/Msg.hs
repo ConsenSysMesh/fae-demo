@@ -1,9 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
 
----------------------------------------------------------------------------
--- Post Transactions and Sync Server state and Broadcast msg to clients
----------------------------------------------------------------------------
 module Msg
   ( msgHandler
   ) where
@@ -11,8 +8,7 @@ module Msg
 import Auction
 import Clients
 import Coins
-import Control.Concurrent (MVar, modifyMVar, modifyMVar_, newMVar, readMVar)
-import Control.Exception (finally)
+import Control.Concurrent (MVar, modifyMVar, modifyMVar_, readMVar)
 import Control.Monad
 import Control.Monad.Except
 import Data.Maybe

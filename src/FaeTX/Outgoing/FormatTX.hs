@@ -6,12 +6,9 @@
 --------------------------------------------------------------------------------------}
 module FaeTX.Outgoing.FormatTX where
 
-import Control.Monad
 import Data.List
 import Data.Monoid
 import Prelude
-import System.Process
-import Text.Pretty.Simple (pPrint)
 
 import FaeTX.Outgoing.Types
 import FaeTX.Types
@@ -39,9 +36,9 @@ getPostTXargs (CreateAuctionTXin (Key key)) =
   formatArgs [("key", key)] ++ ["Create"]
 getPostTXargs (WithdrawTXin (Key key) (AucTXID aucTXID)) =
   formatArgs [("key", key), ("aucTX", aucTXID)] ++ ["Withdraw"]
-getPostTXargs (GetCoinTXin (Key (key))) =
+getPostTXargs (GetCoinTXin (Key key)) =
   formatArgs [("key", key), ("self", key)] ++ ["GetCoin"]
-getPostTXargs (GetMoreCoinsTXin (Key (key)) (CoinTXID (coinTXID))) =
+getPostTXargs (GetMoreCoinsTXin (Key key) (CoinTXID coinTXID)) =
   formatArgs [("self", key), ("key", key), ("coinTX", coinTXID)] ++
   ["GetMoreCoins"]
 
