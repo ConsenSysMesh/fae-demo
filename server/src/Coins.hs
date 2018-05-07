@@ -7,8 +7,8 @@ import Control.Monad.Except
 import Data.Either
 import qualified Data.Map.Lazy as Map
 import Data.Maybe
-import FaeTX.Post
-import FaeTX.Types
+import PostTX
+import Shared
 import Prelude
 import Text.Pretty.Simple (pPrint)
 import Types

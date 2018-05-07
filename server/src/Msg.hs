@@ -14,11 +14,12 @@ import Control.Monad.Except
 import Data.Maybe
 import Data.Text (Text)
 import qualified Data.Text as T
-import FaeTX.Types hiding (Bid)
 import Prelude
 import Text.Pretty.Simple (pPrint)
 import Types
+import Shared
 import Utils
+import PostTX
 
 msgHandler :: MVar ServerState -> Text -> Msg -> IO ()
 msgHandler state clientName (RequestCoins numCoins) =

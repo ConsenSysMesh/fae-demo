@@ -12,7 +12,7 @@ import Data.Text (Text)
 import Data.Time.Clock
 import GHC.Generics
 import qualified Network.WebSockets as WS
-import PostTX (AucTXID, PostTXError)
+import PostTX (AucTXID, CoinTXID, PostTXError)
 import Shared
 
 data Client = Client
@@ -36,27 +36,3 @@ newtype Wallet =
   Wallet (Map CoinTXID Int) -- Int is balance for coin cache
   deriving (Show, Eq)
 
-data Auction = Auction
-  { bids :: [Bid]
-  , createdBy :: String
-  , createdTimestamp :: UTCTime
-  } deriving (Show, Generic, FromJSON, ToJSON)
-
-data Msg
-  = CreateAuctionRequest -- incoming
-  | BidRequest AucTXID -- incoming
-               Int
-  | BidSubmitted AucTXID -- outgoing
-                 Bid
-  | AuctionCreated AucTXID
-                   Auction -- outgoing
-  | RequestCoins Int -- incoming 
-  | CoinsGenerated Int -- outgoing 
-  | ErrMsg PostTXError -- outgoing
-  deriving (Show, Generic, FromJSON, ToJSON)
-
-data Bid = Bid
-  { bidValue :: Int
-  , bidder :: String
-  , bidTimestamp :: UTCTime
-  } deriving (Eq, Show, Generic, FromJSON, ToJSON)

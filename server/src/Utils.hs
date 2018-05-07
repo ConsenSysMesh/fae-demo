@@ -10,6 +10,7 @@ import Data.Time.Calendar
 import Data.Time.Clock
 import Prelude
 import Types
+import Shared
 
 encodeMsg :: Msg -> Text
 encodeMsg a = T.pack $ show $ X.toStrict $ D.decodeUtf8 $ encode a

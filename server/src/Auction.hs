@@ -10,8 +10,8 @@ import qualified Data.List as Li
 import Data.Map.Lazy (Map)
 import qualified Data.Map.Lazy as Map
 import Data.Monoid
-import FaeTX.Post
-import FaeTX.Types (AucTXID)
+import PostTX
+import Shared
 import Prelude
 import Types
 

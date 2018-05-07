@@ -17,6 +17,7 @@ import Prelude
 import Text.Pretty.Simple (pPrint)
 import Types
 import Utils
+import Shared
 
 -- call handler function for all decodable JSON Messages with client and Msg
 clientListener ::
