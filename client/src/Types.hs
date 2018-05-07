@@ -28,29 +28,7 @@ import Miso
 import Miso.String
 import qualified Miso.String as S
 import Miso.Subscription.WebSocket
-
-newtype TXID =
-  TXID String
-  deriving (Show, Eq, Generic, ToJSON, FromJSON, Ord)
- -- private key for signing txs
-
-newtype Key =
-  Key String
-  deriving (Show, Eq, Generic, ToJSON, FromJSON)
-
--- hash of the coin
-newtype CoinSCID =
-  CoinSCID String
-  deriving (Show, Eq)
-
-newtype CoinVersion =
-  CoinVersion String
-  deriving (Show, Eq)
-
--- id of tx which created coin
-newtype CoinTXID =
-  CoinTXID String
-  deriving (Show, Eq, Generic, ToJSON, FromJSON, Ord)
+import SharedTypes
 
 -- id of the tx which created auction
 newtype AucTXID =
@@ -61,30 +39,11 @@ instance ToMisoString AucTXID where
   toMisoString = toMisoString . show
   fromMisoString = read . show
 
-data PostTXError
-  = TXFailed String
-  | TXBodyFailed String
-  | TXInputFailed Int
-  deriving (Show, Eq, Generic, ToJSON, FromJSON)
-
 data Auction = Auction
   { bids :: [Bid]
   , createdBy :: String
   , createdTimestamp :: UTCTime
   } deriving (Show, Eq, Ord, Generic, FromJSON, ToJSON)
-
-data Msg
-  = CreateAuctionRequest -- incoming
-  | BidRequest AucTXID -- incoming
-               Int
-  | BidSubmitted AucTXID -- outgoing
-                 Bid
-  | AuctionCreated AucTXID
-                   Auction -- outgoing
-  | RequestCoins Int -- incoming 
-  | CoinsGenerated Int -- outgoing 
-  | ErrMsg PostTXError -- outgoing
-  deriving (Show, Generic, FromJSON, ToJSON)
 
 data Bid = Bid
   { bidValue :: Int

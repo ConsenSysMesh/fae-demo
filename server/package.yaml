@@ -32,6 +32,8 @@ dependencies:
 - pretty-simple
 - errors
 - mtl
+- shared
+- postTX
 
 library:
   source-dirs: src

@@ -10,11 +10,10 @@ import Data.Map.Lazy (Map)
 import Data.Monoid
 import Data.Text (Text)
 import Data.Time.Clock
-import FaeTX.Post
 import GHC.Generics
 import qualified Network.WebSockets as WS
-import Shared.Types
-import FaeTX.types (AucTXID, PostTXError)
+import PostTX (AucTXID, PostTXError)
+import Shared
 
 data Client = Client
   { name :: Text
@@ -36,8 +35,6 @@ instance Eq Client where
 newtype Wallet =
   Wallet (Map CoinTXID Int) -- Int is balance for coin cache
   deriving (Show, Eq)
-
-
 
 data Auction = Auction
   { bids :: [Bid]
