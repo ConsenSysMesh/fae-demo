@@ -16,12 +16,10 @@ import Data.Bool
 import qualified Data.ByteString.Lazy as L
 import Data.ByteString.Lazy.Char8 as BL
 import qualified Data.ByteString.Lazy.Char8 as C
-import Data.IntMap.Lazy (IntMap)
-import qualified Data.IntMap.Lazy as IntMap
 import qualified Data.JSString as GJS
 import qualified Data.List as Li
 import qualified Data.Map as M
-import qualified Data.Map as M
+import Data.Map.Lazy (Map)
 import Data.Maybe
 import Data.Monoid
 import qualified Data.Text.Lazy as W
@@ -49,31 +47,26 @@ appView m@Model {..} =
   where
     auctionViews =
       [createAuctionView m] ++
-      [viewAuctionsTable m | not $ IntMap.null auctions] ++
-      [selectedAuctionView m]
+      [viewAuctionsTable m | not $ M.null auctions] ++ [selectedAuctionView m]
 
 selectedAuctionView :: Model -> View Action
 selectedAuctionView Model {..} =
-  case selectedAuction of
+  case selectedAuctionTXID of
     Nothing -> ""
-    (Just auction) ->
-      auctionView auction bidFieldValue (S.fromMisoString username)
-  where
-    selectedAuction = IntMap.lookup selectedAuctionId auctions
+    (Just aucTXID) ->
+      case M.lookup aucTXID auctions of
+        Nothing -> ""
+        (Just auction) ->
+          auctionView aucTXID auction bidFieldValue (S.fromMisoString username)
+          -- TODO dont pass auction down instead use reader to pass down auction state and use selected auction id to get auction data
 
 onEnter :: Action -> Attribute Action
 onEnter action = onKeyDown $ bool (AppAction Noop) action . (== KeyCode 13)
 
-viewAuctions :: IntMap Auction -> View Action
-viewAuctions auctions =
-  div_ [class_ "auctions"] [ul_ [class_ "auction-list"] auctionItems]
-  where
-    auctionItems = Prelude.map viewAuction $ IntMap.elems auctions
-
-viewAuction :: Auction -> View Action
-viewAuction auction@Auction {..} =
+viewAuction :: AucTXID -> Auction -> View Action
+viewAuction aucTXID auction@Auction {..} =
   li_
-    [class_ "auction-item", onClick $ AppAction (SelectAuction auctionId)]
+    [class_ "auction-item", onClick $ AppAction (SelectAuction aucTXID)]
     [auctionText]
   where
     auctionText = p_ [] [text $ S.pack $ show auction]
@@ -85,27 +78,27 @@ getTableHeader names =
 iso8601 :: UTCTime -> String
 iso8601 = formatTime defaultTimeLocale "%H:%M:%S"
 
---use reader monad for selectedAuctionId
-getTableRow :: Int -> Auction -> View Action
-getTableRow selectedAuctionId auction@Auction {..} =
+--use reader monad for selectedAuctionTXID
+getTableRow :: Maybe AucTXID -> (AucTXID, Auction) -> View Action
+getTableRow selectedAuctionTXID (aucTXID, auction@Auction {..}) =
   tr_
-    [ onClick $ AppAction (SelectAuction auctionId)
+    [ onClick $ AppAction (SelectAuction aucTXID)
     , class_ $ do bool "auction-row" "auction-row-selected" isSelected
     ]
-    [ td_ [] [text $ S.ms auctionId]
+    [ td_ [] [text $ S.ms aucTXID]
     , td_ [] [text $ S.ms createdBy]
     , td_ [] [text $ S.ms $ iso8601 createdTimestamp]
-    , td_ [] [text $ S.ms numBidToMaxRatio]
+    , td_ [] [text $ S.ms numBids]
     , td_ [] [text $ S.ms $ currentBidValue auction]
     , td_ [] [text $ S.ms $ auctionStatus auction]
     ]
   where
-    isSelected = auctionId == selectedAuctionId
-    numBidToMaxRatio = (show $ numBids auction) <> "/" <> (show maxNumBids)
+    isSelected = maybe False (aucTXID ==) selectedAuctionTXID
+    numBids = Li.length bids
 
-getTableRows :: [Auction] -> Int -> [View Action]
-getTableRows auctions selectedAuctionId =
-  Prelude.map (getTableRow selectedAuctionId) auctions
+getTableRows :: Maybe AucTXID -> Map AucTXID Auction -> [View Action]
+getTableRows selectedAucTXID auctions =
+  Li.map (getTableRow selectedAucTXID) $ M.toList auctions
 
 viewAuctionsTable :: Model -> View Action
 viewAuctionsTable Model {..} =
@@ -125,7 +118,7 @@ viewAuctionsTable Model {..} =
                 , th_ [] [p_ [] [text "Status"]]
                 ]
             ]
-        , tbody_ [] $ getTableRows (IntMap.elems auctions) selectedAuctionId
+        , tbody_ [] $ getTableRows selectedAuctionTXID auctions
         ]
     ]
 
@@ -133,22 +126,12 @@ createAuctionView :: Model -> View Action
 createAuctionView Model {..} =
   button_
     [ style_ $ M.singleton "font-size" "1.25em"
-    , onClick (AppAction (SendAuctionAction (CreateAuctionAction newAuction)))
+    , onClick (AppAction (SendAuctionAction (CreateAuctionRequest)))
     ]
     [text "Create New Auction"]
-  where
-    newAuction =
-      Auction
-        { auctionId = getNextAuctionKey auctions
-        , bids = []
-        , createdBy = S.fromMisoString username
-        , initialValue = 0
-        , maxNumBids = 5
-        , createdTimestamp = UTCTime (ModifiedJulianDay 0) (secondsToDiffTime 0)
-        }
 
-auctionView :: Auction -> Int -> String -> View Action
-auctionView auction@Auction {..} bidFieldValue username =
+auctionView :: AucTXID -> Auction -> Int -> String -> View Action
+auctionView aucTXID auction@Auction {..} bidFieldValue username =
   div_
     [class_ "auction-view"]
     [ article_ [class_ "card"] $
@@ -156,17 +139,17 @@ auctionView auction@Auction {..} bidFieldValue username =
           [ class_ "header"
           , style_ $ M.fromList [(S.pack "text-align", S.pack "center")]
           ]
-          [h3_ [] [text $ "Auction " <> (S.pack $ show auctionId)]]
+          [h3_ [] [text $ "Auction " <> (S.pack $ show aucTXID)]]
       ] ++
-      [ footer_ [] [placeBidView auction bidFieldValue username]
+      [ footer_ [] [placeBidView aucTXID auction bidFieldValue username]
       | not auctionEnded
       ]
     ]
   where
-    auctionEnded = numBids auction == maxNumBids
+    auctionEnded = False -- TODO REMOVE HARDCODING
 
-placeBidView :: Auction -> Int -> String -> View Action
-placeBidView auction@Auction {..} bidFieldValue username =
+placeBidView :: AucTXID -> Auction -> Int -> String -> View Action
+placeBidView aucTXID auction@Auction {..} bidFieldValue username =
   div_
     [class_ "place-bid-container"]
     [ input_
@@ -183,14 +166,8 @@ placeBidView auction@Auction {..} bidFieldValue username =
     , button_ [class_ "bid-field-btn", onClick bidAction] [text "Place Bid"]
     ]
   where
-    title = S.pack $ "Current Bid" ++ show auctionId
-    bid =
-      Bid
-        { bidValue = bidFieldValue
-        , bidder = username
-        , bidTimestamp = UTCTime (ModifiedJulianDay 0) (secondsToDiffTime 0)
-        }
-    bidAction = AppAction (SendAuctionAction (BidAuctionAction auctionId bid))
+    title = S.pack $ "Current Bid" ++ show aucTXID
+    bidAction = AppAction (SendAuctionAction (BidRequest aucTXID bidFieldValue))
 
 loginForm :: Model -> View Action
 loginForm Model {..} =

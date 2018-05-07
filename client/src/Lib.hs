@@ -28,7 +28,6 @@ import qualified Data.Text.Lazy as W
 import Data.Text.Lazy.Encoding as X
 import Data.Time.Calendar
 import Data.Time.Clock
-import Data.Time.Format
 import GHC.Generics
 import Miso
 import Miso.String (MisoString)
@@ -41,21 +40,21 @@ import Views
 parseAuctionAction :: MisoString -> Action
 parseAuctionAction m =
   case parsedAuctionAction of
-    Just auctionAction -> AuctionAction auctionAction
+    Just msg -> AuctionAction msg
     Nothing -> AppAction Noop
   where
-    parsedAuctionAction = decode (C.pack $ GJS.unpack m) :: Maybe AuctionAction
+    parsedAuctionAction = decode (C.pack $ GJS.unpack m) :: Maybe Msg
 
 getInitialModel :: Model
 getInitialModel =
   Model
-    { auctions = IntMap.empty
+    { auctions = M.empty
     , received = S.ms ""
     , msg = Message $ S.ms ""
     , bidFieldValue = 0
     , username = S.ms ""
     , loggedIn = False
-    , selectedAuctionId = 0
+    , selectedAuctionTXID = Nothing
     }
 
 runApp :: IO ()
@@ -71,18 +70,17 @@ runApp = startApp App {initialAction = AppAction Noop, ..}
     mountPoint = Nothing
 
 updateModel :: Action -> Model -> Effect Action Model
-updateModel (AppAction (SendAuctionAction (CreateAuctionAction Auction {..}))) model =
+updateModel (AppAction (SendAuctionAction (CreateAuctionRequest))) model =
+  model <# do
+    send CreateAuctionRequest
+    pure (AppAction Noop)
+updateModel (AppAction (SendAuctionAction (BidRequest aucTXID amount))) model =
   model <# do
     time <- getCurrentTime
-    send (CreateAuctionAction (Auction {createdTimestamp = time, ..}))
+    send (BidRequest aucTXID amount)
     pure (AppAction Noop)
-updateModel (AppAction (SendAuctionAction (BidAuctionAction aucId Bid {..}))) model =
-  model <# do
-    time <- getCurrentTime
-    send (BidAuctionAction aucId (Bid {bidTimestamp = time, ..}))
-    pure (AppAction Noop)
-updateModel (AppAction (SelectAuction auctionId)) Model {..} =
-  noEff Model {selectedAuctionId = auctionId, ..}
+updateModel (AppAction (SelectAuction aucTXID)) Model {..} =
+  noEff Model {selectedAuctionTXID = Just aucTXID, ..}
 updateModel (AppAction (UpdateBidField maybeInt)) Model {..} =
   Model {bidFieldValue = fromMaybe bidFieldValue maybeInt, ..} <# do
     print maybeInt
@@ -100,14 +98,14 @@ updateModel (AppAction (HandleWebSocket (WebSocketMessage msg@(Message m)))) mod
   where
     parsedAuctionAction = parseAuctionAction m
 updateModel (AppAction (UpdateMessage m)) model = noEff model {msg = Message m}
-updateModel (AuctionAction a@(CreateAuctionAction auction)) Model {..} =
+updateModel (AuctionAction a@(AuctionCreated aucTXID auction)) Model {..} =
   noEff Model {auctions = updatedAuctions, ..}
   where
-    updatedAuctions = createAuction auction auctions
-updateModel (AuctionAction a@(BidAuctionAction auctionId bid)) Model {..} =
+    updatedAuctions = createAuction aucTXID auction auctions
+updateModel (AuctionAction a@(BidSubmitted aucTXID bid)) Model {..} =
   noEff Model {auctions = updatedAuctions, ..}
   where
-    updatedAuctions = bidOnAuction auctionId bid auctions
+    updatedAuctions = bidOnAuction aucTXID bid auctions
 updateModel (AppAction Login) Model {..} =
   Model {loggedIn = True, ..} <#
   pure (AppAction (SendMessage (Message username)))

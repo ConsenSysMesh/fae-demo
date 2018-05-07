@@ -10,9 +10,9 @@ import Control.Concurrent (MVar, modifyMVar, modifyMVar_, newMVar, readMVar)
 import Control.Exception (finally)
 import Control.Monad (forM_, forever)
 import Data.Aeson
-import Data.IntMap.Lazy (IntMap)
-import qualified Data.IntMap.Lazy as IntMap
 import qualified Data.List as Li
+import Data.Map.Lazy (Map)
+import qualified Data.Map.Lazy as Map
 import Data.Monoid
 import Data.Text (Text)
 import qualified Data.Text as T
@@ -23,36 +23,28 @@ import Prelude
 import Types
 
 validBid :: Bid -> Auction -> Bool
-validBid Bid {..} a@Auction {..} =
-  bidValue > (currentBidValue a) && numBids < maxNumBids
+validBid Bid {..} a@Auction {..} = bidValue > (currentBidValue a)
   where
     numBids = length bids
 
-bidOnAuction :: AuctionId -> Bid -> IntMap Auction -> IntMap Auction
+bidOnAuction :: AucTXID -> Bid -> Map AucTXID Auction -> Map AucTXID Auction
 bidOnAuction key (bid@Bid {..}) =
-  IntMap.adjust
+  Map.adjust
     (\auction@Auction {..} ->
        case validBid bid auction of
          True -> Auction {bids = bid : bids, ..}
          False -> auction)
     key
 
-createAuction :: Auction -> IntMap Auction -> IntMap Auction
-createAuction auction auctionsMap = IntMap.insert key auction auctionsMap
-  where
-    key = getNextAuctionKey auctionsMap
-
-getNextAuctionKey :: IntMap Auction -> IntMap.Key
-getNextAuctionKey a =
-  case IntMap.maxViewWithKey a of
-    (Just ((k, _), _)) -> k + 1
-    Nothing -> 1
+createAuction ::
+     AucTXID -> Auction -> Map AucTXID Auction -> Map AucTXID Auction
+createAuction aucTXID auction auctionsMap =
+  Map.insert aucTXID auction auctionsMap
 
 auctionStatus :: Auction -> String
 auctionStatus auc@Auction {..}
-  | noBids /= 0 && noBids < maxNumBids = highBidder <> " is Winning"
+  | noBids /= 0 = highBidder <> " is Winning"
   | noBids == 0 = "No Bids"
-  | otherwise = highBidder <> " Has Won!"
   where
     noBids = numBids auc
     highBidder = highestBidder auc
@@ -70,6 +62,8 @@ currentBidValue :: Auction -> Int
 currentBidValue Auction {..}
   | length bids > 0 = (getBidValue . Li.head) bids
   | otherwise = initialValue
+  where
+    initialValue = 0
 
 highestBidder :: Auction -> String
 highestBidder Auction {..}
