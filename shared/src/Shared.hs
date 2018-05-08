@@ -37,11 +37,16 @@ data Msg
   = CreateAuctionRequest -- incoming
   | BidRequest AucTXID -- incoming
                Int
-  | BidSubmitted String -- outgoing
+  | BidSubmitted AucTXID -- outgoing
                  Bid
-  | AuctionCreated String
+  | AuctionCreated AucTXID
                    Auction -- outgoing
   | RequestCoins Int -- incoming 
   | CoinsGenerated Int -- outgoing 
-  | ErrMsg String -- outgoing
+  | ErrMsg Err
   deriving (Show, Generic, FromJSON, ToJSON)
+
+data Err
+  = PostTXErr PostTXError -- outgoing
+  | NoCoins -- outgoing
+   deriving (Show, Generic, FromJSON, ToJSON)
