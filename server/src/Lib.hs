@@ -45,7 +45,7 @@ application state pending = do
             let newServerState =
                   ServerState {clients = addClient client clients, ..}
             return newServerState
-          clientListener state client msgHandler -- clean up state passing with readerT
+          clientListener state clientName conn msgHandler -- clean up state passing with readerT
       where clientName = T.filter (\c -> c `notElem` ['"', ' ']) msg
             client =
               Client {name = clientName, conn = conn, wallet = Wallet Map.empty}

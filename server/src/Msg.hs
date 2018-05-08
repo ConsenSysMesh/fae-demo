@@ -22,16 +22,13 @@ import  qualified Data.Map.Lazy as M
 import Types
 import Utils
 import qualified Network.WebSockets as WS
-
+import Control.Monad.Reader
 import PostTX
 
-msgHandler state client (RequestCoins numCoins) =
-  handleCoinRequest state client numCoins
-msgHandler state client (BidRequest aucTXID amount) =
-  handleBidRequest state client aucTXID
-msgHandler state client CreateAuctionRequest =
-  handleCreateAuctionRequest state client
-
+msgHandler :: Msg -> ReaderT (MVar ServerState, String) IO ()
+msgHandler (RequestCoins numCoins) =  handleCoinRequest numCoins
+msgHandler (BidRequest aucTXID amount) = handleBidRequest aucTXID amount
+msgHandler CreateAuctionRequest = handleCreateAuctionRequest
 
 updateServerState :: MVar ServerState -> ServerState -> IO ()
 updateServerState state newServerState =
@@ -41,77 +38,86 @@ updateServerState state newServerState =
        pPrint $ newServerState
        return newServerState)
 -- TODO use reader to pass client and state around  
-handleFaeOutput :: MVar ServerState -> Client -> Either PostTXError PostTXResponse -> IO ()
-handleFaeOutput state client@Client{..} =
-    either (sendMsg conn . ErrMsg . PostTXErr) (updateAuction state client)
+handleFaeOutput :: Either PostTXError PostTXResponse -> ReaderT (MVar ServerState, String) IO ()
+handleFaeOutput output = do 
+    (state, clientName) <- ask
+    ServerState {..} <- liftIO $ readMVar state
+    let Client{..} = fromJust $ getClient clients $ T.pack clientName --ugh fix fromJust
+    either (\err -> liftIO $ sendMsg conn $ ErrMsg $ PostTXErr err) updateAuction output
 
--- use cont monad T to spend coin if bid is submitted successfully
-handleBidRequest state client@Client{..} aucTXID =
+handleBidRequest :: AucTXID -> Int -> ReaderT (MVar ServerState, String) IO ()
+handleBidRequest aucTXID amount= do 
+  (state, clientName) <- ask
+  ServerState {..} <- liftIO $ readMVar state
+  let client@Client{..} = fromJust $ getClient clients $ T.pack clientName --ugh fix fromJust --also just change the client name to be Text
+  liftIO $ pPrint "BIIIIID REQUEEST"
+  liftIO $ pPrint client
+  let clientWallet = getWallet wallet
+  let coinTXID = head $ M.keys clientWallet
   if not $ M.null clientWallet then do
-      let coinTXID = head $ M.keys clientWallet
-      faeOut <- postBidTX key aucTXID coinTXID
-      ServerState {..} <- readMVar state
-      handleFaeOutput state client faeOut
-  else  sendMsg conn $ ErrMsg NoCoins
+       faeOut <- liftIO $ postBidTX key aucTXID coinTXID
+       ServerState {..} <- liftIO $ readMVar state
+       handleFaeOutput faeOut
+  else liftIO $ sendMsg conn $ ErrMsg NoCoins
   where
     key = Key "bidder1"
     getWallet (Wallet wallet) = wallet
-    clientWallet = getWallet wallet
 -- coinTXID should be retrieved based on amount of coins to bid at the
 -- moment bid amounts always equal account balance for simplicity to avoid implementing a wallet
 
-handleCreateAuctionRequest state client@Client{..} = do
-  faeOut <- postCreateAuctionTX key
-  ServerState {..} <- readMVar state
-  handleFaeOutput state client faeOut
+handleCreateAuctionRequest :: ReaderT (MVar ServerState, String) IO ()
+handleCreateAuctionRequest = do
+  faeOut <- liftIO $ postCreateAuctionTX key
+  handleFaeOutput faeOut
   where
     key = Key "bidder1"
 
-updateAuction :: MVar ServerState -> Client -> PostTXResponse -> IO ()
-updateAuction state client@Client{..} (BidTX txid aucTXID coinTXID hasWon) = do
-  ServerState {..} <- readMVar state
-  let updatedAuctions = updateAuctionWithBid aucTXID newBid auctions
-  updateServerState state ServerState {auctions = updatedAuctions, ..}
-  broadcast state outgoingMsg
-  let newWallet = Wallet $ M.delete coinTXID clientWallet -- remove spent coin cache
-  updateServerState state ServerState {clients = updateClientWallet clients client newWallet, ..}
+updateAuction :: PostTXResponse -> ReaderT (MVar ServerState, String) IO ()
+updateAuction (BidTX txid aucTXID coinTXID hasWon) = do
+  (state, clientName) <- ask
+  ServerState {..} <- liftIO $ readMVar state
+  let Client{..} = fromJust $ getClient clients $ T.pack clientName --ugh fix fromJust
+  let unwrappedWallet = getWallet wallet
+  let bidAmount = fromMaybe 0 $ M.lookup coinTXID unwrappedWallet
+  let bid = newBid clientName bidAmount
+  let updatedAuctions = updateAuctionWithBid aucTXID bid auctions
+  let newWallet = Wallet $ M.delete coinTXID $ unwrappedWallet  -- remove spent coin cache
+  liftIO $ updateServerState state ServerState {clients = updateClientWallet clients name newWallet, auctions = updatedAuctions}
+  liftIO $ broadcast state $ outgoingMsg $ newBid clientName bidAmount
   where
     getWallet (Wallet wallet) = wallet
-    clientWallet = getWallet wallet
-    bidAmount = fromMaybe 0 $ M.lookup coinTXID clientWallet
-    newBid =
-      Bid {bidder = T.unpack name, bidValue = bidAmount, bidTimestamp = getTimestamp}
-    outgoingMsg = BidSubmitted aucTXID newBid 
-updateAuction state client@Client{..} (AuctionCreatedTX (TXID txid)) = do
-  ServerState {..} <- readMVar state
-  let updatedAuctions = createAuction auctionId newAuction auctions
-  updateServerState state ServerState {auctions = updatedAuctions, ..}
-  broadcast state outgoingMsg
+    newBid clientName bidAmount =
+      Bid {bidder = clientName, bidValue = bidAmount, bidTimestamp = getTimestamp}
+    outgoingMsg = BidSubmitted aucTXID 
+updateAuction (AuctionCreatedTX (TXID txid)) = do
+  (state, clientName) <- ask
+  ServerState {..} <- liftIO $ readMVar state
+  let updatedAuctions = createAuction auctionId (newAuction clientName) auctions
+  liftIO $ updateServerState state ServerState {auctions = updatedAuctions, ..}
+  liftIO $ broadcast state $ outgoingMsg $ newAuction clientName
   where
     auctionId = AucTXID txid
-    newAuction =
+    newAuction clientName =
       Auction
-        {createdBy = T.unpack name, bids = [], createdTimestamp = getTimestamp}
-    outgoingMsg = AuctionCreated auctionId newAuction
+        {createdBy = clientName, bids = [], createdTimestamp = getTimestamp}
+    outgoingMsg = AuctionCreated auctionId
 
-handleCoinRequest ::MVar ServerState -> Client -> Int -> IO ()
-handleCoinRequest state client@Client{..} numCoins  = do
-  ServerState {..} <- readMVar state
+handleCoinRequest :: Int ->  ReaderT (MVar ServerState, String) IO ()
+handleCoinRequest numCoins  = do
+  (state, clientName) <- ask
+  ServerState {..} <- liftIO $ readMVar state
+  let Client{..} = fromJust $ getClient clients (T.pack clientName) --ugh fix fromJust
   pPrint (show wallet ++ "clients wallet before generating coins")
-  newWallet <- runExceptT $ generateCoins key numCoins wallet
-  either
-    (sendMsg conn . ErrMsg . PostTXErr)
-    (grantCoins state client numCoins)
-    newWallet
-  where
-    key = Key "bidder"
+  newWallet <- liftIO $ runExceptT $ generateCoins key numCoins wallet
+  either (liftIO . sendMsg conn . ErrMsg . PostTXErr) (grantCoins numCoins) newWallet
+  where key = Key "bidder"
 
-grantCoins :: MVar ServerState -> Client -> Int -> Wallet -> IO ()
-grantCoins state client@Client{..} numCoins newWallet = do
-  ServerState {..} <- readMVar state
-  updateServerState
-    state
-    ServerState {clients = updateClientWallet clients client newWallet, ..}
-  sendMsg conn $ CoinsGenerated numCoins
+grantCoins :: Int -> Wallet -> ReaderT (MVar ServerState, String) IO ()
+grantCoins numCoins newWallet = do
+  (state, clientName) <- ask
+  ServerState {..} <- liftIO $ readMVar state
+  let client@Client{..} = fromJust $ getClient clients (T.pack clientName) --ugh fix fromJust
+  liftIO $ updateServerState state ServerState {clients = updateClientWallet clients  name newWallet, ..}
+  liftIO $ sendMsg conn $ CoinsGenerated numCoins
 
   

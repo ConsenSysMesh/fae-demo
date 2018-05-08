@@ -12,26 +12,31 @@ import Data.Map.Lazy (Map)
 import qualified Data.Map.Lazy as Map
 import Data.Maybe
 import Data.Text (Text)
+import qualified Data.Text as T
 import qualified Network.WebSockets as WS
 import Prelude
 import Text.Pretty.Simple (pPrint)
 import Types
 import Utils
+import PostTX
+import Control.Monad.Reader
 
 -- call handler function for all decodable JSON Messages with client and Msg
 clientListener ::
      MVar ServerState 
-     -> Client
-  -> (MVar ServerState -> Client -> Msg -> IO a)
+     -> Text 
+     -> WS.Connection
+  -> (Msg -> ReaderT (MVar ServerState, String) IO ())
   -> IO b
-clientListener state client@Client{..} msgCallback =
+clientListener state clientName conn msgCallback =
   forever $ do
     msg <- WS.receiveData conn
+    s <- readMVar state
+    pPrint s
     print msg
-    sendMsg conn (RequestCoins 1)
     for_ (parseMsg msg) $ \parsedMsg -> do
       pPrint $ (show msg) ++ "parsedmsg"
-      msgCallback state client parsedMsg
+      runReaderT (msgCallback parsedMsg) (state, (T.unpack clientName)) -- fix this by using Text consistently for client names
 
 clientExists :: Client -> [Client] -> Bool
 clientExists client clients = client `elem` clients
@@ -53,11 +58,11 @@ getClientWallet clients clientName = do
   Client {..} <- getClient clients clientName
   return wallet
 
-updateClientWallet :: [Client] -> Client -> Wallet -> [Client]
-updateClientWallet clients client@Client {..} newWallet =
+updateClientWallet :: [Client] -> Text -> Wallet -> [Client]
+updateClientWallet clients clientName newWallet =
   map
     (\c@Client {..} ->
-       if c == client
+       if clientName == name
          then Client {wallet = newWallet, ..}
          else c)
     clients
