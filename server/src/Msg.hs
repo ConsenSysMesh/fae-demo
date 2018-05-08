@@ -49,8 +49,8 @@ handleAuctionMsg clientName state msg = do
   where
     key = Key "bidder1"
 
-updateAuction :: MVar ServerState -> String -> Msg -> PostTXResponse -> IO ()
-updateAuction state clientName (BidRequest aucTXID amount) _ = do
+updateAuction :: MVar ServerState -> String -> Msg -> IO ()
+updateAuction state clientName (BidRequest aucTXID amount) = do
   ServerState {..} <- readMVar state
   let updatedAuctions = updateAuctionWithBid aucTXID newBid auctions
   updateServerState state ServerState {auctions = updatedAuctions, ..}
@@ -59,7 +59,7 @@ updateAuction state clientName (BidRequest aucTXID amount) _ = do
     newBid =
       Bid {bidder = clientName, bidValue = amount, bidTimestamp = getTimestamp}
     outgoingMsg = BidSubmitted aucTXID newBid
-updateAuction state clientName CreateAuctionRequest (CreateAuction (TXID txid)) = do
+updateAuction state clientName CreateAuctionRequest = do
   ServerState {..} <- readMVar state
   let updatedAuctions = createAuction auctionId newAuction auctions
   updateServerState state ServerState {auctions = updatedAuctions, ..}
@@ -92,3 +92,5 @@ grantCoins state clientName numCoins newWallet = do
     state
     ServerState {clients = updateClientWallet clients client newWallet, ..}
   sendMsg conn $ CoinsGenerated numCoins
+
+  
