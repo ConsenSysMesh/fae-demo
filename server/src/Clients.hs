@@ -21,19 +21,18 @@ import Shared
 
 -- call handler function for all decodable JSON Messages with client and Msg
 clientListener ::
-     MVar ServerState
-  -> WS.Connection
-  -> Text
-  -> (MVar ServerState -> Text -> Msg -> IO a)
+     MVar ServerState 
+     -> Client
+  -> (MVar ServerState -> Client -> Msg -> IO a)
   -> IO b
-clientListener state conn clientName msgCallback =
+clientListener state client@Client{..} msgCallback =
   forever $ do
     msg <- WS.receiveData conn
     print msg
     sendMsg conn (RequestCoins 1)
     for_ (parseMsg msg) $ \parsedMsg -> do
       pPrint $ (show msg) ++ "parsedmsg"
-      msgCallback state clientName parsedMsg
+      msgCallback state client parsedMsg
 
 clientExists :: Client -> [Client] -> Bool
 clientExists client clients = client `elem` clients

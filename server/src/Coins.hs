@@ -21,13 +21,13 @@ generateCoins key numCoins w@(Wallet wallet)
     liftIO (pPrint "second")
     either
       throwError
-      (\(GotCoin (TXID txid)) -> depositCoins key w numCoins (CoinTXID txid))
+      (\(GetCoinTX (TXID txid)) -> depositCoins key w numCoins (CoinTXID txid))
       postTXResult
   | otherwise = do
     postTXResult <- lift $ getCoins key baseCoinTXID numCoins -- todo instead - call getmorecoins on previous cache and then updatewallet int is sum of old and new coins
     either
       throwError
-      (\(GotMoreCoins (TXID txid)) -> do
+      (\(GetMoreCoinsTX (TXID txid)) -> do
          let baseCoinCacheValue = fromJust $ Map.lookup baseCoinTXID wallet
          let newCoinCacheValue = (numCoins + baseCoinCacheValue)
          return $
@@ -46,7 +46,7 @@ depositCoins key wallet numCoins coinTXID = do
   postTXResponse <- liftIO (getCoins key coinTXID numCoins)
   either
     throwError
-    (\(GotMoreCoins (TXID txid)) ->
+    (\(GetMoreCoinsTX (TXID txid)) ->
        return $ deposit wallet numCoins (CoinTXID txid))
     postTXResponse
 
@@ -55,7 +55,7 @@ depositCoin key wallet = do
   postTXResponse <- liftIO (getCoin key)
   either
     throwError
-    (\(GotCoin (TXID txid)) -> return $ deposit wallet numCoins (CoinTXID txid))
+    (\(GetCoinTX (TXID txid)) -> return $ deposit wallet numCoins (CoinTXID txid))
     postTXResponse
   where
     numCoins = 1
@@ -65,9 +65,9 @@ getCoin key = executeContract (GetCoinConfig key)
 
 getCoins :: Key -> CoinTXID -> Int -> IO (Either PostTXError PostTXResponse)
 getCoins key coinTXID@(CoinTXID txid) numCoins
-  | numCoins == 0 = return (Right (GotMoreCoins (TXID txid)))
+  | numCoins == 0 = return (Right (GetMoreCoinsTX (TXID txid)))
   | otherwise = do
-    (Right (GotMoreCoins (TXID txid))) <- liftIO getMoreCoins
+    (Right (GetMoreCoinsTX (TXID txid))) <- liftIO getMoreCoins
     getCoins key (CoinTXID txid) (numCoins - 1)
   where
     getMoreCoins = executeContract (GetMoreCoinsConfig key coinTXID)
