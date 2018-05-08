@@ -1,5 +1,0 @@
-body = Create
-keys
-  self = seller
-others
-  - Auction

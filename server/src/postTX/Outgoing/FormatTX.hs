@@ -4,14 +4,14 @@
 {-------------------------------------------------------------------------------------
   Retrieve the args required to post a transaction to Fae according to the postTX API
 --------------------------------------------------------------------------------------}
-module Outgoing.FormatTX where
+module PostTX.Outgoing.FormatTX where
 
 import Data.List
 import Data.Monoid
 import Prelude
 
-import Outgoing.Types
-import Types
+import PostTX.Outgoing.Types
+import PostTX.Types
 
 getPostTXargs :: AuctionTXin -> [String]
 getPostTXargs (FakeBidTXin (Key key) (AucTXID aucTXID) (CoinTXID coinTXID)) =

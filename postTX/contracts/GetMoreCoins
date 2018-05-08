@@ -1,6 +1,0 @@
-body = GetMoreCoins
-reward = True
-keys
-  self = $self
-inputs
-  TransactionOutput $coinTX 0 = ()

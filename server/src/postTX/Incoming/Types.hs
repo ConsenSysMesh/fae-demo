@@ -1,8 +1,8 @@
 {-# LANGUAGE DuplicateRecordFields #-}
 
-module Incoming.Types where
+module PostTX.Incoming.Types where
 
-import Types
+import PostTX.Types
 
 type IsWinningBid = Bool
 

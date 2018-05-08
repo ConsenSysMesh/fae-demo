@@ -1,14 +1,14 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module Incoming.ParseTX where
+module PostTX.Incoming.ParseTX where
 
 import Control.Monad
 import Control.Monad.Reader
 import Data.Maybe
-import Incoming.Types
+import PostTX.Incoming.Types
 import Prelude
 import Text.Regex.PCRE
-import Types
+import PostTX.Types
 
 exceptionRegex :: String
 exceptionRegex = "<exception>" :: String

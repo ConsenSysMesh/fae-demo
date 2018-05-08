@@ -8,7 +8,6 @@ import Data.Either
 import qualified Data.Map.Lazy as Map
 import Data.Maybe
 import PostTX
-import Shared
 import Prelude
 import Text.Pretty.Simple (pPrint)
 import Types

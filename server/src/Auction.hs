@@ -11,7 +11,6 @@ import Data.Map.Lazy (Map)
 import qualified Data.Map.Lazy as Map
 import Data.Monoid
 import PostTX
-import Shared
 import Prelude
 import Types
 

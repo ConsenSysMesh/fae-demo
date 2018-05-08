@@ -1,6 +1,6 @@
-module Outgoing.Types where
+module PostTX.Outgoing.Types where
 
-import Types
+import PostTX.Types
 
 data AuctionTXin
   = FakeBidTXin Key

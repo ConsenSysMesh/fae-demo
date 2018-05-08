@@ -20,7 +20,6 @@ import Text.Pretty.Simple (pPrint)
 import Data.Map.Lazy (Map)
 import  qualified Data.Map.Lazy as M
 import Types
-import Shared
 import Utils
 import qualified Network.WebSockets as WS
 

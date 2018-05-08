@@ -1,20 +1,20 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
 
-module Outgoing.PostTX where
+module PostTX.Outgoing.PostTX where
 
 import Control.Monad
 import Control.Monad.Except
 import Control.Monad.Reader
-import Incoming.ParseTX
-import Incoming.Types
-import Outgoing.FormatTX
-import Outgoing.Types
+import PostTX.Incoming.ParseTX
+import PostTX.Incoming.Types
+import PostTX.Outgoing.FormatTX
+import PostTX.Outgoing.Types
 import Prelude
 import System.Exit
 import System.IO
 import System.Process
-import Types
+import PostTX.Types
 
 postTX ::
      AuctionTXin

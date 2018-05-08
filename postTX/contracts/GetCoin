@@ -1,4 +1,0 @@
-body = GetCoin
-reward = True
-keys
-  self = $self

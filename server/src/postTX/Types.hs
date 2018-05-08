@@ -1,7 +1,7 @@
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE DeriveAnyClass #-}
 
-module Types where
+module PostTX.Types where
 
 import Data.Aeson.Types
 import GHC.Generics

@@ -1,13 +1,13 @@
 module PostTX
   ( executeContract
-  , module Types
+  , module PostTX.Types
   ) where
 
 import Control.Monad.Except
 import Control.Monad.Reader
-import Outgoing.PostTX
+import PostTX.Outgoing.PostTX
 import Prelude
-import Types
+import PostTX.Types
 
 executeContract :: TXConfig -> IO (Either PostTXError PostTXResponse)
 executeContract conf@BidConfig {} = execute bid conf
