@@ -49,6 +49,7 @@ data PostTXResponse
             CoinVersion
   | BidTX TXID
         AucTXID
+        CoinTXID
         Bool
   | GetCoinTX TXID
   | GetMoreCoinsTX TXID

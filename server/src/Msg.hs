@@ -69,14 +69,19 @@ handleCreateAuctionRequest state client@Client{..} = do
     key = Key "bidder1"
 
 updateAuction :: MVar ServerState -> Client -> PostTXResponse -> IO ()
-updateAuction state client@Client{..} (BidTX txid aucTXID hasWon) = do
+updateAuction state client@Client{..} (BidTX txid aucTXID coinTXID hasWon) = do
   ServerState {..} <- readMVar state
   let updatedAuctions = updateAuctionWithBid aucTXID newBid auctions
   updateServerState state ServerState {auctions = updatedAuctions, ..}
   broadcast state outgoingMsg
+  let newWallet = Wallet $ M.delete coinTXID clientWallet -- remove spent coin cache
+  updateServerState state ServerState {clients = updateClientWallet clients client newWallet, ..}
   where
+    getWallet (Wallet wallet) = wallet
+    clientWallet = getWallet wallet
+    bidAmount = fromMaybe 0 $ M.lookup coinTXID clientWallet
     newBid =
-      Bid {bidder = T.unpack name, bidValue = 9, bidTimestamp = getTimestamp}
+      Bid {bidder = T.unpack name, bidValue = bidAmount, bidTimestamp = getTimestamp}
     outgoingMsg = BidSubmitted aucTXID newBid 
 updateAuction state client@Client{..} (AuctionCreatedTX (TXID txid)) = do
   ServerState {..} <- readMVar state
