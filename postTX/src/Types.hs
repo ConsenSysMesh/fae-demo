@@ -41,18 +41,18 @@ data PostTXError
   deriving (Show, Eq, Generic, ToJSON, FromJSON)
 
 data PostTXResponse
-  = CreateAuction TXID
-  | FakeBid Key
+  = AuctionCreated TXID
+  | FakeBidSubmitted Key
             AucTXID
             CoinTXID
             CoinSCID
             CoinVersion
-  | Bid TXID
+  | BidSubmitted TXID
         AucTXID
         Bool
-  | GetCoin TXID
-  | GetMoreCoins TXID
-  | Withdraw TXID
+  | GotCoin TXID
+  | GotMoreCoins TXID
+  | Withdrew TXID
   deriving (Show, Eq)
 
 data TXConfig

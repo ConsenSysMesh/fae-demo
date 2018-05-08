@@ -30,7 +30,7 @@ postTX tx = do
 
 bid :: ExceptT PostTXError (ReaderT TXConfig IO) PostTXResponse
 bid = do
-  (FakeBid _ _ coinTXID coinSCID coinVersion) <- placeFakeBid
+  (FakeBidSubmitted _ _ coinTXID coinSCID coinVersion) <- placeFakeBid
   placeBid coinTXID coinSCID coinVersion
 
 placeFakeBid :: ExceptT PostTXError (ReaderT TXConfig IO) PostTXResponse
@@ -42,7 +42,7 @@ placeFakeBid = do
       maybe
         (throwError $ TXBodyFailed stdOut)
         (\FakeBidTXout {..} ->
-           return $ FakeBid key aucTXID coinTXID coinSCID coinVersion)
+           return $ FakeBidSubmitted key aucTXID coinTXID coinSCID coinVersion)
         (runReaderT (fakeBidParser stdOut) config)
     ExitFailure _ -> throwError (TXFailed stdErr)
 
@@ -59,7 +59,7 @@ placeBid coinTXID coinSCID coinVersion = do
     ExitSuccess ->
       maybe
         (throwError $ TXBodyFailed stdOut)
-        (\BidTXout {..} -> return $ Bid txid aucTXID isWinningBid)
+        (\BidTXout {..} -> return $ BidSubmitted txid aucTXID isWinningBid)
         (runReaderT (bidParser stdOut) config)
     ExitFailure _ -> throwError $ TXFailed stdErr
 
@@ -71,7 +71,7 @@ createAuction = do
     ExitSuccess ->
       maybe
         (throwError $ TXBodyFailed stdOut)
-        (\(CreateAuctionTXout txid) -> return $ CreateAuction txid)
+        (\(CreateAuctionTXout txid) -> return $ AuctionCreated txid)
         (createAuctionParser stdOut)
     ExitFailure _ -> throwError $ TXFailed stdErr
 
@@ -83,7 +83,7 @@ getCoin = do
     ExitSuccess ->
       maybe
         (throwError $ TXBodyFailed stdOut)
-        (\(GetCoinTXout txid) -> return $ GetCoin txid)
+        (\(GetCoinTXout txid) -> return $ GotCoin txid)
         (getCoinParser stdOut)
     ExitFailure _ -> throwError $ TXFailed stdErr
 
@@ -96,7 +96,7 @@ getMoreCoins = do
     ExitSuccess ->
       maybe
         (throwError $ TXBodyFailed stdOut)
-        (\(GetMoreCoinsTXout txid) -> return $ GetMoreCoins txid)
+        (\(GetMoreCoinsTXout txid) -> return $ GotMoreCoins txid)
         (getMoreCoinsParser stdOut)
     ExitFailure _ -> throwError $ TXFailed stdErr
 
@@ -108,6 +108,6 @@ withdraw = do
     ExitSuccess ->
       maybe
         (throwError $ TXBodyFailed stdOut)
-        (\(WithdrawTXout txid) -> return $ Withdraw txid)
+        (\(WithdrawTXout txid) -> return $ Withdrew txid)
         (withdrawParser stdOut)
     ExitFailure _ -> throwError $ TXFailed stdErr

@@ -1,11 +1,6 @@
 module PostTX
   ( executeContract
-  , TXConfig(..)
-  , Key
-  , CoinTXID
-  , AucTXID
-  , PostTXResponse
-  , PostTXError
+  , module Types
   ) where
 
 import Control.Monad.Except
