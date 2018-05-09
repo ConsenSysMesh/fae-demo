@@ -10,8 +10,9 @@ import Data.List
 import Data.Monoid
 import Prelude
 
-import PostTX.Outgoing.Types
 import PostTX.Types
+import SharedTypes 
+import PostTX.Outgoing.Types
 
 getPostTXargs :: AuctionTXin -> [String]
 getPostTXargs (FakeBidTXin (Key key) (AucTXID aucTXID) (CoinTXID coinTXID)) =

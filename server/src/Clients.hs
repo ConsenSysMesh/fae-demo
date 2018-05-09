@@ -20,6 +20,7 @@ import Types
 import Utils
 import PostTX
 import Control.Monad.Reader
+import SharedTypes (Msg)
 
 -- call handler function for all decodable JSON Messages with client and Msg
 clientListener ::

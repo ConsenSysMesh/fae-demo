@@ -3,6 +3,7 @@
 module PostTX.Incoming.Types where
 
 import PostTX.Types
+import SharedTypes
 
 type IsWinningBid = Bool
 

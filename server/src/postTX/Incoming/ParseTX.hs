@@ -10,6 +10,8 @@ import Prelude
 import Text.Regex.PCRE
 import PostTX.Types
 
+import SharedTypes
+
 exceptionRegex :: String
 exceptionRegex = "<exception>" :: String
 

@@ -11,6 +11,7 @@ import PostTX
 import Prelude
 import Text.Pretty.Simple (pPrint)
 import Types
+import SharedTypes
 
 generateCoins :: Key -> Int -> Wallet -> ExceptT PostTXError IO Wallet
 generateCoins key numCoins w@(Wallet wallet)

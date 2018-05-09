@@ -3,23 +3,7 @@
 
 module PostTX.Types where
 
-import Data.Aeson.Types
-import GHC.Generics
-
-newtype TXID =
-  TXID String
-  deriving (Show, Eq, Generic, ToJSON, FromJSON, Ord)
- -- private key for signing txs
-
-newtype Key =
-  Key String
-  deriving (Show, Eq, Generic, ToJSON, FromJSON)
-  -- id of the tx which created auction
-
-newtype AucTXID =
-  AucTXID String
-  deriving (Show, Eq, Generic, ToJSON, FromJSON, Ord) -- Int represents the number of the argument that failed
-  -- hash of the coin
+import SharedTypes (Key, AucTXID, CoinTXID, TXID, PostTXError)
 
 newtype CoinSCID =
   CoinSCID String
@@ -28,17 +12,6 @@ newtype CoinSCID =
 newtype CoinVersion =
   CoinVersion String
   deriving (Show, Eq)
-
--- id of tx which created coin
-newtype CoinTXID =
-  CoinTXID String
-  deriving (Show, Eq, Generic, ToJSON, FromJSON, Ord)
-
-data PostTXError
-  = TXFailed String
-  | TXBodyFailed String
-  | TXInputFailed Int
-  deriving (Show, Eq, Generic, ToJSON, FromJSON)
 
 data PostTXResponse
   = AuctionCreatedTX TXID

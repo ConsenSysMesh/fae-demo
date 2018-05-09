@@ -32,6 +32,7 @@ dependencies:
 - pretty-simple
 - errors
 - mtl
+- shared 
 
 library:
   source-dirs: src

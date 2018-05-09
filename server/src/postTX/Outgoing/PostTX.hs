@@ -16,6 +16,8 @@ import System.IO
 import System.Process
 import PostTX.Types
 
+import SharedTypes
+
 postTX ::
      AuctionTXin
   -> ExceptT PostTXError (ReaderT TXConfig IO) (ExitCode, String, String)

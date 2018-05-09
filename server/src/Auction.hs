@@ -13,6 +13,7 @@ import Data.Monoid
 import PostTX
 import Prelude
 import Types
+import SharedTypes 
 
 updateAuctionState :: ServerState -> Map AucTXID Auction -> ServerState
 updateAuctionState ServerState {..} auctionState =

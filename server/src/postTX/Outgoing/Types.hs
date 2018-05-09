@@ -1,6 +1,7 @@
 module PostTX.Outgoing.Types where
 
-import PostTX.Types
+import PostTX.Types (CoinSCID, CoinVersion)
+import SharedTypes (Key, AucTXID, CoinTXID)
 
 data AuctionTXin
   = FakeBidTXin Key

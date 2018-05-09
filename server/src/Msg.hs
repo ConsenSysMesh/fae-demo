@@ -24,6 +24,7 @@ import Utils
 import qualified Network.WebSockets as WS
 import Control.Monad.Reader
 import PostTX
+import SharedTypes
 
 msgHandler :: Msg -> ReaderT (MVar ServerState, String) IO ()
 msgHandler (RequestCoins numCoins) =  handleCoinRequest numCoins
