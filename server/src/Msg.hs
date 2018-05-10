@@ -88,7 +88,7 @@ updateAuction (BidTX txid aucTXID coinTXID hasWon) = do
   where
     getWallet (Wallet wallet) = wallet
     newBid clientName bidAmount =
-      Bid {bidder = clientName, bidValue = bidAmount, bidTimestamp = getTimestamp}
+      Bid {bidder = clientName, bidValue = bidAmount, bidTimestamp = getTimestamp, isWinningBid = hasWon}
     outgoingMsg = BidSubmitted aucTXID 
 updateAuction (AuctionCreatedTX (TXID txid)) = do
   (state, clientName) <- ask

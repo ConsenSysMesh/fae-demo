@@ -38,6 +38,7 @@ data Bid = Bid
   { bidValue :: Int
   , bidder :: String
   , bidTimestamp :: UTCTime
+  , isWinningBid :: Bool
   } deriving (Eq, Show, Generic, FromJSON, ToJSON)
 
 data Msg
