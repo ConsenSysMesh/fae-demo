@@ -143,11 +143,10 @@ auctionView aucTXID auction@Auction {..} bidFieldValue username accountBalance =
           [h3_ [] [text $ "Auction " <> (S.pack $ show aucTXID)]]
       ] ++
       [ footer_ [] [placeBidView aucTXID auction bidFieldValue username canBid]
-      | not auctionEnded
+      | not $ auctionEnded auction
       ]
     ]
   where
-    auctionEnded = False -- TODO REMOVE HARDCODING
     bidValue = currentBidValue auction
     canBid = accountBalance > bidValue
 
