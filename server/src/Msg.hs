@@ -111,7 +111,7 @@ handleCoinRequest numCoins  = do
   pPrint (show wallet ++ "clients wallet before generating coins")
   newWallet <- liftIO $ runExceptT $ generateCoins key numCoins wallet
   either (liftIO . sendMsg conn . ErrMsg . PostTXErr) (grantCoins numCoins) newWallet
-  where key = Key "bidder"
+  where key = Key "bidder1"
 
 grantCoins :: Int -> Wallet -> ReaderT (MVar ServerState, String) IO ()
 grantCoins numCoins newWallet = do

@@ -33,8 +33,7 @@ postCreateAuctionTX key = executeContract (CreateAuctionConfig key)
 
 postBidTX ::
      Key -> AucTXID -> CoinTXID -> IO (Either PostTXError PostTXResponse)
-postBidTX key aucTXID coinTXID =
-  executeContract (BidConfig key aucTXID coinTXID)
+postBidTX key aucTXID coinTXID = executeContract (BidConfig key aucTXID coinTXID)
 
 auctionStatus :: Auction -> String
 auctionStatus auc@Auction {..}
