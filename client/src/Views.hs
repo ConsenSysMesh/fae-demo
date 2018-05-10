@@ -33,6 +33,7 @@ import Miso.String (MisoString)
 import qualified Miso.String as S
 import Text.Read
 import Types
+import SharedTypes
 
 appView :: Model -> View Action
 appView m@Model {..} =
@@ -126,7 +127,7 @@ createAuctionView :: Model -> View Action
 createAuctionView Model {..} =
   button_
     [ style_ $ M.singleton "font-size" "1.25em"
-    , onClick (AppAction (SendAuctionAction (CreateAuctionRequest)))
+    , onClick (AppAction (SendServerAction (CreateAuctionRequest)))
     ]
     [text "Create New Auction"]
 
@@ -167,7 +168,7 @@ placeBidView aucTXID auction@Auction {..} bidFieldValue username =
     ]
   where
     title = S.pack $ "Current Bid" ++ show aucTXID
-    bidAction = AppAction (SendAuctionAction (BidRequest aucTXID bidFieldValue))
+    bidAction = AppAction (SendServerAction (BidRequest aucTXID bidFieldValue))
 
 loginForm :: Model -> View Action
 loginForm Model {..} =

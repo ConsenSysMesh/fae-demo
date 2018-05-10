@@ -25,14 +25,14 @@ newtype Key =
 
 newtype AucTXID =
   AucTXID String
-  deriving (Show, Eq, Generic, ToJSON, FromJSON, Ord) -- Int represents the number of the argument that failed
+  deriving (Show, Read, Eq, Generic, ToJSON, FromJSON, Ord) -- Int represents the number of the argument that failed
   -- hash of the coin
 
 data Auction = Auction
   { bids :: [Bid]
   , createdBy :: String
   , createdTimestamp :: UTCTime
-  } deriving (Show, Generic, FromJSON, ToJSON)
+  } deriving (Eq, Show, Generic, FromJSON, ToJSON)
 
 data Bid = Bid
   { bidValue :: Int

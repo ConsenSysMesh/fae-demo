@@ -21,6 +21,7 @@ import qualified Data.Text.Lazy as X
 import qualified Data.Text.Lazy.Encoding as D
 import Prelude
 import Types
+import SharedTypes
 
 validBid :: Bid -> Auction -> Bool
 validBid Bid {..} a@Auction {..} = bidValue > (currentBidValue a)

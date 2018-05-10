@@ -33,17 +33,18 @@ import Miso
 import Miso.String (MisoString)
 import qualified Miso.String as S
 import Text.Read
+import SharedTypes
 
 import Types
 import Views
 
-parseAuctionAction :: MisoString -> Action
-parseAuctionAction m =
-  case parsedAuctionAction of
-    Just msg -> AuctionAction msg
+parseServerAction :: MisoString -> Action
+parseServerAction m =
+  case parsedServerAction of
+    Just msg -> ServerAction msg
     Nothing -> AppAction Noop
   where
-    parsedAuctionAction = decode (C.pack $ GJS.unpack m) :: Maybe Msg
+    parsedServerAction = decode (C.pack $ GJS.unpack m) :: Maybe Msg
 
 getInitialModel :: Model
 getInitialModel =
@@ -70,46 +71,54 @@ runApp = startApp App {initialAction = AppAction Noop, ..}
     mountPoint = Nothing
 
 updateModel :: Action -> Model -> Effect Action Model
-updateModel (AppAction (SendAuctionAction (CreateAuctionRequest))) model =
+updateModel (AppAction action) m = handleAppAction action m
+updateModel (ServerAction action) m = handleServerAction action m
+
+handleAppAction :: AppAction -> Model -> Effect Action Model
+handleAppAction (SendServerAction (CreateAuctionRequest)) model =
   model <# do
     send CreateAuctionRequest
     pure (AppAction Noop)
-updateModel (AppAction (SendAuctionAction (BidRequest aucTXID amount))) model =
+handleAppAction (SendServerAction (BidRequest aucTXID amount)) model =
   model <# do
     time <- getCurrentTime
     send (BidRequest aucTXID amount)
     pure (AppAction Noop)
-updateModel (AppAction (SelectAuction aucTXID)) Model {..} =
+handleAppAction (SelectAuction aucTXID) Model {..} =
   noEff Model {selectedAuctionTXID = Just aucTXID, ..}
-updateModel (AppAction (UpdateBidField maybeInt)) Model {..} =
+handleAppAction (UpdateBidField maybeInt) Model {..} =
   Model {bidFieldValue = fromMaybe bidFieldValue maybeInt, ..} <# do
     print maybeInt
     pure (AppAction Noop)
-updateModel (AppAction (SendMessage msg)) model =
+handleAppAction (SendMessage msg) model =
   model <# do print msg >> send msg >> pure (AppAction Noop)
-updateModel (AppAction (HandleWebSocket (WebSocketMessage msg@(Message m)))) model =
+handleAppAction (HandleWebSocket (WebSocketMessage msg@(Message m))) model =
   model {received = m} <# do
     print msg
     Prelude.putStrLn $ GJS.unpack m
-    --print parsedAuctionAction
-    --send parsedAuctionAction
+    --print parsedServerAction
+    --send parsedServerAction
     print model
-    pure parsedAuctionAction
+    pure parsedServerAction
   where
-    parsedAuctionAction = parseAuctionAction m
-updateModel (AppAction (UpdateMessage m)) model = noEff model {msg = Message m}
-updateModel (AuctionAction a@(AuctionCreated aucTXID auction)) Model {..} =
+    parsedServerAction = parseServerAction m
+handleAppAction (UpdateMessage m) model = noEff model {msg = Message m}
+handleAppAction Login Model {..} =
+  Model {loggedIn = True, ..} <#
+  pure (AppAction (SendMessage (Message username)))
+handleAppAction (UpdateUserNameField newUsername) Model {..} =
+  noEff Model {username = newUsername, ..}
+handleAppAction Noop model = noEff model
+handleAppAction _ model = noEff model
+
+
+handleServerAction :: Msg -> Model -> Effect Action Model
+handleServerAction a@(AuctionCreated aucTXID auction) Model {..} =
   noEff Model {auctions = updatedAuctions, ..}
   where
     updatedAuctions = createAuction aucTXID auction auctions
-updateModel (AuctionAction a@(BidSubmitted aucTXID bid)) Model {..} =
+handleServerAction a@(BidSubmitted aucTXID bid) Model {..} =
   noEff Model {auctions = updatedAuctions, ..}
   where
     updatedAuctions = bidOnAuction aucTXID bid auctions
-updateModel (AppAction Login) Model {..} =
-  Model {loggedIn = True, ..} <#
-  pure (AppAction (SendMessage (Message username)))
-updateModel (AppAction (UpdateUserNameField newUsername)) Model {..} =
-  noEff Model {username = newUsername, ..}
-updateModel (AppAction Noop) model = noEff model
-updateModel _ model = noEff model
+handleServerAction _ model = noEff model

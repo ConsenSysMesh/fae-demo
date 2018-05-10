@@ -57,13 +57,13 @@ data Model = Model
 
 data Action
   = AppAction AppAction
-  | AuctionAction Msg -- incoming ws actions
+  | ServerAction Msg -- incoming ws actions
 
 -- Actions for updating local client state
 data AppAction
   = HandleWebSocket (WebSocket Message)
   | SendMessage Message
-  | SendAuctionAction Msg
+  | SendServerAction Msg
   | UpdateUserNameField MisoString
   | Login
   | UpdateMessage MisoString

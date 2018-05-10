@@ -30,15 +30,18 @@ dependencies:
   - time
   - shared
 
-library:
-  source-dirs: src
-
 executables:
   auction-client-exe:
     main:                Main.hs
-    source-dirs:         app
+    source-dirs:       
+    - app 
+    - src
+    other-modules:
+    - Auction
+    - Lib
+    - Types
+    - Views
     ghc-options:
     - -threaded
     - -rtsopts
     - -with-rtsopts=-N
-
