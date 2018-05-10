@@ -96,7 +96,6 @@ fakeBidParser txOut = do
 bidParser :: String -> ReaderT TXConfig Maybe BidTXout
 bidParser txOut = do
   (BidConfig key aucTXID coinTXID) <- ask
-  exception <- lift $ exceptionParser txOut
   coinSCID <- lift $ coinSCIDparser txOut
   coinVersion <- lift $ coinVersionParser txOut
   coinSCID <- lift $ coinSCIDparser txOut
