@@ -5,6 +5,9 @@ module Msg
   ( msgHandler
   ) where
 
+import Data.Time.Calendar
+import Data.Time.Format
+import Data.Time.Clock
 import Auction
 import Clients
 import Coins
@@ -77,30 +80,34 @@ updateAuction :: PostTXResponse -> ReaderT (MVar ServerState, String) IO ()
 updateAuction (BidTX txid aucTXID coinTXID hasWon) = do
   (state, clientName) <- ask
   ServerState {..} <- liftIO $ readMVar state
+  currentTime <- liftIO getCurrentTime
   let Client{..} = fromJust $ getClient clients $ T.pack clientName --ugh fix fromJust
   let unwrappedWallet = getWallet wallet
   let bidAmount = fromMaybe 0 $ M.lookup coinTXID unwrappedWallet
-  let bid = newBid clientName bidAmount
-  let updatedAuctions = updateAuctionWithBid aucTXID bid auctions
+  newBid <- liftIO $ getNewBid clientName bidAmount
+  let updatedAuctions = updateAuctionWithBid aucTXID newBid auctions
   let newWallet = Wallet $ M.delete coinTXID $ unwrappedWallet  -- remove spent coin cache
   liftIO $ updateServerState state ServerState {clients = updateClientWallet clients name newWallet, auctions = updatedAuctions}
-  liftIO $ broadcast state $ outgoingMsg $ newBid clientName bidAmount
+  liftIO $ broadcast state $ outgoingMsg newBid
   where
     getWallet (Wallet wallet) = wallet
-    newBid clientName bidAmount =
-      Bid {bidder = clientName, bidValue = bidAmount, bidTimestamp = getTimestamp, isWinningBid = hasWon}
+    getNewBid clientName bidAmount = do
+      currentTime <- getCurrentTime
+      return Bid {bidder = clientName, bidValue = bidAmount, bidTimestamp = currentTime, isWinningBid = hasWon}
     outgoingMsg = BidSubmitted aucTXID 
 updateAuction (AuctionCreatedTX (TXID txid)) = do
   (state, clientName) <- ask
   ServerState {..} <- liftIO $ readMVar state
-  let updatedAuctions = createAuction auctionId (newAuction clientName) auctions
+  newAuction <- liftIO $ getNewAuction clientName
+  let updatedAuctions = createAuction auctionId newAuction auctions
   liftIO $ updateServerState state ServerState {auctions = updatedAuctions, ..}
-  liftIO $ broadcast state $ outgoingMsg $ newAuction clientName
+  liftIO $ broadcast state $ outgoingMsg $ newAuction
   where
     auctionId = AucTXID txid
-    newAuction clientName =
-      Auction
-        {createdBy = clientName, bids = [], createdTimestamp = getTimestamp}
+    getNewAuction clientName = do
+      currentTime <- getCurrentTime
+      return Auction
+        {createdBy = clientName, bids = [], createdTimestamp = currentTime }
     outgoingMsg = AuctionCreated auctionId
 
 handleCoinRequest :: Int ->  ReaderT (MVar ServerState, String) IO ()
