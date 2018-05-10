@@ -58,7 +58,7 @@ selectedAuctionView Model {..} =
       case M.lookup aucTXID auctions of
         Nothing -> ""
         (Just auction) ->
-          auctionView aucTXID auction bidFieldValue (S.fromMisoString username)
+          auctionView aucTXID auction bidFieldValue (S.fromMisoString username) accountBalance
           -- TODO dont pass auction down instead use reader to pass down auction state and use selected auction id to get auction data
 
 onEnter :: Action -> Attribute Action
@@ -131,8 +131,8 @@ createAuctionView Model {..} =
     ]
     [text "Create New Auction"]
 
-auctionView :: AucTXID -> Auction -> Int -> String -> View Action
-auctionView aucTXID auction@Auction {..} bidFieldValue username =
+auctionView :: AucTXID -> Auction -> Int -> String -> Int -> View Action
+auctionView aucTXID auction@Auction {..} bidFieldValue username accountBalance =
   div_
     [class_ "auction-view"]
     [ article_ [class_ "card"] $
@@ -142,15 +142,17 @@ auctionView aucTXID auction@Auction {..} bidFieldValue username =
           ]
           [h3_ [] [text $ "Auction " <> (S.pack $ show aucTXID)]]
       ] ++
-      [ footer_ [] [placeBidView aucTXID auction bidFieldValue username]
+      [ footer_ [] [placeBidView aucTXID auction bidFieldValue username canBid]
       | not auctionEnded
       ]
     ]
   where
     auctionEnded = False -- TODO REMOVE HARDCODING
+    bidValue = currentBidValue auction
+    canBid = accountBalance > bidValue
 
-placeBidView :: AucTXID -> Auction -> Int -> String -> View Action
-placeBidView aucTXID auction@Auction {..} bidFieldValue username =
+placeBidView :: AucTXID -> Auction -> Int -> String -> Bool -> View Action
+placeBidView aucTXID auction@Auction {..} bidFieldValue username canBid =
   div_
     [class_ "place-bid-container"]
     [ input_
@@ -165,7 +167,7 @@ placeBidView aucTXID auction@Auction {..} bidFieldValue username =
           AppAction . UpdateBidField . readMaybe . S.unpack . S.toMisoString
         , onEnter bidAction
         ]
-    , button_ [class_ "bid-field-btn", onClick bidAction] [text "Place Bid"]
+    , button_ [class_ "bid-field-btn", onClick bidAction, disabled_ $ not canBid ] [text "Place Bid"]
     ]
   where
     title = S.pack $ "Current Bid" ++ show aucTXID

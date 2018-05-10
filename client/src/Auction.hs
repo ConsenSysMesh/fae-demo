@@ -44,11 +44,12 @@ createAuction aucTXID auction auctionsMap =
 
 auctionStatus :: Auction -> String
 auctionStatus auc@Auction {..}
-  | noBids == 0            = "No Bids"
-  | isWinningBid $ last bids = getBidder (last bids) <> " has Won"
-  | otherwise              = highBidder <> " is Winning"
+  | noBids == 0              = "No Bids"
+  | isWinningBid lastBid     = getBidder lastBid <> " has Won"
+  | otherwise                = highBidder <> " is Winning"
   where
     noBids = numBids auc
+    lastBid = head bids
     highBidder = highestBidder auc
     getBidder Bid{..} = bidder
     isWinningBid Bid{..} = isWinningBid
