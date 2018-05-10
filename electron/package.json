@@ -1,0 +1,26 @@
+{
+    "productName": "Fae Auction",
+    "name": "fae-auction",
+    "version": "1.0.0",
+    "description": "A Fae Auction Demo",
+    "main": "main.js",
+    "scripts": {
+        "start": "electron main.js"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/codetalkio/Haskell-Electron-app.git"
+    },
+    "keywords": [
+        "Fae"
+    ],
+    "author": "therewillbecode",
+    "license": "CC0-1.0",
+    "bugs": {
+        "url": "https://github.com/"
+    },
+    "homepage": "https://github.com",
+    "devDependencies": {
+        "electron-prebuilt": "^1.0.1"
+    }
+}
