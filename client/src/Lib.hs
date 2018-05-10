@@ -117,5 +117,6 @@ handleServerAction a@(BidSubmitted aucTXID bid) Model {..} =
   where
     updatedAuctions = bidOnAuction aucTXID bid auctions
 handleServerAction a@(CoinsGenerated numCoins) Model {..} =
-  noEff Model {accountBalance = accountBalance + numCoins, ..}
+  noEff Model {accountBalance = newBalance, bidFieldValue = newBalance, ..} -- bidAmount == account balance for simplicity
+  where newBalance = accountBalance + 1
 handleServerAction _ model = noEff model

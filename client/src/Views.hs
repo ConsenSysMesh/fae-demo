@@ -158,6 +158,7 @@ placeBidView aucTXID auction@Auction {..} bidFieldValue username =
         , type_ "text"
         , placeholder_ "Enter Bid"
         , autofocus_ True
+        , disabled_ True
         , value_ $ S.pack $ show bidFieldValue
         , name_ "bidValue"
         , onInput $
