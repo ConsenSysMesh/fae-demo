@@ -113,7 +113,7 @@ handleServerAction a@(AuctionCreated aucTXID auction) Model {..} =
   where
     updatedAuctions = createAuction aucTXID auction auctions
 handleServerAction a@(BidSubmitted aucTXID bid) Model {..} =
-  noEff Model {auctions = updatedAuctions, ..}
+  noEff Model {auctions = updatedAuctions, accountBalance = 0, bidFieldValue = 0, ..}
   where
     updatedAuctions = bidOnAuction aucTXID bid auctions
 handleServerAction a@(CoinsGenerated numCoins) Model {..} =

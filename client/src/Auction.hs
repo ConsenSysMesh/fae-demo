@@ -54,7 +54,6 @@ auctionStatus auc@Auction {..}
     getBidder Bid{..} = bidder
     isWinningBid Bid{..} = isWinningBid
 
-
 getBidValue :: Bid -> Int
 getBidValue Bid {..} = bidValue
 
