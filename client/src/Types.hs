@@ -53,6 +53,7 @@ data Model = Model
   , username :: MisoString
   , loggedIn :: Bool
   , selectedAuctionTXID :: Maybe AucTXID
+  , accountBalance :: Int
   } deriving (Show, Eq)
 
 data Action

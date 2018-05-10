@@ -39,12 +39,12 @@ appView :: Model -> View Action
 appView m@Model {..} =
   div_ [style_ $ M.fromList [("text-align", "center")]] $
   [h1_ [class_ "title"] [text "Fae Auction"]] ++
-  [img_ [src_ "background.jpg"]] ++
+  --[img_ [src_ "background.jpg"]] ++
   [div_ [class_ $ bool "visible" "hidden" loggedIn] [loginForm m]] ++
   [ div_
       [class_ $ "auctions-table-container " <> bool "hidden" "visible" loggedIn]
       auctionViews
-  ]
+  ] ++ [ coinView accountBalance ]
   where
     auctionViews =
       [createAuctionView m] ++
@@ -169,6 +169,18 @@ placeBidView aucTXID auction@Auction {..} bidFieldValue username =
   where
     title = S.pack $ "Current Bid" ++ show aucTXID
     bidAction = AppAction (SendServerAction (BidRequest aucTXID bidFieldValue))
+
+coinView :: Int ->  View Action
+coinView accountBalance =
+  div_
+    [class_ "get-coin-container"]
+    [ 
+      h3_ [] [text $ "Account Balance " <> (S.pack $ show accountBalance)],
+      button_ [class_ "get-coin-btn", onClick getCoin] [text "Get Coin"]
+    ]
+  where
+    numCoins = 1
+    getCoin = AppAction (SendServerAction  (RequestCoins numCoins))
 
 loginForm :: Model -> View Action
 loginForm Model {..} =

@@ -56,6 +56,7 @@ getInitialModel =
     , username = S.ms ""
     , loggedIn = False
     , selectedAuctionTXID = Nothing
+    , accountBalance = 0
     }
 
 runApp :: IO ()
@@ -75,14 +76,9 @@ updateModel (AppAction action) m = handleAppAction action m
 updateModel (ServerAction action) m = handleServerAction action m
 
 handleAppAction :: AppAction -> Model -> Effect Action Model
-handleAppAction (SendServerAction (CreateAuctionRequest)) model =
+handleAppAction (SendServerAction action) model =
   model <# do
-    send CreateAuctionRequest
-    pure (AppAction Noop)
-handleAppAction (SendServerAction (BidRequest aucTXID amount)) model =
-  model <# do
-    time <- getCurrentTime
-    send (BidRequest aucTXID amount)
+    send action
     pure (AppAction Noop)
 handleAppAction (SelectAuction aucTXID) Model {..} =
   noEff Model {selectedAuctionTXID = Just aucTXID, ..}
@@ -111,7 +107,6 @@ handleAppAction (UpdateUserNameField newUsername) Model {..} =
 handleAppAction Noop model = noEff model
 handleAppAction _ model = noEff model
 
-
 handleServerAction :: Msg -> Model -> Effect Action Model
 handleServerAction a@(AuctionCreated aucTXID auction) Model {..} =
   noEff Model {auctions = updatedAuctions, ..}
@@ -121,4 +116,6 @@ handleServerAction a@(BidSubmitted aucTXID bid) Model {..} =
   noEff Model {auctions = updatedAuctions, ..}
   where
     updatedAuctions = bidOnAuction aucTXID bid auctions
+handleServerAction a@(CoinsGenerated numCoins) Model {..} =
+  noEff Model {accountBalance = accountBalance + numCoins, ..}
 handleServerAction _ model = noEff model
