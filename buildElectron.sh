@@ -12,6 +12,11 @@ echo ">>> Building the server..."
 stack build --stack-yaml=server/stack.yaml \
   && cp server/.stack-work/dist/x86_64-osx/Cabal-2.0.1.0/build/auction-server-exe/auction-server-exe electron/resources/server
 
+echo ">>> Copying over FaeServer"
+docker create --name faeServer teamfae/faeserver
+docker cp faeServer:/etc/faeServer.sh electron/resources/faeserver
+docker rm faeServer
+
 echo ">>> Copying over Fae contracts..."
 cp -r server/contracts electron/contracts
 
