@@ -29,7 +29,10 @@ import Miso.String
 import qualified Miso.String as S
 import Miso.Subscription.WebSocket
 import SharedTypes
-
+import Data.Proxy
+import Servant.API
+import Servant.Utils.Links
+   
 instance ToMisoString AucTXID where
   toMisoString = toMisoString . show
   fromMisoString = read . show
@@ -46,7 +49,8 @@ instance FromJSON Message where
     withText "Not a valid string" $ \x -> pure (Message (S.toMisoString x))
 
 data Model = Model
-  { msg :: Message
+  {  uri :: URI
+  ,  msg :: Message
   , received :: MisoString
   , auctions :: M.Map AucTXID Auction
   , bidFieldValue :: Int
@@ -70,4 +74,20 @@ data AppAction
   | UpdateMessage MisoString
   | UpdateBidField (Maybe Int)
   | SelectAuction AucTXID
+  | HandleURI URI
+  | ChangeURI URI
   | Noop
+
+-- | Type-level routes
+type API   = Login :<|> Home
+type Home  = View AppAction
+type Login = "login" :> View AppAction
+
+-- | Type-safe links used in `onClick` event handlers to route the application
+goLogin, goHome :: AppAction
+(goHome, goLogin) = (goto api home, goto api login)
+  where
+    goto a b = ChangeURI (linkURI (safeLink a b))
+    home  = Proxy :: Proxy Home
+    login = Proxy :: Proxy Login
+    api   = Proxy :: Proxy API

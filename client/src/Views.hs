@@ -35,12 +35,14 @@ import Text.Read
 import Types
 import SharedTypes
 
-appView :: Model -> View Action
-appView m@Model {..} =
+import Data.Proxy
+import Servant.API
+
+homeView :: Model -> View Action
+homeView m@Model {..} =
   div_ [style_ $ M.fromList [("text-align", "center")]] $
   [h1_ [class_ "title"] [text "Fae Auction"]] ++
   --[img_ [src_ "background.jpg"]] ++
-  [div_ [class_ $ bool "visible" "hidden" loggedIn] [loginForm m]] ++
   [ div_
       [class_ $ "auctions-table-container " <> bool "hidden" "visible" loggedIn]
       auctionViews
@@ -49,6 +51,31 @@ appView m@Model {..} =
     auctionViews =
       [createAuctionView m] ++
       [viewAuctionsTable m | not $ M.null auctions] ++ [selectedAuctionView m]
+
+appView :: Model -> View Action
+appView m = view
+  where
+  view =
+    either (const the404) id
+      $ runRoute (Proxy :: Proxy API) handlers uri m
+  handlers = login :<|> home
+  home (_ :: Model) = div_ [] [
+      div_ [] [ text "home" ]
+    , button_ [ onClick (AppAction goLogin) ] [ text "go Login" ]
+    , homeView m 
+    ]
+  login (_ :: Model) = div_ [] [
+      div_ [] [ text "Login" ]
+    , button_ [ onClick (AppAction goHome) ] [ text "go home" ]
+    , loginView m
+    ]
+  the404 = div_ [] [
+      text "the 404 :("
+    , button_ [ onClick (AppAction goHome) ] [ text "go home" ]
+    ]
+
+loginView m@Model {..} = div_ [class_ $ bool "visible" "hidden" loggedIn] [loginForm m]
+
 
 selectedAuctionView :: Model -> View Action
 selectedAuctionView Model {..} =

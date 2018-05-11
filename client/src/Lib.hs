@@ -46,10 +46,11 @@ parseServerAction m =
   where
     parsedServerAction = decode (C.pack $ GJS.unpack m) :: Maybe Msg
 
-getInitialModel :: Model
-getInitialModel =
+getInitialModel currentURI =
   Model
-    { auctions = M.empty
+    { 
+      uri = currentURI
+    ,  auctions = M.empty
     , received = S.ms ""
     , msg = Message $ S.ms ""
     , bidFieldValue = 0
@@ -60,11 +61,12 @@ getInitialModel =
     }
 
 runApp :: IO ()
-runApp = startApp App {initialAction = AppAction Noop, ..}
+runApp = do 
+  currentURI <- getCurrentURI
+  startApp App {model=getInitialModel currentURI, initialAction = AppAction Noop, ..}
   where
-    model = getInitialModel
     events = defaultEvents
-    subs = [websocketSub uri protocols (AppAction . HandleWebSocket)]
+    subs = [websocketSub uri protocols (AppAction . HandleWebSocket), uriSub (AppAction . HandleURI) ]
     update = updateModel
     view = appView
     uri = URL "ws://localhost:9160"
@@ -76,6 +78,11 @@ updateModel (AppAction action) m = handleAppAction action m
 updateModel (ServerAction action) m = handleServerAction action m
 
 handleAppAction :: AppAction -> Model -> Effect Action Model
+handleAppAction (HandleURI u) m = m { uri = u } <# do
+  pure $ AppAction Noop
+handleAppAction (ChangeURI u) m = m <# do
+  pushURI u
+  pure $ AppAction Noop
 handleAppAction (SendServerAction action) model =
   model <# do
     send action

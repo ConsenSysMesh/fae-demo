@@ -29,6 +29,7 @@ dependencies:
   - text
   - time
   - shared
+  - servant
 
 executables:
   auction-client-exe:
