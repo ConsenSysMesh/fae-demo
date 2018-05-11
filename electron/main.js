@@ -46,10 +46,10 @@ function createBackendServer() {
 
 function createFaeserver() {
   faeServer = child_process.spawn('./resources/faeserver/faeServer.sh')
-  faeServer.stdout.on('data', function (data) {
+  faeServer.stdout.on('data', data => {
     console.log(data.toString());
   });
-  faeServer.stderr.on('data', function (data) {
+  faeServer.stderr.on('data', data => {
     console.log(data.toString());
   });
 
