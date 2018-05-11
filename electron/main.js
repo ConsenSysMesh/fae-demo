@@ -61,7 +61,7 @@ function createFaeserver() {
 // Some APIs can only be used after this event occurs.
 app.on('ready', createWindow)
 
-// Start the backend web server  and faeserver when Electron has finished initializing
+// Start the backend web server and faeserver when Electron has finished initializing
 app.on('ready', () => {
   createBackendServer()
   createFaeserver()

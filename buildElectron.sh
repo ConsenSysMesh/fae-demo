@@ -6,7 +6,11 @@ echo ">>> Building the frontend using GHCJS..."
 stack build --stack-yaml=client/stack.yaml 
 
 echo ">>> Copying over GHCJS build to electron" \
-cp client/.stack-work/install/x86_64-linux/lts-9.21/ghcjs-0.2.1.9009021_ghc-8.0.2/bin/auction-client-exe.jsexe/all.js electron/resources/client/
+cp client/.stack-work/dist/x86_64-osx/Cabal-1.24.2.0_ghcjs/build/auction-client-exe/auction-client-exe.jsexe/all.js electron/resources/client/
+cp client/.stack-work/dist/x86_64-osx/Cabal-1.24.2.0_ghcjs/build/auction-client-exe/auction-client-exe.jsexe/out.js electron/resources/client/
+cp client/.stack-work/dist/x86_64-osx/Cabal-1.24.2.0_ghcjs/build/auction-client-exe/auction-client-exe.jsexe/lib.js electron/resources/client/
+cp client/.stack-work/dist/x86_64-osx/Cabal-1.24.2.0_ghcjs/build/auction-client-exe/auction-client-exe.jsexe/rts.js electron/resources/client/
+cp client/.stack-work/dist/x86_64-osx/Cabal-1.24.2.0_ghcjs/build/auction-client-exe/auction-client-exe.jsexe/all.js.externs electron/resources/client/
 
 echo ">>> Building the server..."
 stack build --stack-yaml=server/stack.yaml \
