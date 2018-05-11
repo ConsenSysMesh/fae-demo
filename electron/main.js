@@ -11,6 +11,7 @@ const BrowserWindow = electron.BrowserWindow
 let mainWindow
 // Do the same for the backend web server
 let backendServer
+let faeserver
 
 function createWindow() {
   // Create the browser window.
@@ -39,6 +40,20 @@ function createBackendServer() {
   backendServer.stderr.on('data', function (data) {
     console.log(data.toString());
   });
+
+  return backendServer
+}
+
+function createFaeserver() {
+  faeServer = child_process.spawn('./resources/faeserver/faeServer.sh')
+  faeServer.stdout.on('data', function (data) {
+    console.log(data.toString());
+  });
+  faeServer.stderr.on('data', function (data) {
+    console.log(data.toString());
+  });
+
+  return faeServer
 }
 
 // This method will be called when Electron has finished
@@ -46,16 +61,20 @@ function createBackendServer() {
 // Some APIs can only be used after this event occurs.
 app.on('ready', createWindow)
 
-// Start the backend web server when Electron has finished initializing
-app.on('ready', createBackendServer)
+// Start the backend web server  and faeserver when Electron has finished initializing
+app.on('ready', () => {
+  createBackendServer()
+  createFaeserver()
+})
 
 // Close the server when the application is shut down
-app.on('will-quit', function () {
+app.on('will-quit', () => {
   backendServer.kill()
+  faeserver.kill()
 })
 
 // Quit when all windows are closed.
-app.on('window-all-closed', function () {
+app.on('window-all-closed', () => {
   // On OS X it is common for applications and their menu bar
   // to stay active until the user quits explicitly with Cmd + Q
   if (process.platform !== 'darwin') {
@@ -63,7 +82,7 @@ app.on('window-all-closed', function () {
   }
 })
 
-app.on('activate', function () {
+app.on('activate', () => {
   // On OS X it's common to re-create a window in the app when the
   // dock icon is clicked and there are no other windows open.
   if (mainWindow === null) {
