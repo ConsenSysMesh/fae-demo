@@ -34,7 +34,9 @@ import Miso.String (MisoString)
 import qualified Miso.String as S
 import Text.Read
 import SharedTypes
-
+import Data.Proxy
+import Servant.API
+import Servant.Utils.Links
 import Types
 import Views
 
@@ -61,10 +63,10 @@ getInitialModel currentURI =
     }
 
 runApp :: IO ()
-runApp = do 
-  currentURI <- getCurrentURI
-  startApp App {model=getInitialModel currentURI, initialAction = AppAction Noop, ..}
+runApp = do
+  startApp App {model=getInitialModel initialURI, initialAction = AppAction Noop, ..}
   where
+    initialURI = linkURI $ safeLink (Proxy :: Proxy API) (Proxy :: Proxy Login)
     events = defaultEvents
     subs = [websocketSub uri protocols (AppAction . HandleWebSocket), uriSub (AppAction . HandleURI) ]
     update = updateModel
