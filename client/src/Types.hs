@@ -71,6 +71,7 @@ data AppAction
   | SendServerAction Msg
   | UpdateUserNameField MisoString
   | Login
+  | Logout
   | UpdateMessage MisoString
   | UpdateBidField (Maybe Int)
   | SelectAuction AucTXID
