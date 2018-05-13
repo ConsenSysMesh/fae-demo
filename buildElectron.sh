@@ -13,6 +13,7 @@ cp "${CLIENT_BUILD_DIR}out.js" $ELECTRON_CLIENT_BUILD_DIR
 cp "${CLIENT_BUILD_DIR}lib.js" $ELECTRON_CLIENT_BUILD_DIR
 cp "${CLIENT_BUILD_DIR}rts.js" $ELECTRON_CLIENT_BUILD_DIR
 cp "${CLIENT_BUILD_DIR}all.js.externs" $ELECTRON_CLIENT_BUILD_DIR
+cp "${CLIENT_BUILD_DIR}runmain.js" $ELECTRON_CLIENT_BUILD_DIR
 
 echo ">>> Building the server..."
 stack build --stack-yaml=server/stack.yaml \
