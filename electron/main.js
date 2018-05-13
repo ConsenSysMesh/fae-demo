@@ -69,8 +69,12 @@ app.on('ready', () => {
 
 // Close the server when the application is shut down
 app.on('will-quit', () => {
-  backendServer.kill()
-  faeserver.kill()
+  if (backendServer) {
+    backendServer.kill()
+  }
+  if (faeserver) {
+    faeserver.kill()
+  }
 })
 
 // Quit when all windows are closed.
