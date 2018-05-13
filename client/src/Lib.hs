@@ -109,8 +109,7 @@ handleAppAction (HandleWebSocket (WebSocketMessage msg@(Message m))) model =
     parsedServerAction = parseServerAction m
 handleAppAction (UpdateMessage m) model = noEff model {msg = Message m}
 handleAppAction Login Model {..} =
-  Model {loggedIn = True, ..} <#
-  pure (AppAction (SendMessage (Message username)))
+  Model {loggedIn = True, ..} <# do send msg >> pure (AppAction (goHome))
 handleAppAction (UpdateUserNameField newUsername) Model {..} =
   noEff Model {username = newUsername, ..}
 handleAppAction Noop model = noEff model

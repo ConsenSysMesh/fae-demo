@@ -61,17 +61,16 @@ appView m = view
   handlers = login :<|> home
   home (_ :: Model) = div_ [] [
       div_ [] [ text "home" ]
-    , button_ [ onClick (AppAction goLogin) ] [ text "go Login" ]
+    , button_ [ onClick (AppAction Logout) ] [ text "Logout" ]
     , homeView m 
     ]
   login (_ :: Model) = div_ [] [
       div_ [] [ text "Login" ]
-    , button_ [ onClick (AppAction goHome) ] [ text "go home" ]
     , loginView m
     ]
   the404 = div_ [] [
       text "the 404 :("
-    , button_ [ onClick (AppAction goHome) ] [ text "go home" ]
+    , button_ [ onClick (AppAction goLogin) ] [ text "Home" ]
     ]
 
 loginView m@Model {..} = div_ [class_ $ bool "visible" "hidden" loggedIn] [loginForm m]
