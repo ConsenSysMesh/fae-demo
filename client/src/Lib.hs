@@ -64,7 +64,7 @@ getInitialModel currentURI =
 
 runApp :: IO ()
 runApp = do
-  startApp App {model=getInitialModel initialURI, initialAction = AppAction Noop, ..}
+  startApp App {model=getInitialModel initialURI, initialAction = AppAction goLogin, ..}
   where
     initialURI = linkURI $ safeLink (Proxy :: Proxy API) (Proxy :: Proxy Login)
     events = defaultEvents
