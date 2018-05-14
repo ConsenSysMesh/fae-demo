@@ -85,7 +85,7 @@ appView m = view
 
 loginView m@Model {..} = div_ [] [
     loginForm m,
-    h1_ [class_ "heading"] [ text "Auctions Powered By Fae"]
+    h1_ [class_ "heading"] [ text "Auctions Powered by Fae"]
   ]
 
 
