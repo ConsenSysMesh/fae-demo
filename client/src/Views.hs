@@ -103,12 +103,12 @@ iso8601 = formatTime defaultTimeLocale "%H:%M:%S"
 
 --use reader monad for selectedAuctionTXID
 getTableRow :: Maybe AucTXID -> (AucTXID, Auction) -> View Action
-getTableRow selectedAuctionTXID (aucTXID, auction@Auction {..}) =
+getTableRow selectedAuctionTXID (txid@(AucTXID aucTXID), auction@Auction {..}) =
   tr_
-    [ onClick $ AppAction (SelectAuction aucTXID)
+    [ onClick $ AppAction (SelectAuction txid)
     , class_ $ do bool "auction-row" "auction-row-selected" isSelected
     ]
-    [ td_ [] [text $ S.ms aucTXID]
+    [ td_ [] [text $ S.ms truncatedAucTXID]
     , td_ [] [text $ S.ms createdBy]
     , td_ [] [text $ S.ms $ iso8601 createdTimestamp]
     , td_ [] [text $ S.ms numBids]
@@ -116,8 +116,9 @@ getTableRow selectedAuctionTXID (aucTXID, auction@Auction {..}) =
     , td_ [] [text $ S.ms $ auctionStatus auction]
     ]
   where
-    isSelected = maybe False (aucTXID ==) selectedAuctionTXID
+    isSelected = maybe False (txid ==) selectedAuctionTXID
     numBids = Li.length bids
+    truncatedAucTXID = Li.take 5 aucTXID 
 
 getTableRows :: Maybe AucTXID -> Map AucTXID Auction -> [View Action]
 getTableRows selectedAucTXID auctions =
@@ -154,7 +155,7 @@ createAuctionView Model {..} =
     [text "Create New Auction"]
 
 auctionView :: AucTXID -> Auction -> Int -> String -> Int -> View Action
-auctionView aucTXID auction@Auction {..} bidFieldValue username accountBalance =
+auctionView aucTXID@(AucTXID txid) auction@Auction {..} bidFieldValue username accountBalance =
   div_
     [class_ "auction-view"]
     [ article_ [class_ "card"] $
@@ -162,7 +163,7 @@ auctionView aucTXID auction@Auction {..} bidFieldValue username accountBalance =
           [ class_ "header"
           , style_ $ M.fromList [(S.pack "text-align", S.pack "center")]
           ]
-          [h3_ [] [text $ "Auction " <> (S.pack $ show aucTXID)]]
+          [h3_ [] [text $ "Auction " <> (S.pack $ show truncatedAucTXID)]]
       ] ++
       [ footer_ [] [placeBidView aucTXID auction bidFieldValue username canBid]
       | not $ auctionEnded auction
@@ -171,6 +172,7 @@ auctionView aucTXID auction@Auction {..} bidFieldValue username accountBalance =
   where
     bidValue = currentBidValue auction
     canBid = accountBalance > bidValue
+    truncatedAucTXID = Li.take 5 txid
 
 placeBidView :: AucTXID -> Auction -> Int -> String -> Bool -> View Action
 placeBidView aucTXID auction@Auction {..} bidFieldValue username canBid =
