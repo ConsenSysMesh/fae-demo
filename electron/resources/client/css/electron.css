@@ -21,11 +21,69 @@
   margin-left: 20px;
 }
 
-.bid-field-btn, .login-form-btn {
+.bid-field-btn, .login-form-btn, .get-coin-btn {
   margin-left: 5px;
 }
 
 .login-form-input {
   width: 150px;
   text-align: center;
+}
+
+.account-balance {
+  position: fixed;
+  right: 75px;
+  top: 20px;
+}
+
+.main-btns {
+  position: fixed;
+  left: 10px;
+  top: 20px;
+  text-align: center;  
+}
+
+.auction-view {
+  text-align: center;
+  width: 300px;
+  left: 350px;
+  margin-top: 80px;
+  position: absolute;
+}
+
+.place-bid-header {
+  left: 30px;
+  border-bottom: 0px !important;
+}
+
+td {
+  text-align: center;
+}
+
+.auctions-container {
+  color: white;
+}
+
+.auction-view {
+   background-color: #001f3f;
+}
+
+.auction-row {
+  background-color: #0074D9;
+  transition-timing-function: ease;
+  transition-duration: 0.2s;
+}
+
+.auction-row:hover {
+  background-color: #001f3f;
+  transition-timing-function: ease;
+  transition-property: background-color;
+  transition-duration: 0.2s;
+}
+
+.auction-row-selected {
+  background-color: #001f3f;
+  transition-timing-function: ease;
+  transition-property: background-color;
+  transition-duration: 0.2s;
 }

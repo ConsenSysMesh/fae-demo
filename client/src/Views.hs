@@ -43,13 +43,28 @@ homeView m@Model {..} =
   div_ [style_ $ M.fromList [("text-align", "center")]] $
   [h1_ [class_ "title"] [text "Fae Auction"]] ++
   [ div_
-      [class_ "auctions-table-container "]
+      [class_ "auctions-container "]
       auctionViews
-  ] ++ [ coinView accountBalance ]
+  ] ++ [ viewAccBalance accountBalance ]
   where
     auctionViews =
-      [createAuctionView m] ++
+      [mainBtns m] ++
       [viewAuctionsTable m | not $ M.null auctions] ++ [selectedAuctionView m]
+
+mainBtns :: Model -> View Action
+mainBtns Model {..} =
+  div_ [ class_ "main-btns" ] $
+  [button_
+    [ 
+        onClick (AppAction (SendServerAction (CreateAuctionRequest)))
+    ]
+    [text "Create New Auction"]]
+    ++ [
+       button_ [class_ "get-coin-btn", onClick getCoin] [text "Get Coin"]
+       ]
+  where numCoins = 1 
+        getCoin = AppAction (SendServerAction (RequestCoins numCoins))
+
 
 appView :: Model -> View Action
 appView m = view
@@ -146,13 +161,7 @@ viewAuctionsTable Model {..} =
         ]
     ]
 
-createAuctionView :: Model -> View Action
-createAuctionView Model {..} =
-  button_
-    [ 
-       onClick (AppAction (SendServerAction (CreateAuctionRequest)))
-    ]
-    [text "Create New Auction"]
+
 
 auctionView :: AucTXID -> Auction -> Int -> String -> Int -> View Action
 auctionView aucTXID@(AucTXID txid) auction@Auction {..} bidFieldValue username accountBalance =
@@ -160,7 +169,7 @@ auctionView aucTXID@(AucTXID txid) auction@Auction {..} bidFieldValue username a
     [class_ "auction-view"]
     [ article_ [class_ "card"] $
       [ header_
-          [ class_ "header"
+          [ class_ "place-bid-header"
           , style_ $ M.fromList [(S.pack "text-align", S.pack "center")]
           ]
           [h3_ [] [text $ "Auction " <> (S.pack $ show truncatedAucTXID)]]
@@ -196,17 +205,13 @@ placeBidView aucTXID auction@Auction {..} bidFieldValue username canBid =
     title = S.pack $ "Current Bid" ++ show aucTXID
     bidAction = AppAction (SendServerAction (BidRequest aucTXID bidFieldValue))
 
-coinView :: Int ->  View Action
-coinView accountBalance =
+viewAccBalance :: Int ->  View Action
+viewAccBalance accountBalance =
   div_
-    [class_ "get-coin-container"]
+    [class_ "account-balance"]
     [ 
-      h3_ [] [text $ "Account Balance " <> (S.pack $ show accountBalance)],
-      button_ [class_ "get-coin-btn", onClick getCoin] [text "Get Coin"]
+      h3_ [] [text $ "Account Balance: " <> (S.pack $ show accountBalance)]
     ]
-  where
-    numCoins = 1
-    getCoin = AppAction (SendServerAction  (RequestCoins numCoins))
 
 loginForm :: Model -> View Action
 loginForm Model {..} =
