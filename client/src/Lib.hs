@@ -93,17 +93,11 @@ handleAppAction (SelectAuction aucTXID) Model {..} =
   noEff Model {selectedAuctionTXID = Just aucTXID, ..}
 handleAppAction (UpdateBidField maybeInt) Model {..} =
   Model {bidFieldValue = fromMaybe bidFieldValue maybeInt, ..} <# do
-    print maybeInt
     pure (AppAction Noop)
 handleAppAction (SendMessage msg) model =
-  model <# do print msg >> send msg >> pure (AppAction Noop)
+  model <# do send msg >> pure (AppAction Noop)
 handleAppAction (HandleWebSocket (WebSocketMessage msg@(Message m))) model =
   model {received = m} <# do
-    print msg
-    Prelude.putStrLn $ GJS.unpack m
-    --print parsedServerAction
-    --send parsedServerAction
-    print model
     pure parsedServerAction
   where
     parsedServerAction = parseServerAction m

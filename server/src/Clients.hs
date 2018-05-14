@@ -15,7 +15,6 @@ import Data.Text (Text)
 import qualified Data.Text as T
 import qualified Network.WebSockets as WS
 import Prelude
-import Text.Pretty.Simple (pPrint)
 import Types
 import Utils
 import PostTX
@@ -33,10 +32,7 @@ clientListener state clientName conn msgCallback =
   forever $ do
     msg <- WS.receiveData conn
     s <- readMVar state
-    pPrint s
-    print msg
     for_ (parseMsg msg) $ \parsedMsg -> do
-      pPrint $ (show msg) ++ "parsedmsg"
       runReaderT (msgCallback parsedMsg) (state, (T.unpack clientName)) -- fix this by using Text consistently for client names
 
 clientExists :: Client -> [Client] -> Bool
@@ -79,12 +75,7 @@ sendMsg conn msg = WS.sendTextData conn (encodeMsg msg)
 
 broadcast :: MVar ServerState -> Msg -> IO ()
 broadcast serverState msg =
-  readMVar serverState >>=
-  (\ServerState {..} -> do
-     print
-       ("outgoing to: [  " ++
-        (show clients) ++ " ] ---------------> " ++ (show msg))
-     sendMsgs (getClientWsConns clients) msg)
+  readMVar serverState >>= (\ServerState {..} -> sendMsgs (getClientWsConns clients) msg)
      -- the output of PostTX should decide this
 --broadcastValidAuctionActions ::
 --     MVar ServerState -> Map String Auction -> Msg -> IO ()

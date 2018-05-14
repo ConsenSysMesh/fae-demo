@@ -9,7 +9,6 @@ import qualified Data.Map.Lazy as Map
 import Data.Maybe
 import PostTX
 import Prelude
-import Text.Pretty.Simple (pPrint)
 import Types
 import SharedTypes
 
@@ -18,7 +17,6 @@ generateCoins key numCoins w@(Wallet wallet)
   | Map.null wallet && numCoins == 1 = depositCoin key w
   | Map.null wallet && numCoins > 1 = do
     postTXResult <- lift $ getCoin key
-    liftIO (pPrint "second")
     either
       throwError
       (\(GetCoinTX (TXID txid)) -> depositCoins key w numCoins (CoinTXID txid))

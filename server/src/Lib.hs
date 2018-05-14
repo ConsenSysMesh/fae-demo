@@ -13,7 +13,6 @@ import Data.Text (Text)
 import qualified Data.Text as T
 import qualified Network.WebSockets as WS
 import Prelude
-import Text.Pretty.Simple (pPrint)
 
 import Clients
 import Msg

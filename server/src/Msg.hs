@@ -19,7 +19,6 @@ import Data.Text (Text)
 import Data.List
 import qualified Data.Text as T
 import Prelude
-import Text.Pretty.Simple (pPrint)
 import Data.Map.Lazy (Map)
 import  qualified Data.Map.Lazy as M
 import Types
@@ -39,7 +38,6 @@ updateServerState state newServerState =
   modifyMVar_
     state
     (\serverState@ServerState {..} -> do
-       pPrint $ newServerState
        return newServerState)
 -- TODO use reader to pass client and state around  
 handleFaeOutput :: Either PostTXError PostTXResponse -> ReaderT (MVar ServerState, String) IO ()
@@ -54,8 +52,6 @@ handleBidRequest aucTXID amount= do
   (state, clientName) <- ask
   ServerState {..} <- liftIO $ readMVar state
   let client@Client{..} = fromJust $ getClient clients $ T.pack clientName --ugh fix fromJust --also just change the client name to be Text
-  liftIO $ pPrint "BIIIIID REQUEEST"
-  liftIO $ pPrint client
   let clientWallet = getWallet wallet
   let coinTXID = head $ M.keys clientWallet
   if not $ M.null clientWallet then do
@@ -115,7 +111,6 @@ handleCoinRequest numCoins  = do
   (state, clientName) <- ask
   ServerState {..} <- liftIO $ readMVar state
   let Client{..} = fromJust $ getClient clients (T.pack clientName) --ugh fix fromJust
-  pPrint (show wallet ++ "clients wallet before generating coins")
   newWallet <- liftIO $ runExceptT $ generateCoins key numCoins wallet
   either (liftIO . sendMsg conn . ErrMsg . PostTXErr) (grantCoins numCoins) newWallet
   where key = Key "bidder1"
