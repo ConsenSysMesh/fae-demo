@@ -2753,7 +2753,6 @@ select.stack {
   border-radius: 0.2em;
   overflow: hidden;
   text-align: left;
-  background: #fff;
   margin-bottom: 0.6em;
   padding: 0;
   transition: all .3s ease; }

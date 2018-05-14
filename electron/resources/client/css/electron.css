@@ -19,6 +19,7 @@
   width: 75px;
   text-align: center;
   margin-left: 20px;
+  color: black;
 }
 
 .bid-field-btn, .login-form-btn, .get-coin-btn {
@@ -49,6 +50,7 @@
   left: 350px;
   margin-top: 80px;
   position: absolute;
+  border-radius: 10px;
 }
 
 .place-bid-header {
@@ -75,10 +77,10 @@ td {
 }
 
 .auction-row:hover {
-  background-color: #001f3f;
+  opacity: 0.87;
   transition-timing-function: ease;
-  transition-property: background-color;
-  transition-duration: 0.2s;
+  transition-property: opacity;
+  transition-duration: 0.22s;
 }
 
 .auction-row-selected {
