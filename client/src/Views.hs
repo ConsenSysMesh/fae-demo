@@ -41,7 +41,6 @@ import Servant.API
 homeView :: Model -> View Action
 homeView m@Model {..} =
   div_ [style_ $ M.fromList [("text-align", "center")]] $
-  [h1_ [class_ "title"] [text "Fae Auction"]] ++
   [ div_
       [class_ "auctions-container "]
       auctionViews
@@ -84,7 +83,10 @@ appView m = view
     , button_ [ onClick (AppAction goLogin) ] [ text "Login" ]
     ]
 
-loginView m@Model {..} = div_ [class_ $ bool "visible" "hidden" loggedIn] [loginForm m]
+loginView m@Model {..} = div_ [] [
+    loginForm m,
+    h1_ [class_ "heading"] [ text "Auctions Powered By Fae"]
+  ]
 
 
 selectedAuctionView :: Model -> View Action
