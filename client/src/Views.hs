@@ -212,7 +212,7 @@ viewAccBalance accountBalance =
   div_
     [class_ "account-balance"]
     [ 
-      h3_ [] [text $ "Account Balance: " <> (S.pack $ show accountBalance)]
+      h3_ [] [text $ "Account Balance: " <> (S.pack $ show accountBalance) <> ( bool  " Coins"  " Coin" (accountBalance == 1))]
     ]
 
 loginForm :: Model -> View Action
