@@ -2,6 +2,30 @@
   width: 300px;
   text-align: center;
   position: absolute;
-  top: 272px;
+  top: 340px;
   left: 350px;
+}
+
+.auctions-table{
+  width: 780px;
+  margin-left: 120px;
+}
+
+.place-bid-container {
+  text-align: center;
+}
+
+.bid-field-input {
+  width: 75px;
+  text-align: center;
+  margin-left: 20px;
+}
+
+.bid-field-btn, .login-form-btn {
+  margin-left: 5px;
+}
+
+.login-form-input {
+  width: 150px;
+  text-align: center;
 }
