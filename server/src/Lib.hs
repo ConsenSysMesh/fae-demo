@@ -33,7 +33,6 @@ application state pending = do
   msg <- WS.receiveData conn
   ServerState {..} <- readMVar state
   case msg
---Check that the given username is not already taken:
         of
     _
       | clientExists client clients ->
@@ -41,10 +40,9 @@ application state pending = do
       | otherwise ->
         flip finally disconnect $ do
           modifyMVar_ state $ \ServerState {..} -> do
-            let newServerState =
-                  ServerState {clients = addClient client clients, ..}
-            return newServerState
-          clientListener state clientName conn msgHandler -- clean up state passing with readerT
+            print clientName
+            return ServerState {clients = addClient client clients, ..}
+          clientListener state clientName conn msgHandler 
       where clientName = T.filter (\c -> c `notElem` ['"', ' ']) msg
             client =
               Client {name = clientName, conn = conn, wallet = Wallet Map.empty}

@@ -27,6 +27,7 @@ import qualified Network.WebSockets as WS
 import Control.Monad.Reader
 import PostTX
 import SharedTypes
+import Text.Pretty.Simple (pPrint)
 
 msgHandler :: Msg -> ReaderT (MVar ServerState, String) IO ()
 msgHandler (RequestCoins numCoins) =  handleCoinRequest numCoins
@@ -38,6 +39,7 @@ updateServerState state newServerState =
   modifyMVar_
     state
     (\serverState@ServerState {..} -> do
+       pPrint serverState
        return newServerState)
 -- TODO use reader to pass client and state around  
 handleFaeOutput :: Either PostTXError PostTXResponse -> ReaderT (MVar ServerState, String) IO ()
