@@ -13,7 +13,7 @@
 }
 
 .auctions-table{
-  width: 780px;
+  width: 100%;
   margin-left: 120px;
 }
 
@@ -39,8 +39,9 @@
 
 .account-balance {
   position: fixed;
+  font-size: 1.1em;
   right: 75px;
-  top: 20px;
+  top: 18px;
 }
 
 .main-btns {
