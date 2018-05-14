@@ -17,7 +17,6 @@ cabal.sandbox.config
 .stack-work/
 
 contracts
-resources/client/
 resources/server/auction-server-exe
 resources/faeserver
 node_modules
