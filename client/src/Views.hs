@@ -42,9 +42,8 @@ homeView :: Model -> View Action
 homeView m@Model {..} =
   div_ [style_ $ M.fromList [("text-align", "center")]] $
   [h1_ [class_ "title"] [text "Fae Auction"]] ++
-  --[img_ [src_ "background.jpg"]] ++
   [ div_
-      [class_ $ "auctions-table-container " <> bool "hidden" "visible" loggedIn]
+      [class_ "auctions-table-container "]
       auctionViews
   ] ++ [ coinView accountBalance ]
   where
@@ -60,16 +59,13 @@ appView m = view
       $ runRoute (Proxy :: Proxy API) handlers uri m
   handlers = login :<|> home
   home (_ :: Model) = div_ [] [
-      div_ [] [ text "home" ]
-    , button_ [ onClick (AppAction goLogin) ] [ text "Logout" ]
-    , homeView m 
+     homeView m 
     ]
   login (_ :: Model) = div_ [] [
-      div_ [] [ text "Login" ]
-    , loginView m
+     loginView m
     ]
   the404 = div_ [] [
-      text "the 404 :("
+      text "404 :("
     , button_ [ onClick (AppAction goLogin) ] [ text "Login" ]
     ]
 
