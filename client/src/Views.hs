@@ -149,8 +149,8 @@ viewAuctionsTable Model {..} =
 createAuctionView :: Model -> View Action
 createAuctionView Model {..} =
   button_
-    [ style_ $ M.singleton "font-size" "1.25em"
-    , onClick (AppAction (SendServerAction (CreateAuctionRequest)))
+    [ 
+       onClick (AppAction (SendServerAction (CreateAuctionRequest)))
     ]
     [text "Create New Auction"]
 
@@ -214,8 +214,8 @@ loginForm Model {..} =
     [class_ "login-form"]
     [ header_
         [class_ "header"]
-        [ h2_ [] [text "Enter Username"]
-        , input_
+        [
+         input_
             [ type_ "text"
             , class_ "login-form-input"
             , onInput (AppAction . UpdateUserNameField . S.toMisoString)
