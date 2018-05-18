@@ -1,0 +1,100 @@
+.heading {
+  position: absolute;
+  top: 220px;
+  left: 300px;
+}
+
+.login-form {
+  width: 300px;
+  text-align: center;
+  position: absolute;
+  top: 340px;
+  left: 350px;
+}
+
+.auctions-table{
+  width: 100%;
+  margin-left: 120px;
+}
+
+.place-bid-container {
+  text-align: center;
+}
+
+.bid-field-input {
+  width: 75px;
+  text-align: center;
+  margin-left: 20px;
+  color: black;
+}
+
+.bid-field-btn, .login-form-btn, .get-coin-btn {
+  margin-left: 5px;
+}
+
+.login-form-input {
+  width: 150px;
+  text-align: center;
+}
+
+.account-balance {
+  position: fixed;
+  font-size: 1.1em;
+  right: 75px;
+  top: 18px;
+}
+
+.main-btns {
+  position: fixed;
+  left: 10px;
+  top: 20px;
+  text-align: center;  
+}
+
+.auction-view {
+  text-align: center;
+  width: 300px;
+  left: 350px;
+  margin-top: 80px;
+  position: absolute;
+  border-radius: 10px;
+}
+
+.place-bid-header {
+  left: 30px;
+  border-bottom: 0px !important;
+}
+
+td {
+  text-align: center;
+}
+
+.auctions-container {
+  color: white;
+  top: 120px;
+  position: absolute;
+}
+
+.auction-view {
+   background-color: #3255BC;
+}
+
+.auction-row {
+  background-color: #0074D9;
+  transition-timing-function: ease;
+  transition-duration: 0.2s;
+}
+
+.auction-row:hover {
+  opacity: 0.87;
+  transition-timing-function: ease;
+  transition-property: opacity;
+  transition-duration: 0.22s;
+}
+
+.auction-row-selected {
+  background-color: #3255BC;
+  transition-timing-function: ease;
+  transition-property: background-color;
+  transition-duration: 0.2s;
+}
