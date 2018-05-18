@@ -9,9 +9,6 @@ const BrowserWindow = electron.BrowserWindow
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
 let mainWindow
-// Do the same for the backend web server
-let backendServer
-let faeserver
 
 function createWindow() {
   // Create the browser window.
@@ -29,30 +26,6 @@ function createWindow() {
   })
 }
 
-function createBackendServer() {
-  backendServer = child_process.spawn('./resources/server/auction-server-exe')
-  backendServer.stdout.on('data', function (data) {
-    console.log(data.toString());
-  });
-  backendServer.stderr.on('data', function (data) {
-    console.log(data.toString());
-  });
-
-  return backendServer
-}
-
-function createFaeserver() {
-  faeServer = child_process.spawn('./resources/faeserver/faeServer.sh')
-  faeServer.stdout.on('data', data => {
-    console.log(data.toString());
-  });
-  faeServer.stderr.on('data', data => {
-    console.log(data.toString());
-  });
-
-  return faeServer
-}
-
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
@@ -60,18 +33,12 @@ app.on('ready', createWindow)
 
 // Start the backend web server and faeserver when Electron has finished initializing
 app.on('ready', () => {
-  createBackendServer()
-  createFaeserver()
+
 })
 
 // Close the server when the application is shut down
 app.on('will-quit', () => {
-  if (backendServer) {
-    backendServer.kill()
-  }
-  if (faeserver) {
-    faeserver.kill()
-  }
+
 })
 
 // Quit when all windows are closed.
