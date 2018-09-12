@@ -1,3 +1,17 @@
 language: haskell
 ghc:
   - "8.4"
+sudo: false
+
+cache:
+    directories:
+        - $HOME/.ghc
+        - $HOME/.cabal
+        - $HOME/.stack
+        - $TRAVIS_BUILD_DIR/.stack-work
+
+before_install: cd server
+
+script:
+  - stack --no-terminal test --only-dependencies
+  - stack --no-terminal build
