@@ -1,17 +1,44 @@
-language: haskell
-ghc:
-  - "8.4"
-sudo: false
 
-cache:
-    directories:
-        - $HOME/.ghc
-        - $HOME/.cabal
-        - $HOME/.stack
-        - $TRAVIS_BUILD_DIR/.stack-work
+matrix:
+  include:
+    - language: node_js
+      before_install: cd client
+      os: osx
 
-before_install: cd server
+      node_js:
+        - 8
+        - 6
+        
+      script:
+        - npm build
 
-script:
-  - stack --no-terminal test --only-dependencies
-  - stack --no-terminal build
+      cache:
+        yarn: true
+        directories:
+          - node_modules
+
+    - language: haskell
+      ghc:
+        - "8.4"
+      sudo: false
+
+      # Caching so the next build will be fast too.
+      cache:
+        directories:
+          - ~/.stack
+          - ~/.local
+          - ~/.stack-work-cache
+          apt: true
+      git:
+        submodules: false
+
+      before_install: 
+        - cd server
+        # Download and unpack the stack executable
+        - mkdir -p ~/.local/bin
+        - export PATH=$HOME/.local/bin:$PATH
+        - travis_retry curl -L https://get.haskellstack.org/stable/linux-x86_64.tar.gz | tar xz --wildcards --strip-components=1 -C ~/.local/bin '*/stack'
+
+      script:
+        - stack --no-terminal --skip-ghc-check test
+        - stack --no-terminal build
