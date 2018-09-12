@@ -17,28 +17,24 @@ matrix:
         directories:
           - node_modules
 
-    - language: haskell
-      ghc:
-        - "8.4"
-      sudo: false
+    - sudo: false
+
+      addons:
+        apt:
+          packages:
+            - libgmp-dev
 
       # Caching so the next build will be fast too.
       cache:
         directories:
-          - ~/.stack
-          - ~/.local
-          - ~/.stack-work-cache
-          apt: true
-      git:
-        submodules: false
+        - $HOME/.stack
 
-      before_install: 
+      before_install:
         - cd server
         # Download and unpack the stack executable
         - mkdir -p ~/.local/bin
         - export PATH=$HOME/.local/bin:$PATH
-        - travis_retry curl -L https://get.haskellstack.org/stable/linux-x86_64.tar.gz | tar xz --wildcards --strip-components=1 -C ~/.local/bin '*/stack'
+        - travis_retry curl -L https://www.stackage.org/stack/linux-x86_64 | tar xz --wildcards --strip-components=1 -C ~/.local/bin '*/stack'
 
       script:
-        - stack --no-terminal --skip-ghc-check test
-        - stack --no-terminal build
+        - stack setup && stack --no-terminal --skip-ghc-check test
