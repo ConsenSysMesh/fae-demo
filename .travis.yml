@@ -6,7 +6,6 @@ matrix:
 
       node_js:
         - 8
-        - 6
       
       before_install:
         - cd client
@@ -20,8 +19,9 @@ matrix:
         directories:
           - node_modules
       
-      before-deploy:
-        - aws s3 rm s3://$S3_PRODUCTION_BUCKET_NAME/* --recursive --region $AWS_DEFAULT_REGION
+      before_deploy:
+        - aws s3 rm s3://$S3_PRODUCTION_BUCKET_NAME --recursive --region $AWS_DEFAULT_REGION
+        - yarn run copy-static
 
       deploy:
         # Deploy Front End to AWS S3 on successful build of master branch.
