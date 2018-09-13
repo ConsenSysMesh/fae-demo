@@ -38,7 +38,6 @@ matrix:
         local_dir: build
         # Set the Cache-Control header.
         cache_control: "max-age=21600"
-        region: $AWS_DEFAULT_REGION
 
     - sudo: false
 
