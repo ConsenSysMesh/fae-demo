@@ -21,7 +21,7 @@ matrix:
           - node_modules
       
       before-deploy:
-        - ls
+        - aws s3 rm s3://$S3_PRODUCTION_BUCKET_NAME/* --recursive --region $AWS_DEFAULT_REGION
 
       deploy:
         # Deploy Front End to AWS S3 on successful build of master branch.
@@ -32,7 +32,7 @@ matrix:
         access_key_id: $AWS_ACCESS_KEY_ID
         secret_access_key: $AWS_SECRET_ACCESS_KEY
         # Name of the S3 bucket to which your site should be uploaded.
-        bucket: gotham-poker-client
+        bucket: $S3_PRODUCTION_BUCKET_NAME
         # Prevent Travis from deleting your built site so it can be uploaded.
         skip_cleanup: true
         # Path to a directory containing your built site.
