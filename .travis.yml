@@ -20,7 +20,6 @@ matrix:
           - node_modules
       
       before_deploy:
-        - aws s3 rm s3://$S3_PRODUCTION_BUCKET_NAME --recursive --region $AWS_DEFAULT_REGION
         - yarn run copy-static
 
       deploy:
