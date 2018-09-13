@@ -22,7 +22,6 @@ matrix:
       
       before-deploy:
         - ls
-        - pwd
 
       deploy:
         # Deploy Front End to AWS S3 on successful build of master branch.
