@@ -2,7 +2,6 @@
 matrix:
   include:
     - language: node_js
-      before_install: cd client
       os: osx
 
       node_js:
@@ -10,6 +9,7 @@ matrix:
         - 6
       
       before_install:
+        - cd client
         - npm i yarn -g
         
       script:
@@ -19,6 +19,10 @@ matrix:
         yarn: true
         directories:
           - node_modules
+      
+      before-deploy:
+        - ls
+        - pwd
 
       deploy:
         # Deploy Front End to AWS S3 on successful build of master branch.
