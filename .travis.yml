@@ -13,13 +13,15 @@ matrix:
         - npm i yarn -g
         
       script:
-        - npm build
+        - yarn build
 
       cache:
         yarn: true
         directories:
           - node_modules
-      
+      before-deploy:
+        -    yarn build
+
       deploy:
         # Deploy Front End to AWS S3 on successful build of master branch.
         on:
@@ -33,7 +35,7 @@ matrix:
         # Prevent Travis from deleting your built site so it can be uploaded.
         skip_cleanup: true
         # Path to a directory containing your built site.
-        local_dir: client/build
+        local_dir: build
         # Set the Cache-Control header.
         cache_control: "max-age=21600"
 
