@@ -20,6 +20,7 @@ matrix:
           - node_modules
       
       before_deploy:
+        - aws s3 rm s3://$S3_PRODUCTION_BUCKET_NAME --recursive --region $AWS_DEFAULT_REGION
         - yarn run copy-static
 
       deploy:
@@ -38,6 +39,7 @@ matrix:
         local_dir: build
         # Set the Cache-Control header.
         cache_control: "max-age=21600"
+        region: $AWS_DEFAULT_REGION
 
     - sudo: false
 
