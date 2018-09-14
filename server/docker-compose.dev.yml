@@ -1,0 +1,29 @@
+version: '3.7'
+
+services:
+  poker-server:
+    build: .
+    depends_on:
+      - db
+      - redis
+    ports:
+      - '8000:8000'
+      - '5000:5000'
+ #   env_file: ./.dev.env
+    environment: 
+     - secret='{$secret}'
+     - dbConnStr='{$dbConnStr}'
+
+  db:
+    image: postgres
+    ports: 
+      - 5432:5432
+   # restart: on-failure
+
+  redis:
+    image: redis:5.0-rc4-alpine
+    ports:
+      - '6379:6379'
+    volumes:
+      - /srv/docker/redis:/var/lib/redis
+   # restart: on-failure
