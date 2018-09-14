@@ -1,6 +1,6 @@
-version: '3.7'
+version: "3.3"
 
 poker-server:
   build: .
   volumes:
-    - '.:/code'
+    - ".:/code"

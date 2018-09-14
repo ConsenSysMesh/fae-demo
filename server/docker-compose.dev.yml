@@ -1,4 +1,4 @@
-version: '3.7'
+version: "3.3"
 
 services:
   poker-server:
@@ -7,23 +7,38 @@ services:
       - db
       - redis
     ports:
-      - '8000:8000'
-      - '5000:5000'
- #   env_file: ./.dev.env
-    environment: 
-     - secret='{$secret}'
-     - dbConnStr='{$dbConnStr}'
+      - "8000:8000"
+      - "5000:5000"
+    networks:
+      - backend
+    #   env_file: ./.dev.env
+    environment:
+      - secret='{$secret}'
+      - dbConnStr=\"host=127.0.0.1 port=5432 user=postgres dbname=postgres password=postgres\"
 
   db:
     image: postgres
-    ports: 
+    ports:
       - 5432:5432
-   # restart: on-failure
+    networks:
+      - backend
+    volumes:
+      - data:/var/lib/postgresql/data
+    # restart: on-failure
 
   redis:
     image: redis:5.0-rc4-alpine
     ports:
-      - '6379:6379'
+      - "6379:6379"
     volumes:
       - /srv/docker/redis:/var/lib/redis
-   # restart: on-failure
+    # restart: on-failure
+    networks:
+      - backend
+
+networks:
+  backend:
+    driver: "bridge"
+
+volumes:
+  data: {}
