@@ -75,7 +75,7 @@ matrix:
 
       after_success:
         - test $TRAVIS_BRANCH = "master" && test $TRAVIS_PULL_REQUEST = "false"
-          && sudo pip install --upgrade pip \
+          && sudo -H pip install --upgrade pip \
           && sudo -H pip install awscli --upgrade \
           && sudo -H pip install ansible --upgrade \
           && cd ansible \
