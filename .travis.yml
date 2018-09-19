@@ -22,8 +22,8 @@ matrix:
           - node_modules
       
       before_deploy:
-        - sudo pip install --user awscli
-        - aws s3 rm s3://gotham-poker-client --recursive
+        - sudo -H pip install awscli --upgrade
+        - aws s3 rm s3://${S3_PRODUCTION_BUCKET_NAME} --recursive
         - yarn run copy-static
 
       deploy:
