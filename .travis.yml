@@ -74,15 +74,9 @@ matrix:
         - stack install # build and copies binary executable to build dir
 
       after_success:
-        # Deploy Server to AWS EC2 on successful build of master branch.
-        skip_cleanup: true # Don't remove built executable so we can copy into docker image
-        on:
-          branch: master
-        script:
-          - sudo pip install --user awscli
-          - sudo pip install ansible
-          - cd ansible
-          # Build new Docker image and push to AWS Container Registry
-          - ansible-playbook -i push-new-image.yml
-          # Pull new image from registry and spin up new container on EC2 instance
-          - ansible-playbook -i deploy-image.yml
+        - test $TRAVIS_BRANCH = "master" && test $TRAVIS_PULL_REQUEST = "false"
+          && sudo -H pip install awscli --upgrade \
+          && sudo pip install ansible \
+          && cd ansible \
+          && ansible-playbook -i push-new-image.yml \ # Build new Docker image and push to AWS Container Registry
+          && ansible-playbook -i deploy-image.yml     # Pull new image from registry and spin up new container on EC2 instance
