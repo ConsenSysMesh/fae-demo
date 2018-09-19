@@ -12,7 +12,6 @@ matrix:
       before_install:
         - cd client
         - npm i yarn -g
-        - sudo pip install --user awscli
 
       script:
         - yarn build
@@ -23,7 +22,8 @@ matrix:
           - node_modules
       
       before_deploy:
-        - aws s3 rm s3://${S3_PRODUCTION_BUCKET_NAME} --recursive
+        - sudo pip install --user awscli
+        - aws s3 rm s3://gotham-poker-client --recursive
         - yarn run copy-static
 
       deploy:
@@ -77,7 +77,7 @@ matrix:
         - stack setup && stack --no-terminal --skip-ghc-check test
         - stack install # build and copies binary executable to build dir
 
-      deploy:
+      after_success:
         # Deploy Server to AWS EC2 on successful build of master branch.
         skip_cleanup: true # Don't remove built executable so we can copy into docker image
         on:
