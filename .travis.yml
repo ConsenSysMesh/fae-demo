@@ -23,7 +23,7 @@ matrix:
           - node_modules
       
       before_deploy:
-        - aws s3 rm s3://$S3_PRODUCTION_BUCKET_NAME --recursive
+        - aws s3 rm s3://${S3_PRODUCTION_BUCKET_NAME} --recursive
         - yarn run copy-static
 
       deploy:
@@ -57,7 +57,9 @@ matrix:
       # Caching so the next build will be fast too.
       cache:
         directories:
-        - $HOME/.stack
+          - $HOME/.ghc
+          - $HOME/.cabal
+          - $HOME/.stack
 
       before_install:
         - cd server
