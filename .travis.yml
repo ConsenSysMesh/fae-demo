@@ -60,6 +60,7 @@ matrix:
           - $HOME/.ghc
           - $HOME/.cabal
           - $HOME/.stack
+          - $HOME/.stack-work
 
       before_install:
         - cd server
@@ -67,11 +68,6 @@ matrix:
           # Download and unpack the stack executable
         - travis_retry curl -L https://www.stackage.org/stack/linux-x86_64 | tar xz --wildcards --strip-components=1 -C ~/.local/bin '*/stack'
         - export PATH=$PATH:$HOME/.local/bin
-          # Auth AWS for deployments
-        - sudo pip install --user awscli
-
-      install:
-        - sudo pip install ansible
       
       script:
         - stack setup && stack --no-terminal --skip-ghc-check test
@@ -83,6 +79,8 @@ matrix:
         on:
           branch: master
         script:
+          - sudo pip install --user awscli
+          - sudo pip install ansible
           - cd ansible
           # Build new Docker image and push to AWS Container Registry
           - ansible-playbook -i push-new-image.yml
