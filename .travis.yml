@@ -12,7 +12,7 @@ matrix:
       before_install:
         - cd client
         - npm i yarn -g
-        - pip install --user awscli
+        - sudo pip install --user awscli
 
       script:
         - yarn build
@@ -66,10 +66,10 @@ matrix:
         - travis_retry curl -L https://www.stackage.org/stack/linux-x86_64 | tar xz --wildcards --strip-components=1 -C ~/.local/bin '*/stack'
         - export PATH=$PATH:$HOME/.local/bin
           # Auth AWS for deployments
-        - pip install --user awscli
+        - sudo pip install --user awscli
 
       install:
-        - pip install ansible
+        - sudo pip install ansible
       
       script:
         - stack setup && stack --no-terminal --skip-ghc-check test
