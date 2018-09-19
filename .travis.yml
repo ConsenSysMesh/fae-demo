@@ -78,5 +78,5 @@ matrix:
           && sudo -H pip install awscli --upgrade \
           && sudo pip install ansible \
           && cd ansible \
-          && ansible-playbook -i push-new-image.yml \ # Build new Docker image and push to AWS Container Registry
-          && ansible-playbook -i deploy-image.yml     # Pull new image from registry and spin up new container on EC2 instance
+          && ansible-playbook -i push-new-image.yml \
+          && ansible-playbook -i deploy-image.yml
