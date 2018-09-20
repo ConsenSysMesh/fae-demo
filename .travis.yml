@@ -78,7 +78,7 @@ matrix:
       after_success:
         - test $TRAVIS_BRANCH = "master" && test $TRAVIS_PULL_REQUEST = "false"
           && sudo -H pip install --upgrade pip
-          && sudo pip -H install requests[security] \
+          && sudo -H pip install requests[security] \
           && sudo -H pip install aws-cli ansible --upgrade \
           && cd ansible \
           && ansible-playbook -i push-new-image.yml \
