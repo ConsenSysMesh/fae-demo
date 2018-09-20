@@ -55,6 +55,7 @@ matrix:
             - libgmp-dev
             - libffi-dev
             - libssl-dev
+            - python-dev
 
       # Caching so the next build will be fast too.
       cache:
