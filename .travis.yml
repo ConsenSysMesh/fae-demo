@@ -78,7 +78,8 @@ matrix:
       after_success:
         - test $TRAVIS_BRANCH = "master" && test $TRAVIS_PULL_REQUEST = "false"
           && sudo -H pip install --upgrade pip
-          && sudo -H pip install pyopenssl ndg-httpsclient pyasn1 aws-cli ansible --upgrade \
+          && sudo pip -H install requests[security] \
+          && sudo -H pip install aws-cli ansible --upgrade \
           && cd ansible \
           && ansible-playbook -i push-new-image.yml \
           && ansible-playbook -i deploy-image.yml
