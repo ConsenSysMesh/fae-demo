@@ -4,6 +4,7 @@ import { connect } from 'react-redux'
 import { logoutUser } from '../actions/auth'
 import { isAuthenticated, getUsername } from '../selectors/auth'
 
+
 import NavBar from '../components/NavBar'
 
 const mapStateToProps = state => ({
