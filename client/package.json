@@ -1,7 +1,7 @@
 {
-  "name": "react-redux-boilerplate",
+  "name": "gotham-poker-client",
   "version": "1.0.0",
-  "description": "A minimal react-redux boilerplate with all the best practices",
+  "description": "Client for gotham poker server",
   "repository": {
     "type": "git",
     "url": "git://github.com/flexdinesh/react-redux-boilerplate.git"
@@ -10,7 +10,7 @@
     "npm": ">=3",
     "node": ">=5"
   },
-  "author": "Dinesh Pandiyan",
+  "author": "therewillbecode",
   "license": "MIT",
   "scripts": {
     "serve-static-dev": "npm i -g http-server && cd static-server && http-server -a localhost -p 9080",
@@ -21,7 +21,7 @@
     "start:production": "npm run test && npm run build && npm run start:prod",
     "start:prod": "cross-env NODE_ENV=production node server",
     "copy-static": "cp -r static build/static",
-    "deploy": "rm -r build && yarn run copy-static && yarn run build && aws s3 sync build/ s3://gotham-poker-client --delete",
+    "deploy": "npm run build:clean && yarn run copy-static && yarn run build && aws s3 sync build/ s3://gotham-poker-client --delete",
     "clean": "npm run test:clean && npm run build:clean",
     "lint": "npm run lint:eslint",
     "lint:eslint": "eslint .",
