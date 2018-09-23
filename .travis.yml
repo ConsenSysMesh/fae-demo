@@ -78,9 +78,9 @@ matrix:
 
       after_success:
         - test $TRAVIS_BRANCH = "master" && test $TRAVIS_PULL_REQUEST = "false"
-          && sudo add-apt-repository -y ppa:jonathonf/python-2.7
+          && sudo add-apt-repository -y ppa:fkrull/deadsnakes
           && sudo apt-get -y update
-          && sudo apt-get -y install python2.7
+          && sudo apt-get -y install python2.6 python2.6-dev
           && python --version
           && sudo -H pip install pip==8.1.1
           && sudo -H pip install 'requests[security]' --upgrade \
