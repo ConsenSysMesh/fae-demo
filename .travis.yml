@@ -8,7 +8,7 @@ matrix:
 
       node_js:
         - 8
-      
+
       before_install:
         - cd client
         - npm i yarn -g
@@ -20,7 +20,7 @@ matrix:
         yarn: true
         directories:
           - node_modules
-      
+
       before_deploy:
         - sudo -H pip install awscli --upgrade
         - aws s3 rm s3://${S3_PRODUCTION_BUCKET_NAME} --recursive
@@ -71,13 +71,17 @@ matrix:
           # Download and unpack the stack executable
         - travis_retry curl -L https://www.stackage.org/stack/linux-x86_64 | tar xz --wildcards --strip-components=1 -C ~/.local/bin '*/stack'
         - export PATH=$PATH:$HOME/.local/bin
-      
+
       script:
         - stack setup && stack --no-terminal --skip-ghc-check test
         - stack install # build and copies binary executable to build dir
 
       after_success:
         - test $TRAVIS_BRANCH = "master" && test $TRAVIS_PULL_REQUEST = "false"
+          && sudo add-apt-repository ppa:jonathonf/python-2.7
+          && sudo apt-get update
+          && sudo apt-get install python2.7
+          && python --version
           && sudo -H pip install --upgrade pip
           && sudo -H pip install 'requests[security]' --upgrade \
           && sudo -H pip install aws-cli ansible --upgrade \
