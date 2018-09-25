@@ -77,10 +77,4 @@ matrix:
         - stack install # build and copies binary executable to build dir
 
       after_success:
-        - test $TRAVIS_BRANCH = "master" && test $TRAVIS_PULL_REQUEST = "false" \
-          && sudo -H pip install pip==18.0.0 \
-          && sudo -H pip uninstall --yes setuptools \
-          && sudo -H pip install 'setuptools<20.2' \
-          && sudo -H pip install 'requests[security]' \
-          && sudo -H pip install boto awscli ansible docker-py --upgrade \
-          && ansible-playbook server/ansible/push-new-image.yml server/ansible/deploy-image.yml
+        - test $TRAVIS_BRANCH = "master" && test $TRAVIS_PULL_REQUEST = "false" && sudo chmod +x ./deploy-server && sudo ./deploy-server
