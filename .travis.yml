@@ -77,16 +77,11 @@ matrix:
         - stack install # build and copies binary executable to build dir
 
       after_success:
-        - test $TRAVIS_BRANCH = "master" && test $TRAVIS_PULL_REQUEST = "false"
-          && sudo add-apt-repository ppa:jonathonf/python-2.7 \
-          && sudo apt-get -y update \
-          && sudo apt-get -y install python2.7 \
-          && sudo -H pip install pip==9.0.0 \
-          && sudo pip uninstall setuptools \
-          && sudo -H pip install 'setuptools<20.2'
-          && sudo -H pip install 'requests[security]' --upgrade \
-          && sudo -H pip install aws-cli ansible --upgrade \
-          && sudo -H pip install ansible --upgrade \
-          && cd ansible \
-          && ansible-playbook -i push-new-image.yml \
-          && ansible-playbook -i deploy-image.yml
+        - test $TRAVIS_BRANCH = "master" && test $TRAVIS_PULL_REQUEST = "false" \ 
+          && sudo -H pip install pip==18.0.0 \
+          && sudo -H pip uninstall --yes setuptools \
+          && sudo -H pip install 'setuptools<20.2' \
+          && sudo -H pip install 'requests[security]' boto awscli ansible docker-py --upgrade \
+          && cd server/ansible \
+          && ansible-playbook push-new-image.yml \
+          && ansible-playbook deploy-image.yml
