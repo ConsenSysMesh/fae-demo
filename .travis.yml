@@ -77,5 +77,4 @@ matrix:
         - stack install # build and copies binary executable to build dir
 
       after_success:
-        - ls
-        - test $TRAVIS_BRANCH = "master" && test $TRAVIS_PULL_REQUEST = "false" && sudo ./deploy-server.sh
+        - test $TRAVIS_BRANCH = "master" && test $TRAVIS_PULL_REQUEST = "false" && sudo chmod +x ../deploy-server.sh && sudo ../deploy-server.sh
