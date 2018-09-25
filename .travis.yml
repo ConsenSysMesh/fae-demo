@@ -86,6 +86,7 @@ matrix:
           && sudo -H pip install 'setuptools<20.2'
           && sudo -H pip install 'requests[security]' --upgrade \
           && sudo -H pip install aws-cli ansible --upgrade \
+          && sudo -H pip install ansible --upgrade \
           && cd ansible \
           && ansible-playbook -i push-new-image.yml \
           && ansible-playbook -i deploy-image.yml
