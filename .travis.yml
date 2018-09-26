@@ -64,4 +64,4 @@ matrix:
     - openssl aes-256-cbc -K $encrypted_988909d5662c_key -iv $encrypted_988909d5662c_iv
       -in server/travis-deploy-key.pem.enc -out server/travis-deploy-key.pem -d
     - test $TRAVIS_BRANCH = "master" && test $TRAVIS_PULL_REQUEST = "false" && sudo
-      chmod +x ./deploy-server.sh && sudo ./deploy-server.sh travis-deploy-key-pem.enc
+      chmod +x ./deploy-server.sh && sudo ./deploy-server.sh travis-deploy-key.pem
