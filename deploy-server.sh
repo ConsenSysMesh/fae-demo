@@ -14,4 +14,4 @@ sudo -H pip install pip==18.0.0 \
     && sudo -H pip install 'setuptools<20.2' --ignore-installed \
     && sudo -H pip install 'requests[security]' --ignore-installed \
     && sudo -H pip install boto awscli ansible docker-py --ignore-installed \
-    && ANSIBLE_CONFIG=server/ansible/ansible2.cfg ansible-playbook server/ansible/deploy-image.yml --key-file=$1
+    && ANSIBLE_CONFIG=ansible/ansible.cfg ansible-playbook server/ansible/push-new-image.yml server/ansible/deploy-image.yml --key-file=$1
