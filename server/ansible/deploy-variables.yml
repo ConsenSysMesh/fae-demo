@@ -8,6 +8,9 @@ secret: "secret"
 dbConnStr: "host=poker-db-production.cxsvikyslmc2.eu-west-2.rds.amazonaws.com port=5432 user=postgres dbname=poker_production password=postgres"
 authAPIPort: "8000"
 socketAPIPort: "3000"
+dbPort: "5432"
+redisPort: "6379"
+redisConfig: "redis://gotham-poker-redis.c0tk12.0001.euw2.cache.amazonaws.com:6379"
 
 ## Server Logging to Cloudwatch
 #DOCKER_LOGS_AWS_ACCESS_KEY_ID

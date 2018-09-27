@@ -3,6 +3,7 @@
 module Env where
 
 import qualified Data.ByteString.Char8 as C
+import Data.Either
 import Data.Maybe
 import Data.Text (pack)
 import Database.Redis
@@ -11,6 +12,7 @@ import Database.Redis
   , connect
   , connectPort
   , defaultConnectInfo
+  , parseConnectInfo
   , runRedis
   , setex
   )
@@ -20,8 +22,14 @@ import Text.Read
 import Types
 import Web.JWT (secret)
 
-redisConnectInfo :: RedisConfig
-redisConnectInfo = defaultConnectInfo
+-- Redis config expects the form of "redis://username:password@host:42/2"
+getRedisConfigFromEnv :: ConnectInfo -> IO ConnectInfo
+getRedisConfigFromEnv defaultConnInfo = do
+  maybeConnInfo <- lookupEnv "redisConfig"
+  case maybeConnInfo of
+    Nothing -> return defaultConnInfo
+    (Just connInfo) ->
+      return $ fromRight (defaultConnInfo) (parseConnectInfo connInfo)
 
 -- get the postgres connection string from dbConnStr env variable
 getDBConnStrFromEnv :: IO C.ByteString

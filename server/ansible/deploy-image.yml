@@ -44,11 +44,6 @@
       docker_image:
         name: "{{ ECRrepo }}/{{ repoName }}"
 
-   # - name: Create Poker Server Container
-   #   docker_container:
-   #    name: poker-server
-   #    image: "{{ ECRrepo }}/{{ repoName }}"
-
     - name: Start Poker Server Container
       docker_container:
         name: poker-server
@@ -56,9 +51,12 @@
         ports:
           - "{{ authAPIPort }}"
           - "{{ socketAPIPort }}"
+          - "{{ dbPort }}"
+          - "{{ redisPort }}"
         env:
           secret: "{{ secret }}"
           dbConnStr: "{{ dbConnStr }}"
+          redisConfig: "{{ redisConfig }}"
         restart_policy: on-failure
     #    log_driver: awslogs
     #    log_options:

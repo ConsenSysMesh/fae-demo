@@ -3,6 +3,7 @@
 module Main where
 
 import Control.Concurrent.Async
+import Database.Redis (defaultConnectInfo)
 import Network.Wai.Handler.Warp (run)
 import Prelude
 import qualified System.Remote.Monitoring as EKG
@@ -17,6 +18,7 @@ main = do
   dbConnString <- getDBConnStrFromEnv
   userAPIPort <- getAuthAPIPort defaultUserAPIPort
   socketAPIPort <- getSocketAPIPort defaultSocketAPIPort
+  redisConfig <- getRedisConfigFromEnv defaultRedisConfig
   secretKey <- getSecretKey
   let runSocketAPI =
         runSocketServer secretKey socketAPIPort dbConnString redisConfig
@@ -27,7 +29,7 @@ main = do
   where
     defaultUserAPIPort = 8000
     defaultSocketAPIPort = 5000
-    redisConfig = redisConnectInfo
+    defaultRedisConfig = defaultConnectInfo
     defaultMonitoringServerAddress = "localhost"
     defaultMonitoringServerPort = 9999
     runMonitoringServer =
