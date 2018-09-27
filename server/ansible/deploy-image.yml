@@ -44,10 +44,10 @@
         name: poker-server
         image: "{{ ECRrepo }}/{{ repoName }}"
         ports:
-          - "{{ authAPIPort }}"
-          - "{{ socketAPIPort }}"
-          - "{{ dbPort }}"
-          - "{{ redisPort }}"
+          - "{{ authAPIPort }}:{{ authAPIPort }}"
+          - "{{ socketAPIPort }}:{{ socketAPIPort }}"
+          - "{{ dbPort }}:{{ dbPort }}"
+          - "{{ redisPort }}:{{ redisPort }}"
         env:
           secret: "{{ secret }}"
           dbConnStr: "{{ dbConnStr }}"
