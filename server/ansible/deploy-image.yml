@@ -12,11 +12,6 @@
     - include_vars: deploy-variables.yml
 
   tasks:
-    - name: Install Python
-      apt:
-        name: python3
-        state: present
-        update_cache: yes
 
     - name: Start Docker service, If Not Running
       service:
