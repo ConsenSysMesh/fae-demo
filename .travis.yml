@@ -12,7 +12,7 @@ matrix:
     - cd client
     - npm i yarn -g
     script:
-    - SOCKET_API_URL=ws://18.130.171.128:5000 AUTH_API_URL=http://18.130.171.128:8000 yarn build
+    - yarn build
     cache:
       yarn: true
       directories:
