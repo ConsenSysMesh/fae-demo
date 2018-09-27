@@ -20,6 +20,8 @@ export const logoutUser = history => dispatch => {
   history.push('/')
 }
 
+console.log('env var', process.env)
+
 /* Action Creators for User API authentication */
 const AUTH_API_URL = process.env.AUTH_API_URL || 'http://localhost:8000'
 
