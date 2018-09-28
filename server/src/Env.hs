@@ -8,8 +8,10 @@ import Data.Maybe
 import Data.Text (pack)
 import Database.Redis
   ( ConnectInfo
+  , HostName
   , Redis
   , connect
+  , connectHost
   , connectPort
   , defaultConnectInfo
   , parseConnectInfo
@@ -23,13 +25,19 @@ import Types
 import Web.JWT (secret)
 
 -- Redis config expects the form of "redis://username:password@host:42/2"
-getRedisConfigFromEnv :: ConnectInfo -> IO ConnectInfo
-getRedisConfigFromEnv defaultConnInfo = do
+getRedisHostFromEnv :: HostName -> IO ConnectInfo
+getRedisHostFromEnv defaultHostName = do
   maybeConnInfo <- lookupEnv "redisConfig"
   case maybeConnInfo of
-    Nothing -> return defaultConnInfo
-    (Just connInfo) ->
-      return $ fromRight (defaultConnInfo) (parseConnectInfo connInfo)
+    Nothing -> return defaultRedisConn
+    (Just hostname) ->
+      return $
+      maybe
+        defaultRedisConn
+        (\a -> defaultConnectInfo {connectHost = a})
+        (readMaybe hostname)
+  where
+    defaultRedisConn = defaultConnectInfo {connectHost = defaultHostName}
 
 -- get the postgres connection string from dbConnStr env variable
 getDBConnStrFromEnv :: IO C.ByteString

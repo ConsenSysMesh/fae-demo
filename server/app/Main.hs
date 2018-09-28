@@ -18,7 +18,8 @@ main = do
   dbConnString <- getDBConnStrFromEnv
   userAPIPort <- getAuthAPIPort defaultUserAPIPort
   socketAPIPort <- getSocketAPIPort defaultSocketAPIPort
-  redisConfig <- getRedisConfigFromEnv defaultRedisConfig
+  redisConfig <- getRedisHostFromEnv defaultRedisHost
+  print redisConfig
   secretKey <- getSecretKey
   let runSocketAPI =
         runSocketServer secretKey socketAPIPort dbConnString redisConfig
@@ -29,7 +30,7 @@ main = do
   where
     defaultUserAPIPort = 8000
     defaultSocketAPIPort = 5000
-    defaultRedisConfig = defaultConnectInfo
+    defaultRedisHost = "localhost"
     defaultMonitoringServerAddress = "localhost"
     defaultMonitoringServerPort = 9999
     runMonitoringServer =
