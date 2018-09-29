@@ -51,7 +51,7 @@
         env:
           secret: "{{ secret }}"
           dbConnStr: "{{ dbConnStr }}"
-          redisConfig: "{{ redisConfig }}"
+          redisHost: "{{ redisHost }}"
         restart_policy: on-failure
     #    log_driver: awslogs
     #    log_options:

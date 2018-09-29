@@ -21,6 +21,7 @@ main = do
   redisConfig <- getRedisHostFromEnv defaultRedisHost
   print redisConfig
   secretKey <- getSecretKey
+  print redisConfig
   let runSocketAPI =
         runSocketServer secretKey socketAPIPort dbConnString redisConfig
   let runUserAPI = run userAPIPort (app secretKey dbConnString redisConfig)

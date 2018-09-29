@@ -27,7 +27,7 @@ import Web.JWT (secret)
 -- Redis config expects the form of "redis://username:password@host:42/2"
 getRedisHostFromEnv :: HostName -> IO ConnectInfo
 getRedisHostFromEnv defaultHostName = do
-  maybeConnInfo <- lookupEnv "redisConfig"
+  maybeConnInfo <- lookupEnv "redisHost"
   case maybeConnInfo of
     Nothing -> return defaultRedisConn
     (Just hostname) ->
