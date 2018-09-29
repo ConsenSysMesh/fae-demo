@@ -19,9 +19,9 @@ main = do
   userAPIPort <- getAuthAPIPort defaultUserAPIPort
   socketAPIPort <- getSocketAPIPort defaultSocketAPIPort
   redisConfig <- getRedisHostFromEnv defaultRedisHost
+  print "redis config: "
   print redisConfig
   secretKey <- getSecretKey
-  print redisConfig
   let runSocketAPI =
         runSocketServer secretKey socketAPIPort dbConnString redisConfig
   let runUserAPI = run userAPIPort (app secretKey dbConnString redisConfig)

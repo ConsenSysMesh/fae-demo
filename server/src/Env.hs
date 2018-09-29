@@ -29,13 +29,17 @@ getRedisHostFromEnv :: HostName -> IO ConnectInfo
 getRedisHostFromEnv defaultHostName = do
   maybeConnInfo <- lookupEnv "redisHost"
   case maybeConnInfo of
-    Nothing -> return defaultRedisConn
-    (Just hostname) ->
+    Nothing -> do
+      print "couldn't parse redishost from env default used"
+      return defaultRedisConn
+    (Just hostname) -> do
+      print "hostName from env is: "
+      print hostname
       return $
-      maybe
-        defaultRedisConn
-        (\a -> defaultConnectInfo {connectHost = a})
-        (readMaybe hostname)
+        maybe
+          defaultRedisConn
+          (\a -> defaultConnectInfo {connectHost = a})
+          (readMaybe hostname)
   where
     defaultRedisConn = defaultConnectInfo {connectHost = defaultHostName}
 
