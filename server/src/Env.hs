@@ -35,11 +35,7 @@ getRedisHostFromEnv defaultHostName = do
     (Just hostname) -> do
       print "hostName from env is: "
       print hostname
-      return $
-        maybe
-          defaultRedisConn
-          (\a -> defaultConnectInfo {connectHost = a})
-          (readMaybe hostname)
+      return $ defaultConnectInfo {connectHost = read hostname}
   where
     defaultRedisConn = defaultConnectInfo {connectHost = defaultHostName}
 
