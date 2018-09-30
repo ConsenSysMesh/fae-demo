@@ -31,7 +31,7 @@ main = do
   where
     defaultUserAPIPort = 8000
     defaultSocketAPIPort = 5000
-    defaultRedisHost = "localhost"
+    defaultRedisHost = "localghost"
     defaultMonitoringServerAddress = "localhost"
     defaultMonitoringServerPort = 9999
     runMonitoringServer =
