@@ -36,8 +36,7 @@
       shell: eval $(aws ecr get-login --no-include-email --region $AWS_DEFAULT_REGION)
 
     - name: Pull Latest Image
-      docker_image:
-        name: "{{ ECRrepo }}/{{ repoName }}"
+      shell: "docker pull {{ ECRrepo }}/{{ repoName }}"
 
     - name: Start Poker Server Container
       docker_container:
