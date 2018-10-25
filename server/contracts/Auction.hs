@@ -7,7 +7,7 @@ import Control.Monad.State
 
 import qualified Data.Map as Map
 import Data.Map (Map)
-
+import Control.DeepSeq
 import Data.Maybe
 
 data AuctionError =

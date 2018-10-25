@@ -35,8 +35,7 @@ generateCoins key numCoins w@(Wallet wallet)
              newCoinCacheValue
              (Map.delete baseCoinTXID wallet))
       postTXResult
-  where
-    baseCoinTXID = fst $ head $ Map.toList wallet
+  where baseCoinTXID = fst $ head $ Map.toList wallet
 
 depositCoins ::
      Key -> Wallet -> Int -> CoinTXID -> ExceptT PostTXError IO Wallet

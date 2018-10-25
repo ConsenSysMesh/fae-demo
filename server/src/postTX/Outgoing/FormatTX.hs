@@ -40,7 +40,7 @@ getPostTXargs (WithdrawTXin (Key key) (AucTXID aucTXID)) =
 getPostTXargs (GetCoinTXin (Key key)) =
   formatArgs [("key", key), ("self", key)] ++ ["GetCoin"]
 getPostTXargs (GetMoreCoinsTXin (Key key) (CoinTXID coinTXID)) =
-  formatArgs [("self", key), ("key", key), ("coinTX", coinTXID)] ++
+  formatArgs [("self", "bidder1"), ("key", "bidder1"), ("coinTX", coinTXID)] ++
   ["GetMoreCoins"]
 
 formatArg :: (String, String) -> [String]

@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 76cf7955809ec0cf7370169e5b97918436a823b1a75cde1f37796512a92d6340
+-- hash: 0645d266bdcdf5a1ba58149bc0434efe07b3de99a8afaf1ac652bc7e71407327
 
 name:           auction-client
 version:        0.1.0.0
@@ -42,6 +42,7 @@ executable auction-client-exe
     , containers
     , ghcjs-base
     , miso
+    , servant
     , shared
     , text
     , time

@@ -16,6 +16,8 @@ import System.IO
 import System.Process
 import PostTX.Types
 
+
+import Debug.Trace
 import SharedTypes
 
 postTX ::
@@ -27,7 +29,7 @@ postTX tx = do
   liftIO $ System.IO.putStrLn stdErr
   return (exitCode, stdOut, stdErr)
   where
-    args = getPostTXargs tx
+    args = traceShow (getPostTXargs tx) (getPostTXargs tx)
     path = "./contracts/postTX.sh"
 
 bid :: ExceptT PostTXError (ReaderT TXConfig IO) PostTXResponse
