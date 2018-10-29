@@ -1,0 +1,3 @@
+[submodule "Fae"]
+	path = Fae
+	url = git@github.com:ConsenSys/Fae.git
