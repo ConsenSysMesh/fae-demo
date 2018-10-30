@@ -32,7 +32,8 @@ dependencies:
 - pretty-simple
 - errors
 - mtl
-- shared 
+- shared
+- fae
 
 library:
   source-dirs: src

@@ -8,6 +8,8 @@ import Data.Aeson.Types
 import Data.Time.Clock
 import GHC.Generics
 
+import  Blockchain.Fae.FrontEnd
+
 -- id of tx which created coin
 newtype CoinTXID =
   CoinTXID String

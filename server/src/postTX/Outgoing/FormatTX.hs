@@ -1,6 +1,5 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
-
 {-------------------------------------------------------------------------------------
   Retrieve the args required to post a transaction to Fae according to the postTX API
 --------------------------------------------------------------------------------------}
