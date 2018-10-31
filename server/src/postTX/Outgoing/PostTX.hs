@@ -6,6 +6,7 @@ module PostTX.Outgoing.PostTX where
 import Control.Monad
 import Control.Monad.Except
 import Control.Monad.Reader
+import Data.List
 import PostTX.Incoming.ParseTX
 import PostTX.Incoming.Types
 import PostTX.Outgoing.FormatTX
@@ -24,13 +25,23 @@ postTX ::
      AuctionTXin
   -> ExceptT PostTXError (ReaderT TXConfig IO) (ExitCode, String, String)
 postTX tx = do
-  (exitCode, stdOut, stdErr) <- liftIO $ readProcessWithExitCode path args []
+  liftIO $ print tx
+  (exitCode, stdOut, stdErr) <- liftIO $ readCreateProcessWithExitCode (shell $ unwords ("stack exec postTX -- " : finalArgs)){ cwd = pure "./contracts", std_out = CreatePipe, env = pure finalEnv } ""
   liftIO $ System.IO.putStrLn stdOut
   liftIO $ System.IO.putStrLn stdErr
   return (exitCode, stdOut, stdErr)
   where
-    args = traceShow (getPostTXargs tx) (getPostTXargs tx)
-    path = "./contracts/postTX.sh"
+    (env, args) = traceShow (getPostTXopts tx) (getPostTXopts tx)
+    finalArgs = args ++ ["--json"]
+    finalEnv = ("HOME", "~/fae") : env
+{-  (exitCode, stdOut, stdErr) <- liftIO $ readProcessWithExitCode cmd args []
+  liftIO $ System.IO.putStrLn stdOut
+  liftIO $ System.IO.putStrLn stdErr
+  return (exitCode, stdOut, stdErr)
+  where
+    args = traceShow (getPostTXargs tx ++ ["--json"]) (getPostTXargs tx  ++ ["--json"])
+    cmd = "stack exec postTX"
+    -}
 
 bid :: ExceptT PostTXError (ReaderT TXConfig IO) PostTXResponse
 bid = do
