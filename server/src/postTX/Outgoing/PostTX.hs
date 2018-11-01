@@ -41,7 +41,7 @@ postTX tx = do
   liftIO $ print exitCode
   return (exitCode, stdOut, stdErr)
   where
-    (contractName, env, args) = traceShow (getPostTXopts tx) (getPostTXopts tx)
+    PostTXOpts {..} = traceShow (getPostTXopts tx) (getPostTXopts tx)
     finalArgs = contractName : "--" : args ++ ["--json"]
 {-  (exitCode, stdOut, stdErr) <- liftIO $ readProcessWithExitCode cmd args []
   liftIO $ System.IO.putStrLn stdOut

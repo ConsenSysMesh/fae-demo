@@ -23,20 +23,31 @@ data PostTXOpts = PostTXOpts {
   contractName :: String,
   env :: [(String, String)],
   args :: [String]
-}
+} deriving (Show)
 
 -- Get the necessary environment variables and args for PostTX in order
 -- to post the auction TX
-getPostTXopts :: AuctionTXin -> (ContractName, Env, Args)
-getPostTXopts (FakeBidTXin (Key key) (AucTXID aucTXID) (CoinTXID coinTXID)) = ("Bid", env, ["--fake"])
+getPostTXopts :: AuctionTXin -> PostTXOpts
+getPostTXopts (FakeBidTXin (Key key) (AucTXID aucTXID) (CoinTXID coinTXID)) = 
+  PostTXOpts { contractName = "Bid", args = ["--fake"], env = env}
   where env = [("key", key), ("aucTX", aucTXID), ("coinTX", coinTXID), ("coinSCID", ""), ("coinVersion", "")]
-getPostTXopts (BidTXin (Key key) (AucTXID aucTXID) (CoinTXID coinTXID) (CoinSCID coinSCID) (CoinVersion coinVersion)) = ("Bid", env, [])
+
+getPostTXopts (BidTXin (Key key) (AucTXID aucTXID) (CoinTXID coinTXID) (CoinSCID coinSCID) (CoinVersion coinVersion)) = 
+  PostTXOpts { contractName = "Bid", args = [], env = env}
   where env = [ ("key", key), ("aucTX", aucTXID), ("coinTX", coinTXID), ("coinSCID", coinSCID), ("coinVersion", coinVersion) ]
-getPostTXopts (CreateAuctionTXin (Key key)) = ("Create", env, [])
-  where env = [("key", key)] 
-getPostTXopts (WithdrawTXin (Key key) (AucTXID aucTXID)) = ("Withdraw", env, [])
+
+getPostTXopts (CreateAuctionTXin (Key key)) =
+  PostTXOpts { contractName = "Create", args = [], env = env}
+  where env = [("key", key)]
+
+getPostTXopts (WithdrawTXin (Key key) (AucTXID aucTXID)) = 
+  PostTXOpts { contractName = "Withdraw", args = [], env = env}
   where env = [("key", key), ("aucTX", aucTXID)]
-getPostTXopts (GetCoinTXin (Key key)) = ("GetCoin", env, [])
+
+getPostTXopts (GetCoinTXin (Key key)) =
+  PostTXOpts { contractName = "GetCoin", args = [], env = env}
   where env = [("key", key), ("self", key)] 
-getPostTXopts (GetMoreCoinsTXin (Key key) (CoinTXID coinTXID)) = ("GetMoreCoins", env, [])
+
+getPostTXopts (GetMoreCoinsTXin (Key key) (CoinTXID coinTXID)) = 
+  PostTXOpts { contractName = "GetMoreCoins", args = [], env = env}
   where env = [("self", "bidder1"), ("key", "bidder1"), ("coinTX", coinTXID)]
