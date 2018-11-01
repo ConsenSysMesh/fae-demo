@@ -6,34 +6,43 @@ module PostTX.Outgoing.PostTX where
 import Control.Monad
 import Control.Monad.Except
 import Control.Monad.Reader
+
 import Data.List
+
+import Prelude
+
+import System.Exit
+import System.IO
+import System.Process
+import System.Environment
+import System.Directory
+
+import Debug.Trace
+
+import PostTX.Types
 import PostTX.Incoming.ParseTX
 import PostTX.Incoming.Types
 import PostTX.Outgoing.FormatTX
 import PostTX.Outgoing.Types
-import Prelude
-import System.Exit
-import System.IO
-import System.Process
-import PostTX.Types
-
-
-import Debug.Trace
 import SharedTypes
 
 postTX ::
      AuctionTXin
   -> ExceptT PostTXError (ReaderT TXConfig IO) (ExitCode, String, String)
 postTX tx = do
-  liftIO $ print tx
-  (exitCode, stdOut, stdErr) <- liftIO $ readCreateProcessWithExitCode (shell $ unwords ("stack exec postTX -- " : finalArgs)){ cwd = pure "./contracts", std_out = CreatePipe, env = pure finalEnv } ""
-  liftIO $ System.IO.putStrLn stdOut
-  liftIO $ System.IO.putStrLn stdErr
+  faeHome <- liftIO $ getEnv "FAE_HOME_DIR"
+  let finalEnv = ("HOME", faeHome) : env
+  liftIO $ print finalEnv
+  liftIO $ print finalArgs
+  (exitCode, stdOut, stdErr) <- liftIO $ withCurrentDirectory "/Users/tom/code/teamfae/demo/auction-server/server/contracts" (readProcessWithExitCode "stack" (["exec", "postTX"] ++ traceShow finalArgs finalArgs) "")
+  --(exitCode, stdOut, stdErr) <- liftIO $ readCreateProcessWithExitCode (shell $ unwords ("stack exec postTX" : "--" : finalArgs)){ cwd = pure "/Users/tom/code/teamfae/demo/auction-server/server/contracts", std_out = CreatePipe, env = pure finalEnv } ""
+  liftIO $ putStrLn stdOut
+  liftIO $ putStrLn stdErr
+  liftIO $ print exitCode
   return (exitCode, stdOut, stdErr)
   where
-    (env, args) = traceShow (getPostTXopts tx) (getPostTXopts tx)
-    finalArgs = args ++ ["--json"]
-    finalEnv = ("HOME", "~/fae") : env
+    (contractName, env, args) = traceShow (getPostTXopts tx) (getPostTXopts tx)
+    finalArgs = contractName : "--" : args ++ ["--json"]
 {-  (exitCode, stdOut, stdErr) <- liftIO $ readProcessWithExitCode cmd args []
   liftIO $ System.IO.putStrLn stdOut
   liftIO $ System.IO.putStrLn stdErr
