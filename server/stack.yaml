@@ -26,7 +26,7 @@ packages:
 
 # Dependency packages to be pulled from upstream that are not in the resolver
 # (e.g., acme-missiles-0.3)
-extra-deps: ["../../../fae", "../shared"]
+extra-deps: ["../../Fae", "../shared"]
 
 # User packages to be built.
 # Various formats can be used as shown in the example below.

@@ -1,6 +1,6 @@
 packages:
  - '.'
-extra-deps: [miso-0.20.0.0, "../shared"]
+extra-deps: [miso-0.20.0.0, "../shared", "../Fae"]
 
 resolver: lts-9.21
 compiler: ghcjs-0.2.1.9009021_ghc-8.0.2
