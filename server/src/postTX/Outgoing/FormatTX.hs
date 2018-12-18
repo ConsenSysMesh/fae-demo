@@ -36,17 +36,17 @@ getPostTXopts (BidTXin (Key key) (AucTXID aucTXID) (CoinTXID coinTXID) (CoinSCID
   where env = [ ("key", key), ("aucTX", aucTXID), ("coinTX", coinTXID), ("coinSCID", coinSCID), ("coinVersion", coinVersion) ]
 
 getPostTXopts (CreateAuctionTXin (Key key)) =
-  PostTXOpts { contractName = "Create", args = [], env = env}
+  PostTXOpts { contractName = "Create", args = ["--","--json"], env = env}
   where env = [("key", key)]
 
 getPostTXopts (WithdrawTXin (Key key) (AucTXID aucTXID)) = 
-  PostTXOpts { contractName = "Withdraw", args = [], env = env}
+  PostTXOpts { contractName = "Collect", args = [], env = env}
   where env = [("key", key), ("aucTX", aucTXID)]
 
 getPostTXopts (GetCoinTXin (Key key)) =
-  PostTXOpts { contractName = "GetCoin", args = [], env = env}
+  PostTXOpts { contractName = "GetCoin", args = ["--","--json"], env = env}
   where env = [("key", key), ("self", key)] 
 
 getPostTXopts (GetMoreCoinsTXin (Key key) (CoinTXID coinTXID)) = 
-  PostTXOpts { contractName = "GetMoreCoins", args = [], env = env}
-  where env = [("self", "bidder1"), ("key", "bidder1"), ("coinTX", coinTXID)]
+  PostTXOpts { contractName = "GetMoreCoins", args = ["--","--json"], env = env}
+  where env = [("ver", "Current"), ("self", "bidder1"), ("key", "bidder1"), ("coinTX", coinTXID)]

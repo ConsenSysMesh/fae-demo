@@ -17,6 +17,16 @@ import System.Process
 import System.Environment
 import System.Directory
 
+import Data.Aeson
+import qualified Data.ByteString.Lazy.Char8 as C
+import Data.Text (Text)
+import qualified Data.Text as T
+import qualified Data.Text.Lazy as X
+import qualified Data.Text.Lazy.Encoding as D
+
+import Data.Either
+import Data.Maybe
+
 import Debug.Trace
 
 import PostTX.Types
@@ -26,23 +36,21 @@ import PostTX.Outgoing.FormatTX
 import PostTX.Outgoing.Types
 import SharedTypes
 
+import FaeTXSummary
+
+parseTXSummary :: Text -> Either String TXSummary
+parseTXSummary jsonTxt = eitherDecode $ C.pack $ T.unpack jsonTxt
+
 postTX ::
      AuctionTXin
-  -> ExceptT PostTXError (ReaderT TXConfig IO) (ExitCode, String, String)
+  -> ExceptT PostTXError (ReaderT TXConfig IO) (TXSummary)
 postTX tx = do
-  faeHome <- liftIO $ getEnv "FAE_HOME_DIR"
-  let finalEnv = ("HOME", faeHome) : env
-  liftIO $ print finalEnv
-  liftIO $ print finalArgs
-  (exitCode, stdOut, stdErr) <- liftIO $ withCurrentDirectory "/Users/tom/code/teamfae/demo/auction-server/server/contracts" (readProcessWithExitCode "stack" (["exec", "postTX"] ++ traceShow finalArgs finalArgs) "")
-  --(exitCode, stdOut, stdErr) <- liftIO $ readCreateProcessWithExitCode (shell $ unwords ("stack exec postTX" : "--" : finalArgs)){ cwd = pure "/Users/tom/code/teamfae/demo/auction-server/server/contracts", std_out = CreatePipe, env = pure finalEnv } ""
-  liftIO $ putStrLn stdOut
-  liftIO $ putStrLn stdErr
-  liftIO $ print exitCode
-  return (exitCode, stdOut, stdErr)
+  stdout <- liftIO $ readProcess "stack" ["exec", "posttx", "Create","--","--json"] []
+  liftIO $ putStrLn stdout
+  either (throwError . TXSummaryParseFailed) return (parseTXSummary $ T.pack stdout)
   where
     PostTXOpts {..} = traceShow (getPostTXopts tx) (getPostTXopts tx)
-    finalArgs = contractName : "--" : args ++ ["--json"]
+    finalArgs = []
 {-  (exitCode, stdOut, stdErr) <- liftIO $ readProcessWithExitCode cmd args []
   liftIO $ System.IO.putStrLn stdOut
   liftIO $ System.IO.putStrLn stdErr
@@ -52,6 +60,31 @@ postTX tx = do
     cmd = "stack exec postTX"
     -}
 
+{-
+
+-- | Useful for Fae clients communicating with faeServer
+data TXSummary = TXSummary {
+  transactionID :: TransactionID,
+  txResult :: String,
+  txOutputs:: Vector VersionID,
+  txInputSummaries :: InputSummaries,
+  txMaterialsSummaries :: MaterialsSummaries,
+  txSSigners :: [(String, PublicKey)]
+} deriving (Generic)
+
+data TXInputSummary = TXInputSummary {
+  txInputStatus :: Status,
+  txInputOutputs :: Vector VersionID,
+  txInputMaterialsSummaries :: MaterialsSummaries,
+  txInputVersion :: VersionID
+} deriving (Generic)
+
+type InputSummary = (ContractID, TXInputSummary)
+type InputSummaries = Vector InputSummary
+type MaterialsSummaries = Vector (String, InputSummary)
+
+-}
+
 bid :: ExceptT PostTXError (ReaderT TXConfig IO) PostTXResponse
 bid = do
   (FakeBidTX _ _ coinTXID coinSCID coinVersion) <- placeFakeBid
@@ -60,15 +93,18 @@ bid = do
 placeFakeBid :: ExceptT PostTXError (ReaderT TXConfig IO) PostTXResponse
 placeFakeBid = do
   config@(BidConfig key aucTXID coinTXID) <- ask
-  (exitCode, stdOut, stdErr) <- postTX (FakeBidTXin key aucTXID coinTXID)
-  case exitCode of
-    ExitSuccess ->
-      maybe
+  TXSummary{..} <- postTX (FakeBidTXin key aucTXID coinTXID)
+  FakeBidTXResponse {
+    coinSCID=txInputVersion,
+    coinVersion="",
+    ..
+    }
+
+  maybe
         (throwError $ TXBodyFailed stdOut)
         (\FakeBidTXout {..} ->
            return $ FakeBidTX key aucTXID coinTXID coinSCID coinVersion)
         (runReaderT (fakeBidParser stdOut) config)
-    ExitFailure _ -> throwError (TXFailed stdErr)
 
 placeBid ::
      CoinTXID
@@ -77,61 +113,40 @@ placeBid ::
   -> ExceptT PostTXError (ReaderT TXConfig IO) PostTXResponse
 placeBid coinTXID coinSCID coinVersion = do
   config@(BidConfig key aucTXID coinTXID) <- ask
-  (exitCode, stdOut, stdErr) <-
+  stdOut <-
     postTX (BidTXin key aucTXID coinTXID coinSCID coinVersion)
-  case exitCode of
-    ExitSuccess ->
-      maybe
+  maybe
         (throwError $ TXBodyFailed stdOut)
         (\BidTXout {..} -> return $ BidTX txid aucTXID coinTXID isWinningBid)
         (runReaderT (bidParser stdOut) config)
-    ExitFailure _ -> throwError $ TXFailed stdErr
 
 createAuction :: ExceptT PostTXError (ReaderT TXConfig IO) PostTXResponse
 createAuction = do
   (CreateAuctionConfig key) <- ask
-  (exitCode, stdOut, stdErr) <- postTX (CreateAuctionTXin key)
-  case exitCode of
-    ExitSuccess ->
-      maybe
-        (throwError $ TXBodyFailed stdOut)
-        (\(CreateAuctionTXout txid) -> return $ AuctionCreatedTX txid)
-        (createAuctionParser stdOut)
-    ExitFailure _ -> throwError $ TXFailed stdErr
+  TXSummary{..} <- postTX (CreateAuctionTXin key)
+  return $ AuctionCreatedTX transactionID
 
 getCoin :: ExceptT PostTXError (ReaderT TXConfig IO) PostTXResponse
 getCoin = do
   (GetCoinConfig key) <- ask
-  (exitCode, stdOut, stdErr) <- postTX (GetCoinTXin key)
-  case exitCode of
-    ExitSuccess ->
-      maybe
-        (throwError $ TXBodyFailed stdOut)
-        (\(GetCoinTXout txid) -> return $ GetCoinTX txid)
-        (getCoinParser stdOut)
-    ExitFailure _ -> throwError $ TXFailed stdErr
+  TXSummary{..} <- postTX (GetCoinTXin key)
+  return $ GetCoinTX transactionID
 
 -- take the coins from an old cache destroy the cache and deposit the old coins + 1 new coin to a new cache
 getMoreCoins :: ExceptT PostTXError (ReaderT TXConfig IO) PostTXResponse
 getMoreCoins = do
   (GetMoreCoinsConfig key coinTXID) <- ask
-  (exitCode, stdOut, stdErr) <- postTX (GetMoreCoinsTXin key coinTXID)
-  case exitCode of
-    ExitSuccess ->
-      maybe
+  stdOut <- postTX (GetMoreCoinsTXin key coinTXID)
+  maybe
         (throwError $ TXBodyFailed stdOut)
         (\(GetMoreCoinsTXout txid) -> return $ GetMoreCoinsTX txid)
         (getMoreCoinsParser stdOut)
-    ExitFailure _ -> throwError $ TXFailed stdErr
 
 withdraw :: ExceptT PostTXError (ReaderT TXConfig IO) PostTXResponse
 withdraw = do
   (WithdrawConfig key aucTXID) <- ask
-  (exitCode, stdOut, stdErr) <- postTX (WithdrawTXin key aucTXID)
-  case exitCode of
-    ExitSuccess ->
-      maybe
-        (throwError $ TXBodyFailed stdOut)
+  txOutJSON <- postTX (WithdrawTXin key aucTXID)
+  maybe
+        (throwError $ TXBodyFailed txOutJSON)
         (\(WithdrawTXout txid) -> return $ WithdrawTX txid)
-        (withdrawParser stdOut)
-    ExitFailure _ -> throwError $ TXFailed stdErr
+        (txOutJSON)
