@@ -2,13 +2,14 @@
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE DeriveAnyClass #-}
 
-module SharedTypes where 
+module SharedTypes where
 
 import Data.Aeson.Types
 import Data.Time.Clock
 import GHC.Generics
 
-import  Blockchain.Fae.FrontEnd
+import FaeTypes
+import FaeCrypto
 
 -- id of tx which created coin
 newtype CoinTXID =
@@ -64,5 +65,6 @@ data Err
 data PostTXError
   = TXFailed String
   | TXBodyFailed String
+  | TXSummaryParseFailed String
   | TXInputFailed Int
   deriving (Show, Eq, Generic, ToJSON, FromJSON)

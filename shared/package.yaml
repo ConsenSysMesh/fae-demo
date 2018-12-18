@@ -21,14 +21,55 @@ description:         Please see the README on GitHub at <https://github.com/gith
 
 dependencies:
 - base >= 4.7 && < 5
+- bytestring
+- base16-bytestring
 - aeson
-- time 
-- fae
+- cereal
+- cryptonite >= 0.24
+- exceptions
+- deepseq
+- time
+- template-haskell
+- containers
+- lens
+- pretty
+- memory
+- mtl
+- text
+- vector
+
+default-extensions:
+  -  BangPatterns
+  -  ConstraintKinds
+  -  DefaultSignatures
+  -  DeriveGeneric
+  -  ExistentialQuantification
+  -  FlexibleContexts
+  -  FlexibleInstances
+  -  FunctionalDependencies
+  -  GeneralizedNewtypeDeriving
+  -  LambdaCase
+  -  MultiParamTypeClasses
+  -  MultiWayIf
+  -  NamedFieldPuns
+  -  OverloadedStrings
+  -  PatternGuards
+  -  RankNTypes
+  -  RecordWildCards
+  -  ScopedTypeVariables
+  -  StandaloneDeriving
+  -  TupleSections
+  -  TypeApplications
+  -  TypeFamilies
+  -  TypeFamilyDependencies
+  -  TypeOperators
+
 
 library:
   source-dirs: src
   exposed-modules:
      - SharedTypes
+     - FaeTXSummary
 
 tests:
   shared-test:
