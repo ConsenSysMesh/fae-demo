@@ -3,30 +3,18 @@
 
 module PostTX.Types where
 
-import SharedTypes (Key, AucTXID, CoinTXID, TXID, PostTXError)
-
-newtype CoinSCID =
-  CoinSCID String
-  deriving (Show, Eq)
-
-newtype CoinVersion =
-  CoinVersion String
-  deriving (Show, Eq)
+import SharedTypes (Key, AucTXID, CoinTXID, PostTXError)
+import FaeFrontend
 
 data PostTXResponse
-  = AuctionCreatedTX TXID
-  | FakeBidTX Key
-            AucTXID
-            CoinTXID
-            CoinSCID
-            CoinVersion
-  | BidTX TXID
+  = AuctionCreatedTX TransactionID
+  | BidTX TransactionID
         AucTXID
         CoinTXID
         Bool
-  | GetCoinTX TXID
-  | GetMoreCoinsTX TXID
-  | WithdrawTX TXID
+  | GetCoinTX TransactionID
+  | GetMoreCoinsTX TransactionID
+  | WithdrawTX TransactionID
   deriving (Show, Eq)
 
 data TXConfig

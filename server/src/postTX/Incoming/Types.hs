@@ -4,30 +4,20 @@ module PostTX.Incoming.Types where
 
 import PostTX.Types
 import SharedTypes
+import FaeFrontend
 
 type IsWinningBid = Bool
 
-data FakeBidTXout = FakeBidTXout
-  { key :: Key
-  , txid :: TXID
-  , aucTXID :: AucTXID
-  , coinTXID :: CoinTXID
-  , coinSCID :: CoinSCID
-  , coinVersion :: CoinVersion
-  }
-
 data BidTXout = BidTXout
-  { txid :: TXID
+  { txid :: TransactionID
   , aucTXID :: AucTXID
   , coinTXID :: CoinTXID
-  , coinSCID :: CoinSCID
-  , coinVersion :: CoinVersion
   , isWinningBid :: IsWinningBid
   }
 
 data AuctionTXout
-  = CreateAuctionTXout TXID
-  | WithdrawTXout TXID
-  | GetCoinTXout TXID
-  | GetMoreCoinsTXout TXID
+  = CreateAuctionTXout TransactionID
+  | WithdrawTXout TransactionID
+  | GetCoinTXout TransactionID
+  | GetMoreCoinsTXout TransactionID
   deriving (Show, Eq)

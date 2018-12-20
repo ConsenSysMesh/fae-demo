@@ -39,7 +39,6 @@ dependencies:
 library:
   source-dirs: src
   other-modules:
-    PostTX.Incoming.ParseTX
     PostTX.Incoming.Types
     PostTX.Outgoing.FormatTX
     PostTX.Outgoing.PostTX

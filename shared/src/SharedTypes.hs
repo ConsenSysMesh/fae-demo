@@ -10,26 +10,21 @@ import GHC.Generics
 
 import FaeTypes
 import FaeCrypto
-
--- id of tx which created coin
-newtype CoinTXID =
-  CoinTXID String
-  deriving (Show, Eq, Generic, ToJSON, FromJSON, Ord)
-
-newtype TXID =
-  TXID String
-  deriving (Show, Eq, Generic, ToJSON, FromJSON, Ord)
- -- private key for signing txs
+import FaeJSON
 
 newtype Key =
   Key String
   deriving (Show, Eq, Generic, ToJSON, FromJSON)
   -- id of the tx which created auction
 
+-- id of tx which created coin
+newtype CoinTXID =
+  CoinTXID String
+  deriving (Show, Eq, Generic, ToJSON, FromJSON, Ord)
+
 newtype AucTXID =
   AucTXID String
   deriving (Show, Read, Eq, Generic, ToJSON, FromJSON, Ord) -- Int represents the number of the argument that failed
-  -- hash of the coin
 
 data Auction = Auction
   { bids :: [Bid]

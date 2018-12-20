@@ -7,10 +7,14 @@ import Control.Monad.Except
 import Data.Either
 import qualified Data.Map.Lazy as Map
 import Data.Maybe
-import PostTX
 import Prelude
+
+import PostTX
 import Types
+
 import SharedTypes
+import FaeFrontend
+import FaeCrypto
 
 generateCoins :: Key -> Int -> Wallet -> ExceptT PostTXError IO Wallet
 generateCoins key numCoins w@(Wallet wallet)
@@ -19,13 +23,13 @@ generateCoins key numCoins w@(Wallet wallet)
     postTXResult <- lift $ getCoin key
     either
       throwError
-      (\(GetCoinTX (TXID txid)) -> depositCoins key w numCoins (CoinTXID txid))
+      (\(GetCoinTX (TransactionID txid)) -> depositCoins key w numCoins (CoinTXID txid))
       postTXResult
   | otherwise = do
     postTXResult <- lift $ getCoins key baseCoinTXID numCoins -- todo instead - call getmorecoins on previous cache and then updatewallet int is sum of old and new coins
     either
       throwError
-      (\(GetMoreCoinsTX (TXID txid)) -> do
+      (\(GetMoreCoinsTX (TransactionID txid)) -> do
          let baseCoinCacheValue = fromJust $ Map.lookup baseCoinTXID wallet
          let newCoinCacheValue = (numCoins + baseCoinCacheValue)
          return $
@@ -43,7 +47,7 @@ depositCoins key wallet numCoins coinTXID = do
   postTXResponse <- liftIO (getCoins key coinTXID numCoins)
   either
     throwError
-    (\(GetMoreCoinsTX (TXID txid)) ->
+    (\(GetMoreCoinsTX (TransactionID txid)) ->
        return $ deposit wallet numCoins (CoinTXID txid))
     postTXResponse
 
@@ -52,7 +56,7 @@ depositCoin key wallet = do
   postTXResponse <- liftIO (getCoin key)
   either
     throwError
-    (\(GetCoinTX (TXID txid)) -> return $ deposit wallet numCoins (CoinTXID txid))
+    (\(GetCoinTX (TransactionID txid)) -> return $ deposit wallet numCoins (CoinTXID txid))
     postTXResponse
   where
     numCoins = 1
@@ -62,9 +66,9 @@ getCoin key = executeContract (GetCoinConfig key)
 
 getCoins :: Key -> CoinTXID -> Int -> IO (Either PostTXError PostTXResponse)
 getCoins key coinTXID@(CoinTXID txid) numCoins
-  | numCoins == 0 = return (Right (GetMoreCoinsTX (TXID txid)))
+  | numCoins == 0 = return (Right (GetMoreCoinsTX (TransactionID txid)))
   | otherwise = do
-    (Right (GetMoreCoinsTX (TXID txid))) <- liftIO getMoreCoins
+    (Right (GetMoreCoinsTX (TransactionID txid))) <- liftIO getMoreCoins
     getCoins key (CoinTXID txid) (numCoins - 1)
   where
     getMoreCoins = executeContract (GetMoreCoinsConfig key coinTXID)

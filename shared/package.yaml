@@ -70,6 +70,8 @@ library:
   exposed-modules:
      - SharedTypes
      - FaeTXSummary
+     - FaeCrypto
+     - FaeFrontend
 
 tests:
   shared-test:

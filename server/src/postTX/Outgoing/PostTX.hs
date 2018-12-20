@@ -30,7 +30,6 @@ import Data.Maybe
 import Debug.Trace
 
 import PostTX.Types
-import PostTX.Incoming.ParseTX
 import PostTX.Incoming.Types
 import PostTX.Outgoing.FormatTX
 import PostTX.Outgoing.Types
@@ -85,40 +84,13 @@ type MaterialsSummaries = Vector (String, InputSummary)
 
 -}
 
-bid :: ExceptT PostTXError (ReaderT TXConfig IO) PostTXResponse
-bid = do
-  (FakeBidTX _ _ coinTXID coinSCID coinVersion) <- placeFakeBid
-  placeBid coinTXID coinSCID coinVersion
-
-placeFakeBid :: ExceptT PostTXError (ReaderT TXConfig IO) PostTXResponse
-placeFakeBid = do
+placeBid :: ExceptT PostTXError (ReaderT TXConfig IO) PostTXResponse
+placeBid = do
   config@(BidConfig key aucTXID coinTXID) <- ask
-  TXSummary{..} <- postTX (FakeBidTXin key aucTXID coinTXID)
-  FakeBidTXResponse {
-    coinSCID=txInputVersion,
-    coinVersion="",
-    ..
-    }
-
-  maybe
-        (throwError $ TXBodyFailed stdOut)
-        (\FakeBidTXout {..} ->
-           return $ FakeBidTX key aucTXID coinTXID coinSCID coinVersion)
-        (runReaderT (fakeBidParser stdOut) config)
-
-placeBid ::
-     CoinTXID
-  -> CoinSCID
-  -> CoinVersion
-  -> ExceptT PostTXError (ReaderT TXConfig IO) PostTXResponse
-placeBid coinTXID coinSCID coinVersion = do
-  config@(BidConfig key aucTXID coinTXID) <- ask
-  stdOut <-
-    postTX (BidTXin key aucTXID coinTXID coinSCID coinVersion)
-  maybe
-        (throwError $ TXBodyFailed stdOut)
-        (\BidTXout {..} -> return $ BidTX txid aucTXID coinTXID isWinningBid)
-        (runReaderT (bidParser stdOut) config)
+  TXSummary{..} <-
+    postTX (BidTXin key aucTXID coinTXID)
+  let hasWon = txResult == "You won!"
+  return $ BidTX transactionID aucTXID coinTXID hasWon
 
 createAuction :: ExceptT PostTXError (ReaderT TXConfig IO) PostTXResponse
 createAuction = do
@@ -136,17 +108,11 @@ getCoin = do
 getMoreCoins :: ExceptT PostTXError (ReaderT TXConfig IO) PostTXResponse
 getMoreCoins = do
   (GetMoreCoinsConfig key coinTXID) <- ask
-  stdOut <- postTX (GetMoreCoinsTXin key coinTXID)
-  maybe
-        (throwError $ TXBodyFailed stdOut)
-        (\(GetMoreCoinsTXout txid) -> return $ GetMoreCoinsTX txid)
-        (getMoreCoinsParser stdOut)
+  TXSummary{..} <- postTX (GetMoreCoinsTXin key coinTXID)
+  return $ GetMoreCoinsTX transactionID
 
 withdraw :: ExceptT PostTXError (ReaderT TXConfig IO) PostTXResponse
 withdraw = do
   (WithdrawConfig key aucTXID) <- ask
-  txOutJSON <- postTX (WithdrawTXin key aucTXID)
-  maybe
-        (throwError $ TXBodyFailed txOutJSON)
-        (\(WithdrawTXout txid) -> return $ WithdrawTX txid)
-        (txOutJSON)
+  TXSummary{..} <- postTX (WithdrawTXin key aucTXID)
+  return $ WithdrawTX transactionID

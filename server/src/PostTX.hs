@@ -12,7 +12,7 @@ import PostTX.Types
 import SharedTypes
 
 executeContract :: TXConfig -> IO (Either PostTXError PostTXResponse)
-executeContract conf@BidConfig {} = execute bid conf
+executeContract conf@BidConfig {} = execute placeBid conf
 executeContract conf@CreateAuctionConfig {} = execute createAuction conf
 executeContract conf@GetCoinConfig {} = execute getCoin conf
 executeContract conf@GetMoreCoinsConfig {} = execute getMoreCoins conf

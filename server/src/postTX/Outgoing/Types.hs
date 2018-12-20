@@ -1,17 +1,12 @@
 module PostTX.Outgoing.Types where
 
-import PostTX.Types (CoinSCID, CoinVersion)
+import PostTX.Types
 import SharedTypes (Key, AucTXID, CoinTXID)
 
-data AuctionTXin
-  = FakeBidTXin Key
-                AucTXID
-                CoinTXID
-  | BidTXin Key
+data AuctionTXin =
+  BidTXin Key
             AucTXID
             CoinTXID
-            CoinSCID
-            CoinVersion
   | CreateAuctionTXin Key
   | WithdrawTXin Key
                  AucTXID

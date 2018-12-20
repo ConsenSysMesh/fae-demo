@@ -33,3 +33,5 @@ import FaeTXSummary
     TXSummary(..), TXInputSummary(..), 
     InputSummary, InputSummaries, MaterialsSummaries,
   )
+
+type TransactionID = Digest
