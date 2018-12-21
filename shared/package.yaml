@@ -64,7 +64,6 @@ default-extensions:
   -  TypeFamilyDependencies
   -  TypeOperators
 
-
 library:
   source-dirs: src
   exposed-modules:

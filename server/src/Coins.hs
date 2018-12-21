@@ -23,13 +23,13 @@ generateCoins key numCoins w@(Wallet wallet)
     postTXResult <- lift $ getCoin key
     either
       throwError
-      (\(GetCoinTX (TransactionID txid)) -> depositCoins key w numCoins (CoinTXID txid))
+      (\(GetCoinTX txid) -> depositCoins key w numCoins (CoinTXID txid))
       postTXResult
   | otherwise = do
     postTXResult <- lift $ getCoins key baseCoinTXID numCoins -- todo instead - call getmorecoins on previous cache and then updatewallet int is sum of old and new coins
     either
       throwError
-      (\(GetMoreCoinsTX (TransactionID txid)) -> do
+      (\(GetMoreCoinsTX txid) -> do
          let baseCoinCacheValue = fromJust $ Map.lookup baseCoinTXID wallet
          let newCoinCacheValue = (numCoins + baseCoinCacheValue)
          return $
@@ -47,8 +47,8 @@ depositCoins key wallet numCoins coinTXID = do
   postTXResponse <- liftIO (getCoins key coinTXID numCoins)
   either
     throwError
-    (\(GetMoreCoinsTX (TransactionID txid)) ->
-       return $ deposit wallet numCoins (CoinTXID txid))
+    (\(GetMoreCoinsTX txid) -> 
+      return $ deposit wallet numCoins (CoinTXID txid))
     postTXResponse
 
 depositCoin :: Key -> Wallet -> ExceptT PostTXError IO Wallet
@@ -56,7 +56,7 @@ depositCoin key wallet = do
   postTXResponse <- liftIO (getCoin key)
   either
     throwError
-    (\(GetCoinTX (TransactionID txid)) -> return $ deposit wallet numCoins (CoinTXID txid))
+    (\(GetCoinTX txid) -> return $ deposit wallet numCoins (CoinTXID txid))
     postTXResponse
   where
     numCoins = 1
@@ -66,9 +66,9 @@ getCoin key = executeContract (GetCoinConfig key)
 
 getCoins :: Key -> CoinTXID -> Int -> IO (Either PostTXError PostTXResponse)
 getCoins key coinTXID@(CoinTXID txid) numCoins
-  | numCoins == 0 = return (Right (GetMoreCoinsTX (TransactionID txid)))
+  | numCoins == 0 = return (Right (GetMoreCoinsTX txid))
   | otherwise = do
-    (Right (GetMoreCoinsTX (TransactionID txid))) <- liftIO getMoreCoins
+    (Right (GetMoreCoinsTX txid)) <- liftIO getMoreCoins
     getCoins key (CoinTXID txid) (numCoins - 1)
   where
     getMoreCoins = executeContract (GetMoreCoinsConfig key coinTXID)
