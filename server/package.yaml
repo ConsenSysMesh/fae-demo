@@ -36,6 +36,32 @@ dependencies:
 - shared
 - fae
 
+default-extensions:
+  -  BangPatterns
+  -  ConstraintKinds
+  -  DefaultSignatures
+  -  DeriveGeneric
+  -  ExistentialQuantification
+  -  FlexibleContexts
+  -  FlexibleInstances
+  -  FunctionalDependencies
+  -  GeneralizedNewtypeDeriving
+  -  LambdaCase
+  -  MultiParamTypeClasses
+  -  MultiWayIf
+  -  NamedFieldPuns
+  -  OverloadedStrings
+  -  PatternGuards
+  -  RankNTypes
+  -  RecordWildCards
+  -  ScopedTypeVariables
+  -  StandaloneDeriving
+  -  TupleSections
+  -  TypeApplications
+  -  TypeFamilies
+  -  TypeFamilyDependencies
+  -  TypeOperators
+
 library:
   source-dirs: src
   other-modules:
