@@ -8,7 +8,7 @@ module Msg
 import Data.Time.Calendar
 import Data.Time.Format
 import Data.Time.Clock
-import Auction
+import AuctionManager
 import Clients
 import Coins
 import Control.Concurrent (MVar, modifyMVar, modifyMVar_, readMVar)
@@ -93,7 +93,7 @@ updateAuction (BidTX txid aucTXID coinTXID hasWon) = do
       currentTime <- getCurrentTime
       return Bid {bidder = clientName, bidValue = bidAmount, bidTimestamp = currentTime, isWinningBid = hasWon}
     outgoingMsg = BidSubmitted aucTXID 
-updateAuction (AuctionCreatedTX (TXID txid)) = do
+updateAuction (AuctionCreatedTX (txid)) = do
   (state, clientName) <- ask
   ServerState {..} <- liftIO $ readMVar state
   newAuction <- liftIO $ getNewAuction clientName
@@ -101,7 +101,7 @@ updateAuction (AuctionCreatedTX (TXID txid)) = do
   liftIO $ updateServerState state ServerState {auctions = updatedAuctions, ..}
   liftIO $ broadcast state $ outgoingMsg $ newAuction
   where
-    auctionId = AucTXID txid
+    auctionId = AucTXID $ show txid
     getNewAuction clientName = do
       currentTime <- getCurrentTime
       return Auction

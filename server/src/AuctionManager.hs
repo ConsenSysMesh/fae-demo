@@ -4,7 +4,7 @@
 ----------------------------------------------
 -- Post Auction Transactions To Fae
 ----------------------------------------------
-module Auction where
+module AuctionManager where
 
 import qualified Data.List as Li
 import Data.Map.Lazy (Map)
