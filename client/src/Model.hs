@@ -8,7 +8,7 @@
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE ExtendedDefaultRules #-}
 
-module Lib where
+module Model where
 
 import Auction
 import Data.Aeson as A
@@ -56,6 +56,7 @@ getInitialModel currentURI =
     , received = S.ms ""
     , msg = Message $ S.ms ""
     , bidFieldValue = 0
+    , genNumCoinsField = 1
     , username = S.ms ""
     , loggedIn = False
     , selectedAuctionTXID = Nothing

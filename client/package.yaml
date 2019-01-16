@@ -39,7 +39,7 @@ executables:
     - src
     other-modules:
     - Auction
-    - Lib
+    - Model
     - Types
     - Views
     ghc-options:
