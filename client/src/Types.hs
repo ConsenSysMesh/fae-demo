@@ -54,6 +54,7 @@ data Model = Model
   , received :: MisoString
   , auctions :: M.Map AucTXID Auction
   , bidFieldValue :: Int
+  , genNumCoinsField :: Int
   , username :: MisoString
   , loggedIn :: Bool
   , selectedAuctionTXID :: Maybe AucTXID
@@ -74,6 +75,7 @@ data AppAction
   | Logout
   | UpdateMessage MisoString
   | UpdateBidField (Maybe Int)
+  | UpdateGenNumCoinsField (Maybe Int)
   | SelectAuction AucTXID
   | HandleURI URI
   | ChangeURI URI

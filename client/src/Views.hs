@@ -53,18 +53,32 @@ homeView m@Model {..} =
 mainBtns :: Model -> View Action
 mainBtns Model {..} =
   div_ [ class_ "main-btns" ] $
-  [button_
-    [ 
-        onClick (AppAction (SendServerAction (CreateAuctionRequest)))
-    ]
-    [text "Create New Auction"]]
-    ++ [
-       button_ [class_ "get-coin-btn", onClick getCoin] [text "Get Coin"]
-       ]
-  where numCoins = 1 
-        getCoin = AppAction (SendServerAction (RequestCoins numCoins))
-
-
+    [button_
+      [ 
+          onClick (AppAction (SendServerAction (CreateAuctionRequest)))
+      ]
+      [text "Create New Auction"]
+      ] ++ [genCoinNumInput genNumCoinsField]
+    
+genCoinNumInput :: Int -> View Action
+genCoinNumInput numCoinsToGen =
+  div_
+    [class_ "gen-coin-input-container"]
+    [ input_
+        [ class_ "gen-coin-num-field-input"
+        , type_ "text"
+        , autofocus_ True
+        , value_ $ S.pack $ show numCoinsToGen
+        , name_ "numCoinsGen"
+        , onInput $
+          AppAction . UpdateGenNumCoinsField . readMaybe . S.unpack . S.toMisoString
+        ],
+         button_ [class_ "get-coin-btn", onClick getCoinsAction] [text "Mint Coins"]
+        ]
+  where
+    title = S.pack $ "Coins"
+    getCoinsAction =  AppAction (SendServerAction (RequestCoins numCoinsToGen))
+ 
 appView :: Model -> View Action
 appView m = view
   where
@@ -163,8 +177,6 @@ viewAuctionsTable Model {..} =
         ]
     ]
 
-
-
 auctionView :: AucTXID -> Auction -> Int -> String -> Int -> View Action
 auctionView aucTXID@(AucTXID txid) auction@Auction {..} bidFieldValue username accountBalance =
   div_
@@ -193,8 +205,6 @@ placeBidView aucTXID auction@Auction {..} bidFieldValue username canBid =
         [ class_ "bid-field-input"
         , type_ "text"
         , placeholder_ "Enter Bid"
-        , autofocus_ True
-        , disabled_ True
         , value_ $ S.pack $ show bidFieldValue
         , name_ "bidValue"
         , onInput $

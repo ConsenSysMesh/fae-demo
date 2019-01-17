@@ -1,6 +1,6 @@
 module Main where
 
-import Lib
+import Model
 
 main :: IO ()
 main = runApp

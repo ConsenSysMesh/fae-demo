@@ -95,6 +95,9 @@ handleAppAction (SelectAuction aucTXID) Model {..} =
 handleAppAction (UpdateBidField maybeInt) Model {..} =
   Model {bidFieldValue = fromMaybe bidFieldValue maybeInt, ..} <# do
     pure (AppAction Noop)
+handleAppAction (UpdateGenNumCoinsField maybeInt) Model {..} =
+  Model {genNumCoinsField = fromMaybe 0 maybeInt, ..} <# do
+    pure (AppAction Noop)
 handleAppAction (SendMessage msg) model =
   model <# do send msg >> pure (AppAction Noop)
 handleAppAction (HandleWebSocket (WebSocketMessage msg@(Message m))) model =
@@ -121,5 +124,5 @@ handleServerAction a@(BidSubmitted aucTXID bid) Model {..} =
     updatedAuctions = bidOnAuction aucTXID bid auctions
 handleServerAction a@(CoinsGenerated numCoins) Model {..} =
   noEff Model {accountBalance = newBalance, bidFieldValue = newBalance, ..} -- bidAmount == account balance for simplicity
-  where newBalance = accountBalance + 1
+  where newBalance = accountBalance + numCoins
 handleServerAction _ model = noEff model
