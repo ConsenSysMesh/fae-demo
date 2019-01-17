@@ -38,6 +38,30 @@ import SharedTypes
 import Data.Proxy
 import Servant.API
 
+appView :: Model -> View Action
+appView m = view
+  where
+  view =
+    either (const the404) id
+      $ runRoute (Proxy :: Proxy API) handlers uri m
+  handlers = login :<|> home
+  home (_ :: Model) = div_ [] [
+     homeView m 
+    ]
+  login (_ :: Model) = div_ [] [
+     loginView m
+    ]
+  the404 = div_ [] [
+      text "404 :("
+    , button_ [ onClick (AppAction goLogin) ] [ text "Login" ]
+    ]
+
+loginView :: Model -> View Action
+loginView m@Model {..} = div_ [] [
+    loginForm m,
+    h1_ [class_ "heading"] [ text "Auctions Powered by Fae"]
+  ]
+
 homeView :: Model -> View Action
 homeView m@Model {..} =
   div_ [style_ $ M.fromList [("text-align", "center")]] $
@@ -79,30 +103,10 @@ genCoinNumInput numCoinsToGen =
     title = S.pack $ "Coins"
     getCoinsAction =  AppAction (SendServerAction (RequestCoins numCoinsToGen))
  
-appView :: Model -> View Action
-appView m = view
-  where
-  view =
-    either (const the404) id
-      $ runRoute (Proxy :: Proxy API) handlers uri m
-  handlers = login :<|> home
-  home (_ :: Model) = div_ [] [
-     homeView m 
-    ]
-  login (_ :: Model) = div_ [] [
-     loginView m
-    ]
-  the404 = div_ [] [
-      text "404 :("
-    , button_ [ onClick (AppAction goLogin) ] [ text "Login" ]
-    ]
 
-loginView m@Model {..} = div_ [] [
-    loginForm m,
-    h1_ [class_ "heading"] [ text "Auctions Powered by Fae"]
-  ]
-
-
+bookImg :: View Action
+bookImg = img_ [class_ "book-view", src_ "/book.jpeg", width_ "250px"]
+  
 selectedAuctionView :: Model -> View Action
 selectedAuctionView Model {..} =
   case selectedAuctionTXID of
