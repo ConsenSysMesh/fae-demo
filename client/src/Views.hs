@@ -220,7 +220,7 @@ placeBidView aucTXID auction@Auction {..} bidFieldValue username canBid =
           AppAction . UpdateBidField . readMaybe . S.unpack . S.toMisoString
         , onEnter bidAction
         ]
-    , button_ [class_ "bid-field-btn", onClick bidAction, disabled_ $ not canBid ] [text "Place Bid"]
+    , button_ [class_ "bid-field-btn", onClick bidAction, disabled_ $ auctionEnded auction] [text "Place Bid"]
     ]
   where
     title = S.pack $ "Current Bid" ++ show aucTXID

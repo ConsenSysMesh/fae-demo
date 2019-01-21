@@ -62,7 +62,6 @@ getInitialModel currentURI =
     , accountBalance = 0
     }
 
-
 updateModel :: Action -> Model -> Effect Action Model
 updateModel (AppAction action) m = handleAppAction action m
 updateModel (ServerAction action) m = handleServerAction action m
@@ -70,34 +69,48 @@ updateModel (ServerAction action) m = handleServerAction action m
 handleAppAction :: AppAction -> Model -> Effect Action Model
 handleAppAction (HandleURI u) m = m { uri = u } <# do
   pure $ AppAction Noop
+
 handleAppAction (ChangeURI u) m = m <# do
   pushURI u
   pure $ AppAction Noop
+
+handleAppAction (MintCoinsAndBid aucTXID coinCount) model = 
+  mintCoinsAndBid coinCount aucTXID model
+
 handleAppAction (SendServerAction action) model =
   model <# do
     send action
     pure (AppAction Noop)
+
 handleAppAction (SelectAuction aucTXID) Model {..} =
   noEff Model {selectedAuctionTXID = Just aucTXID, ..}
+
 handleAppAction (UpdateBidField maybeInt) Model {..} =
   Model {bidFieldValue = fromMaybe bidFieldValue maybeInt, ..} <# do
     pure (AppAction Noop)
+
 handleAppAction (UpdateGenNumCoinsField maybeInt) Model {..} =
   Model {genNumCoinsField = fromMaybe 0 maybeInt, ..} <# do
     pure (AppAction Noop)
 handleAppAction (SendMessage msg) model =
   model <# do send msg >> pure (AppAction Noop)
+
 handleAppAction (HandleWebSocket (WebSocketMessage msg@(Message m))) model =
   model {received = m} <# do
     pure parsedServerAction
   where
     parsedServerAction = parseServerAction m
+
 handleAppAction (UpdateMessage m) model = noEff model {msg = Message m}
+
 handleAppAction Login Model {..} =
   Model {loggedIn = True, ..} <# do send username >> pure (AppAction (goHome))
+
 handleAppAction (UpdateUserNameField newUsername) Model {..} =
   noEff Model {username = newUsername, ..}
+
 handleAppAction Noop model = noEff model
+
 handleAppAction _ model = noEff model
 
 handleServerAction :: Msg -> Model -> Effect Action Model
@@ -105,13 +118,16 @@ handleServerAction a@(AuctionCreated aucTXID auction) Model {..} =
   noEff Model {auctions = updatedAuctions, ..}
   where
     updatedAuctions = createAuction aucTXID auction auctions
+
 handleServerAction a@(BidSubmitted aucTXID bid@Bid{..}) Model {..} =
   noEff Model {auctions = updatedAuctions, accountBalance = accountBalance - bidValue, bidFieldValue = 0, ..}
   where
     updatedAuctions = bidOnAuction aucTXID bid auctions
+
 handleServerAction a@(CoinsGenerated numCoins) Model {..} =
   noEff Model {accountBalance = newBalance, bidFieldValue = newBalance, ..} -- bidAmount == account balance for simplicity
   where newBalance = accountBalance + numCoins
+
 handleServerAction _ model = noEff model
 
 mintCoinsAndBid :: Int -> AucTXID -> Model -> Effect Action Model
