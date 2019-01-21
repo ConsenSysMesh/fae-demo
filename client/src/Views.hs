@@ -68,7 +68,7 @@ homeView m@Model {..} =
   [ div_
       [class_ "auctions-container "]
       auctionViews
-  ] ++ [ viewAccBalance accountBalance ]
+  ]
   where
     auctionViews =
       [mainBtns m] ++
@@ -82,26 +82,7 @@ mainBtns Model {..} =
           onClick (AppAction (SendServerAction (CreateAuctionRequest)))
       ]
       [text "Create New Auction"]
-      ] ++ [genCoinNumInput genNumCoinsField]
-    
-genCoinNumInput :: Int -> View Action
-genCoinNumInput coinCount =
-  div_
-    [class_ "gen-coin-input-container"]
-    [ input_
-        [ class_ "field-input"
-        , type_ "text"
-        , autofocus_ True
-        , value_ $ S.pack $ show coinCount
-        , name_ "numCoinsGen"
-        , onInput $
-          AppAction . UpdateGenNumCoinsField . readMaybe . S.unpack . S.toMisoString
-        ],
-         button_ [class_ "get-coin-btn", onClick getCoinsAction] [text "Mint Coins"]
-        ]
-  where
-    title = S.pack $ "Coins"
-    getCoinsAction =  AppAction (SendServerAction (RequestCoins coinCount))
+      ]
 
 bookImg :: View Action
 bookImg = img_ [class_ "book-view", src_ $ S.pack "https://www.baumanrarebooks.com/BookImages/86406.jpg", width_ "250px"]
@@ -197,17 +178,16 @@ auctionView aucTXID@(AucTXID txid) auction@Auction {..} bidFieldValue username a
               text $ S.pack "An Inquiry into the Nature and Causes of the Wealth of Nations. Smith, Adam. 1776"], p_ [class_ "book-description"] [text description], bookImg]
           ]
       ] ++
-      [ footer_ [] [placeBidView aucTXID auction bidFieldValue username canBid]
+      [ footer_ [] [placeBidView aucTXID auction bidFieldValue username]
       | not $ auctionEnded auction
       ]
     ]
   where
     bidValue = currentBidValue auction
-    canBid = accountBalance > bidValue
     truncatedAucTXID = Li.take 5 txid
 
-placeBidView :: AucTXID -> Auction -> Int -> String -> Bool -> View Action
-placeBidView aucTXID auction@Auction {..} bidFieldValue username canBid =
+placeBidView :: AucTXID -> Auction -> Int -> String -> View Action
+placeBidView aucTXID auction@Auction {..} bidFieldValue username =
   div_
     [class_ "place-bid-container"]
     [ input_
@@ -225,14 +205,6 @@ placeBidView aucTXID auction@Auction {..} bidFieldValue username canBid =
   where
     title = S.pack $ "Current Bid" ++ show aucTXID
     bidAction = AppAction $ MintCoinsAndBid aucTXID bidFieldValue
-
-viewAccBalance :: Int ->  View Action
-viewAccBalance accountBalance =
-  div_
-    [class_ "account-balance"]
-    [ 
-      h4_ [] [text $ "Account Balance: " <> (S.pack $ show accountBalance) <> ( bool  " Coins"  " Coin" (accountBalance == 1))]
-    ]
 
 loginForm :: Model -> View Action
 loginForm Model {..} =
