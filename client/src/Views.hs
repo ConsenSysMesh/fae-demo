@@ -85,14 +85,14 @@ mainBtns Model {..} =
       ] ++ [genCoinNumInput genNumCoinsField]
     
 genCoinNumInput :: Int -> View Action
-genCoinNumInput numCoinsToGen =
+genCoinNumInput coinCount =
   div_
     [class_ "gen-coin-input-container"]
     [ input_
-        [ class_ "gen-coin-num-field-input"
+        [ class_ "field-input"
         , type_ "text"
         , autofocus_ True
-        , value_ $ S.pack $ show numCoinsToGen
+        , value_ $ S.pack $ show coinCount
         , name_ "numCoinsGen"
         , onInput $
           AppAction . UpdateGenNumCoinsField . readMaybe . S.unpack . S.toMisoString
@@ -101,11 +101,10 @@ genCoinNumInput numCoinsToGen =
         ]
   where
     title = S.pack $ "Coins"
-    getCoinsAction =  AppAction (SendServerAction (RequestCoins numCoinsToGen))
- 
+    getCoinsAction =  AppAction (SendServerAction (RequestCoins coinCount))
 
 bookImg :: View Action
-bookImg = img_ [class_ "book-view", src_ "/book.jpeg", width_ "250px"]
+bookImg = img_ [class_ "book-view", src_ $ S.pack "https://www.baumanrarebooks.com/BookImages/86406.jpg", width_ "250px"]
   
 selectedAuctionView :: Model -> View Action
 selectedAuctionView Model {..} =
@@ -181,6 +180,8 @@ viewAuctionsTable Model {..} =
         ]
     ]
 
+description = S.pack "Lot #685 London: Printed for W. Strahan; and T. Cadell, 1776. First edition of the Adam Smith’s magnum opus and cornerstone of economic thought."
+
 auctionView :: AucTXID -> Auction -> Int -> String -> Int -> View Action
 auctionView aucTXID@(AucTXID txid) auction@Auction {..} bidFieldValue username accountBalance =
   div_
@@ -190,7 +191,11 @@ auctionView aucTXID@(AucTXID txid) auction@Auction {..} bidFieldValue username a
           [ class_ "place-bid-header"
           , style_ $ M.fromList [(S.pack "text-align", S.pack "center")]
           ]
-          [h3_ [] [text $ "Auction " <> (S.pack $ show truncatedAucTXID)]]
+          [
+            h3_ [] [text $ "Auction " <> (S.pack $ show truncatedAucTXID)],
+            div_ [class_ "auction-info"] [ h3_ [class_ "book_title"] [
+              text $ S.pack "An Inquiry into the Nature and Causes of the Wealth of Nations. Smith, Adam. 1776"], p_ [class_ "book-description"] [text description], bookImg]
+          ]
       ] ++
       [ footer_ [] [placeBidView aucTXID auction bidFieldValue username canBid]
       | not $ auctionEnded auction
@@ -206,7 +211,7 @@ placeBidView aucTXID auction@Auction {..} bidFieldValue username canBid =
   div_
     [class_ "place-bid-container"]
     [ input_
-        [ class_ "bid-field-input"
+        [ class_ "field-input"
         , type_ "text"
         , placeholder_ "Enter Bid"
         , value_ $ S.pack $ show bidFieldValue
@@ -219,14 +224,14 @@ placeBidView aucTXID auction@Auction {..} bidFieldValue username canBid =
     ]
   where
     title = S.pack $ "Current Bid" ++ show aucTXID
-    bidAction = AppAction (SendServerAction (BidRequest aucTXID bidFieldValue))
+    bidAction = AppAction $ MintCoinsAndBid aucTXID bidFieldValue
 
 viewAccBalance :: Int ->  View Action
 viewAccBalance accountBalance =
   div_
     [class_ "account-balance"]
     [ 
-      h3_ [] [text $ "Account Balance: " <> (S.pack $ show accountBalance) <> ( bool  " Coins"  " Coin" (accountBalance == 1))]
+      h4_ [] [text $ "Account Balance: " <> (S.pack $ show accountBalance) <> ( bool  " Coins"  " Coin" (accountBalance == 1))]
     ]
 
 loginForm :: Model -> View Action

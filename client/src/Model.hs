@@ -38,7 +38,6 @@ import Data.Proxy
 import Servant.API
 import Servant.Utils.Links
 import Types
-import Views
 
 parseServerAction :: MisoString -> Action
 parseServerAction m =
@@ -63,18 +62,6 @@ getInitialModel currentURI =
     , accountBalance = 0
     }
 
-runApp :: IO ()
-runApp = do
-  startApp App {model=getInitialModel initialURI, initialAction = AppAction goLogin, ..}
-  where
-    initialURI = linkURI $ safeLink (Proxy :: Proxy API) (Proxy :: Proxy Login)
-    events = defaultEvents
-    subs = [websocketSub uri protocols (AppAction . HandleWebSocket), uriSub (AppAction . HandleURI) ]
-    update = updateModel
-    view = appView
-    uri = URL "ws://localhost:9160"
-    protocols = Protocols []
-    mountPoint = Nothing
 
 updateModel :: Action -> Model -> Effect Action Model
 updateModel (AppAction action) m = handleAppAction action m
@@ -118,11 +105,18 @@ handleServerAction a@(AuctionCreated aucTXID auction) Model {..} =
   noEff Model {auctions = updatedAuctions, ..}
   where
     updatedAuctions = createAuction aucTXID auction auctions
-handleServerAction a@(BidSubmitted aucTXID bid) Model {..} =
-  noEff Model {auctions = updatedAuctions, accountBalance = 0, bidFieldValue = 0, ..}
+handleServerAction a@(BidSubmitted aucTXID bid@Bid{..}) Model {..} =
+  noEff Model {auctions = updatedAuctions, accountBalance = accountBalance - bidValue, bidFieldValue = 0, ..}
   where
     updatedAuctions = bidOnAuction aucTXID bid auctions
 handleServerAction a@(CoinsGenerated numCoins) Model {..} =
   noEff Model {accountBalance = newBalance, bidFieldValue = newBalance, ..} -- bidAmount == account balance for simplicity
   where newBalance = accountBalance + numCoins
 handleServerAction _ model = noEff model
+
+mintCoinsAndBid :: Int -> AucTXID -> Model -> Effect Action Model
+mintCoinsAndBid coinCount aucTXID model = 
+  updateModel mintCoinsMsg model >>= updateModel bidMsg
+  where
+    mintCoinsMsg = AppAction (SendServerAction (RequestCoins coinCount))
+    bidMsg = AppAction (SendServerAction (BidRequest aucTXID coinCount)) 

@@ -77,6 +77,7 @@ data AppAction
   | UpdateBidField (Maybe Int)
   | UpdateGenNumCoinsField (Maybe Int)
   | SelectAuction AucTXID
+  | MintCoinsAndBid AucTXID Int
   | HandleURI URI
   | ChangeURI URI
   | Noop
