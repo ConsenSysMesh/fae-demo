@@ -64,15 +64,15 @@ loginView m@Model {..} = div_ [] [
 
 homeView :: Model -> View Action
 homeView m@Model {..} =
-  div_ [style_ $ M.fromList [("text-align", "center")]] $
+  div_ [] $
   [ div_
-      [class_ "auctions-container "]
-      auctionViews
+      [class_ "main-container"]
+      [mainBtns m, mainView m ]
   ]
-  where
-    auctionViews =
-      [mainBtns m] ++
-      [viewAuctionsTable m | not $ M.null auctions] ++ [selectedAuctionView m]
+
+
+-- use this for tx log
+--auctionTableView = [viewAuctionsTable m | not $ M.null auctions] 
 
 mainBtns :: Model -> View Action
 mainBtns Model {..} =
@@ -86,9 +86,10 @@ mainBtns Model {..} =
 
 bookImg :: View Action
 bookImg = img_ [class_ "book-view", src_ $ S.pack "https://www.baumanrarebooks.com/BookImages/86406.jpg", width_ "250px"]
-  
-selectedAuctionView :: Model -> View Action
-selectedAuctionView Model {..} =
+
+-- container for the main auction content
+mainView :: Model -> View Action
+mainView Model {..} =
   case selectedAuctionTXID of
     Nothing -> ""
     (Just aucTXID) ->
@@ -166,25 +167,27 @@ description = S.pack "Lot #685 London: Printed for W. Strahan; and T. Cadell, 17
 auctionView :: AucTXID -> Auction -> Int -> String -> Int -> View Action
 auctionView aucTXID@(AucTXID txid) auction@Auction {..} bidFieldValue username accountBalance =
   div_
-    [class_ "auction-view"]
-    [ article_ [class_ "card"] $
-      [ header_
-          [ class_ "place-bid-header"
-          , style_ $ M.fromList [(S.pack "text-align", S.pack "center")]
-          ]
+    [class_ "auction-container"]
+      [ div_
+          [ class_ "auction-container-item"]
           [
-            h3_ [] [text $ "Auction " <> (S.pack $ show truncatedAucTXID)],
-            div_ [class_ "auction-info"] [ h3_ [class_ "book_title"] [
-              text $ S.pack "An Inquiry into the Nature and Causes of the Wealth of Nations. Smith, Adam. 1776"], p_ [class_ "book-description"] [text description], bookImg]
+            h3_ [class_ "book_title"] [text "Auction Seller      London Book House"]
           ]
-      ] ++
-      [ footer_ [] [placeBidView aucTXID auction bidFieldValue username]
-      | not $ auctionEnded auction
       ]
-    ]
-  where
-    bidValue = currentBidValue auction
-    truncatedAucTXID = Li.take 5 txid
+--
+       --     h3_ [] [text $ "Auction " <> (S.pack $ show truncatedAucTXID)],
+       --     div_ [class_ "auction-info"] [ h3_ [class_ "book_title"] [
+       --       text $ S.pack "An Inquiry into the Nature and Causes of the Wealth of Nations. Smith, Adam. 1776"], p_ [class_ "book-description"] [text description], bookImg]
+       --   ]
+      --]
+  --     ++
+  --    [ footer_ [] [placeBidView aucTXID auction bidFieldValue username]
+  --    | not $ auctionEnded auction
+  --    ]
+  --  ]
+  --where
+  --  bidValue = currentBidValue auction
+  --  truncatedAucTXID = Li.take 5 txid
 
 placeBidView :: AucTXID -> Auction -> Int -> String -> View Action
 placeBidView aucTXID auction@Auction {..} bidFieldValue username =

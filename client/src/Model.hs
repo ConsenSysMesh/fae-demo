@@ -115,7 +115,7 @@ handleAppAction _ model = noEff model
 
 handleServerAction :: Msg -> Model -> Effect Action Model
 handleServerAction a@(AuctionCreated aucTXID auction) Model {..} =
-  noEff Model {auctions = updatedAuctions, ..}
+  noEff Model {auctions = updatedAuctions, selectedAuctionTXID= Just aucTXID, ..}
   where
     updatedAuctions = createAuction aucTXID auction auctions
 
