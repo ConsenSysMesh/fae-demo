@@ -38,6 +38,8 @@ import SharedTypes
 import Data.Proxy
 import Servant.API
 
+bookDescription = "An Inquiry into the Nature and Causes of the Wealth of Nations. Smith, Adam. 1776 \n Lot #685 London: Printed for W. Strahan; and T. Cadell, 1776. First edition of the Adam Smith’s magnum opus and cornerstone of economic thought."
+
 appView :: Model -> View Action
 appView m = view
   where
@@ -67,9 +69,21 @@ homeView m@Model {..} =
   div_ [] $
   [ div_
       [class_ "main-container"]
-      [mainBtns m, mainView m ]
+      [mainBtns m, headerView m, mainView m ]
   ]
 
+headerView :: Model -> View Action
+headerView m = div_ [class_ "header-container"] [titleView, signedInView m ]
+
+-- main title
+titleView = h3_ [class_ "title-container"] [text "Fae Auction"]
+
+-- username and user icon
+signedInView Model{..} = div_ [class_ "signedin-container"] [
+    div_ [class_ "username-container"] [h3_ [class_ "username"] [text username]]
+    , 
+    div_ [class_ "signedin-logo-container"] [img_ [class_ "signedin-logo", src_ $ S.pack "https://openclipart.org/download/247319/abstract-user-flat-3.svg"]]
+    ]
 
 -- use this for tx log
 --auctionTableView = [viewAuctionsTable m | not $ M.null auctions] 
@@ -165,14 +179,90 @@ viewAuctionsTable Model {..} =
 description = S.pack "Lot #685 London: Printed for W. Strahan; and T. Cadell, 1776. First edition of the Adam Smith’s magnum opus and cornerstone of economic thought."
 
 auctionView :: AucTXID -> Auction -> Int -> String -> Int -> View Action
-auctionView aucTXID@(AucTXID txid) auction@Auction {..} bidFieldValue username accountBalance =
+auctionView aucTXID@(AucTXID txid) auction@Auction {..} bidFieldValue username accountBalance = 
+  div_ [class_ "auction-container"] [ auctionViewLeft auction, auctionViewRight aucTXID bidFieldValue auction]
+
+auctionViewLeft auction =
   div_
-    [class_ "auction-container"]
+    [class_ "auction-container-left"]
       [ div_
           [ class_ "auction-container-item"]
           [
-            h3_ [class_ "book_title"] [text "Auction Seller      London Book House"]
+            h3_ [] [text "Auction Seller London Book House"]
           ]
+      ,
+      div_
+        [class_ "auction-container-item"]
+        [
+            h3_ [] [text "Item 58113861094"]
+        ]
+      ,
+       div_
+          [ class_ "auction-container-item"]
+          [
+            h3_ [] [text $ "Current Price  $ " <> (S.ms (currentBidValue auction))]
+          ]
+      ,
+      div_
+          [ class_ "auction-container-item"]
+          [
+            h3_ [] [text "Description"]
+          ]
+      ,
+      div_
+          [ class_ "auction-container-item"]
+          [
+            p_ [] [text bookDescription]
+          ]
+      ,
+      div_
+          [ class_ "auction-container-item book-description"]
+          [
+            h3_ [] [text "Fae Transaction Log"]
+          ]
+      ]
+
+
+auctionViewRight aucTXID bidFieldValue auction@Auction{..} =
+  div_
+    [class_ "auction-container-right"]
+      [ div_
+          [ class_ "auction-container-item"]
+          [
+            bookImg
+          ]
+      ,
+      div_
+        [class_ "auction-container-item"]
+        [
+            div_ 
+              [class_ "bid-input-container"] 
+              [ h3_ [class_ "dollar"] [text "$"]
+                , input_
+                [ class_ "field-input"
+                , type_ "text"
+                , placeholder_ "Enter Bid"
+                , value_ $ S.pack $ show bidFieldValue
+                , name_ "bidValue"
+                , onInput $
+                  AppAction . UpdateBidField . readMaybe . S.unpack . S.toMisoString
+                ]
+              ]
+        ]
+      ,
+       div_
+          [ class_ "auction-container-item"]
+          [
+            button_ [class_ "bid-field-btn", onClick (AppAction $ MintCoinsAndBid aucTXID bidFieldValue),
+            disabled_ $ auctionEnded auction] [text "Submit Bid"]
+          ]
+      ,
+      div_
+          [ class_ "bid-progress-container"]
+          [
+            h3_ [] [text $ ("Bids: " <> (S.ms $ show $ Li.length bids)) <> "/5"]
+          ]
+      
       ]
 --
        --     h3_ [] [text $ "Auction " <> (S.pack $ show truncatedAucTXID)],
@@ -203,7 +293,7 @@ placeBidView aucTXID auction@Auction {..} bidFieldValue username =
           AppAction . UpdateBidField . readMaybe . S.unpack . S.toMisoString
         , onEnter bidAction
         ]
-    , button_ [class_ "bid-field-btn", onClick bidAction, disabled_ $ auctionEnded auction] [text "Place Bid"]
+    , button_ [class_ "bid-field-btn", onClick bidAction, disabled_ $ auctionEnded auction] [text "Submit Bid"]
     ]
   where
     title = S.pack $ "Current Bid" ++ show aucTXID

@@ -16,14 +16,32 @@ img {
     height: 200px;
 }
 
-auction-container {
-    flex-direction: column;
+.auction-container {
+    margin: 90px;
     border-width: 1px;
     border-style: solid;
-    border-color:blue;
+    border-color:orange;
 }
 
-auction-container-item {
+.auction-container-left {
+    flex-direction: column;
+    flex-grow: 2;
+    border-width: 1px;
+    border-style: solid;
+    border-color: mediumturquoise;
+  }
+  
+
+.auction-container-right {
+  flex-direction: column;
+  flex-grow: 2;
+  border-width: 1px;
+  border-style: solid;
+  border-color:green;
+}
+
+
+.auction-container-item {
     border-width: 1px;
     border-style: solid;
     border-color:red;
