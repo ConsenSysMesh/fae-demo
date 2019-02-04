@@ -2,14 +2,22 @@
 @import url('https://fonts.googleapis.com/css?family=Montserrat:400,700,800|Roboto');
 
 
-h5,h4,h3,h2,h1 {
- font-weight:700;
- font-family: 'Montserrat', sans-serif;
+html {font-size: 16px;}
+
+body {
+  background-color: white;
+  font-family: 'Roboto', sans-serif;
+  font-weight: 400;
+  line-height: 1.45;
+  color: #333;
 }
 
-html, body, p{
-    font-family: 'Roboto', sans-serif;
+h1, h2, h3, h4, h5 {
+  font-weight:700;
+  font-family: 'Montserrat', sans-serif;
+  line-height: 1.15;
 }
+
 
 .signedin-logo {
     width: 40px;
@@ -55,6 +63,7 @@ html, body, p{
 
 .title-container {
   text-align: center;
+  margin-top: 40px;
 }
 
 .signedin-container {
@@ -98,4 +107,34 @@ button {
 .heading {
   margin-top: 320px;
   text-align: center;
+}
+
+  
+button{ 
+    color: white;
+    padding:5px 15px; 
+    background:#ccc; 
+    border:0 none;
+    cursor:pointer;
+    font-size: 18px;
+    font-weight: 400;
+    font-family: 'Montserrat', 'sans-serif';
+    border-radius: 6px; 
+    background-color: #4C92E3;
+    outline:none;
+}
+
+.main-btns {
+    position: absolute;
+}
+
+input[type=text] {
+    padding:5px; 
+    border:2px solid #ccc; 
+    -webkit-border-radius: 5px;
+    border-radius: 5px;
+}
+
+input[type=text]:focus {
+    border-color:#333;
 }
