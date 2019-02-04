@@ -76,7 +76,7 @@ headerView :: Model -> View Action
 headerView m = div_ [class_ "header-container"] [titleView, signedInView m ]
 
 -- main title
-titleView = h2_ [class_ "title-container header-item"] [text "Fae Auction"]
+titleView = h3_ [class_ "title-container header-item"] [text "Fae Auction"]
 
 -- username and user icon
 signedInView Model{..} = div_ [class_ "signedin-container"] [
@@ -186,31 +186,31 @@ auctionViewLeft auction =
   div_
     [class_ "auction-container-left"]
       [ div_
-          [ class_ "auction-container-item"]
+          [ class_ "auction-container-item no-margin-top"]
           [
-            h3_ [] [text "Auction Seller London Book House"]
+            h3_ [] [text "Seller London Book House"]
           ]
       ,
       div_
-        [class_ "auction-container-item"]
+        [class_ "auction-container-item no-margin-top"]
         [
             h3_ [] [text "Item 58113861094"]
         ]
       ,
        div_
-          [ class_ "auction-container-item"]
+          [ class_ "auction-container-item no-margin-top"]
           [
             h3_ [] [text $ "Current Price  $ " <> (S.ms (currentBidValue auction))]
           ]
       ,
       div_
-          [ class_ "auction-container-item"]
+          [ class_ "auction-container-item no-margin-top"]
           [
             h3_ [] [text "Description"]
           ]
       ,
       div_
-          [ class_ "auction-container-item"]
+          [ class_ "auction-container-item no-margin-top"]
           [
             p_ [] [text bookDescription]
           ]
@@ -237,8 +237,9 @@ auctionViewRight aucTXID bidFieldValue auction@Auction{..} =
         [
             div_ 
               [class_ "bid-input-container"] 
-              [ h3_ [class_ "dollar"] [text "$"]
-                , input_
+              [ --h3_ [class_ "dollar"] [text "$"]
+               -- , 
+                input_
                 [ class_ "field-input"
                 , type_ "text"
                 , placeholder_ "Enter Bid"

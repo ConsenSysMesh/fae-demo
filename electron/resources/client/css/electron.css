@@ -30,18 +30,12 @@ h1, h2, h3, h4, h5 {
     box-shadow: 0 2px 4px 0 rgba(0,0,0,0.50);
 }
 
-.dollar {
-    position: absolute;
-}
 
 .auction-container {
     display: flex;
     margin-left: 200px;
     margin-right: 200px;
     margin-top: 80px;
-    border-width: 1px;
-    border-style: solid;
-    border-color:blue;
 }
 
 .auction-container-left {
@@ -56,9 +50,6 @@ h1, h2, h3, h4, h5 {
 }
 
 .auction-container-item {
-    border-width: 1px;
-    border-style: solid;
-    border-color:red;
 }
 
 .title-container {
@@ -70,7 +61,7 @@ h1, h2, h3, h4, h5 {
     display: flex;
     position: absolute;
     right: 75px;
-    top: 30px;
+    top: 28px;
 }
 
 .auction-container-item > p {    margin: 30px 48px 40px 0;}
@@ -113,7 +104,6 @@ button {
 button{ 
     color: white;
     padding:5px 15px; 
-    background:#ccc; 
     border:0 none;
     cursor:pointer;
     font-size: 18px;
@@ -129,12 +119,23 @@ button{
 }
 
 input[type=text] {
-    padding:5px; 
+    padding: 5px; 
     border:2px solid #ccc; 
     -webkit-border-radius: 5px;
     border-radius: 5px;
+    font-size: 16px;
+    font-family: 'Montserrat', 'sans-serif';
+   font-weight: 700;
 }
 
 input[type=text]:focus {
     border-color:#333;
+}
+
+.no-margin-top h3 {
+    margin-top: 0;
+}
+
+.no-margin-top p {
+    margin-top: 0;
 }

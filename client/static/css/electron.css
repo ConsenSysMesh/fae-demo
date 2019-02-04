@@ -2,14 +2,22 @@
 @import url('https://fonts.googleapis.com/css?family=Montserrat:400,700,800|Roboto');
 
 
-h5,h4,h3,h2,h1 {
- font-weight:700;
- font-family: 'Montserrat', sans-serif;
+html {font-size: 16px;}
+
+body {
+  background-color: white;
+  font-family: 'Roboto', sans-serif;
+  font-weight: 400;
+  line-height: 1.45;
+  color: #333;
 }
 
-html, body, p{
-    font-family: 'Roboto', sans-serif;
+h1, h2, h3, h4, h5 {
+  font-weight:700;
+  font-family: 'Montserrat', sans-serif;
+  line-height: 1.15;
 }
+
 
 .signedin-logo {
     width: 40px;
@@ -22,18 +30,12 @@ html, body, p{
     box-shadow: 0 2px 4px 0 rgba(0,0,0,0.50);
 }
 
-.dollar {
-    position: absolute;
-}
 
 .auction-container {
     display: flex;
     margin-left: 200px;
     margin-right: 200px;
     margin-top: 80px;
-    border-width: 1px;
-    border-style: solid;
-    border-color:blue;
 }
 
 .auction-container-left {
@@ -48,20 +50,18 @@ html, body, p{
 }
 
 .auction-container-item {
-    border-width: 1px;
-    border-style: solid;
-    border-color:red;
 }
 
 .title-container {
   text-align: center;
+  margin-top: 40px;
 }
 
 .signedin-container {
     display: flex;
     position: absolute;
     right: 75px;
-    top: 30px;
+    top: 28px;
 }
 
 .auction-container-item > p {    margin: 30px 48px 40px 0;}
@@ -98,4 +98,44 @@ button {
 .heading {
   margin-top: 320px;
   text-align: center;
+}
+
+  
+button{ 
+    color: white;
+    padding:5px 15px; 
+    border:0 none;
+    cursor:pointer;
+    font-size: 18px;
+    font-weight: 400;
+    font-family: 'Montserrat', 'sans-serif';
+    border-radius: 6px; 
+    background-color: #4C92E3;
+    outline:none;
+}
+
+.main-btns {
+    position: absolute;
+}
+
+input[type=text] {
+    padding: 5px; 
+    border:2px solid #ccc; 
+    -webkit-border-radius: 5px;
+    border-radius: 5px;
+    font-size: 16px;
+    font-family: 'Montserrat', 'sans-serif';
+   font-weight: 700;
+}
+
+input[type=text]:focus {
+    border-color:#333;
+}
+
+.no-margin-top h3 {
+    margin-top: 0;
+}
+
+.no-margin-top p {
+    margin-top: 0;
 }
