@@ -60,8 +60,8 @@ appView m = view
 
 loginView :: Model -> View Action
 loginView m@Model {..} = div_ [] [
-    loginForm m,
-    h1_ [class_ "heading"] [ text "Auctions Powered by Fae"]
+  h1_ [class_ "heading"] [ text "Fae Auction"]
+  , loginForm m
   ]
 
 homeView :: Model -> View Action
@@ -76,13 +76,13 @@ headerView :: Model -> View Action
 headerView m = div_ [class_ "header-container"] [titleView, signedInView m ]
 
 -- main title
-titleView = h3_ [class_ "title-container"] [text "Fae Auction"]
+titleView = h2_ [class_ "title-container header-item"] [text "Fae Auction"]
 
 -- username and user icon
 signedInView Model{..} = div_ [class_ "signedin-container"] [
-    div_ [class_ "username-container"] [h3_ [class_ "username"] [text username]]
+    div_ [class_ "header-item username-container"] [h3_ [class_ "username"] [text username]]
     , 
-    div_ [class_ "signedin-logo-container"] [img_ [class_ "signedin-logo", src_ $ S.pack "https://openclipart.org/download/247319/abstract-user-flat-3.svg"]]
+    div_ [class_ "header-item signedin-logo-container"] [img_ [class_ "signedin-logo", src_ $ S.pack "https://openclipart.org/download/247319/abstract-user-flat-3.svg"]]
     ]
 
 -- use this for tx log
@@ -233,7 +233,7 @@ auctionViewRight aucTXID bidFieldValue auction@Auction{..} =
           ]
       ,
       div_
-        [class_ "auction-container-item"]
+        [class_ "bid-input-container auction-container-item"]
         [
             div_ 
               [class_ "bid-input-container"] 

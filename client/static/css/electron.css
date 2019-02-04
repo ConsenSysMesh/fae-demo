@@ -7,42 +7,95 @@ h5,h4,h3,h2,h1 {
  font-family: 'Montserrat', sans-serif;
 }
 
-html, body {
+html, body, p{
     font-family: 'Roboto', sans-serif;
 }
 
-img {
+.signedin-logo {
+    width: 40px;
+    height: 40px;
+}
+
+.auction-container img {
     width: 300px;
     height: 200px;
+    box-shadow: 0 2px 4px 0 rgba(0,0,0,0.50);
+}
+
+.dollar {
+    position: absolute;
 }
 
 .auction-container {
-    margin: 90px;
+    display: flex;
+    margin-left: 200px;
+    margin-right: 200px;
+    margin-top: 80px;
     border-width: 1px;
     border-style: solid;
-    border-color:orange;
+    border-color:blue;
 }
 
 .auction-container-left {
     flex-direction: column;
-    flex-grow: 2;
-    border-width: 1px;
-    border-style: solid;
-    border-color: mediumturquoise;
-  }
-  
-
-.auction-container-right {
-  flex-direction: column;
-  flex-grow: 2;
-  border-width: 1px;
-  border-style: solid;
-  border-color:green;
+    display: flex;
 }
 
+.auction-container-right {
+    flex-direction: column;
+    display: flex;
+    align-items: center;
+}
 
 .auction-container-item {
     border-width: 1px;
     border-style: solid;
     border-color:red;
+}
+
+.title-container {
+  text-align: center;
+}
+
+.signedin-container {
+    display: flex;
+    position: absolute;
+    right: 75px;
+    top: 30px;
+}
+
+.auction-container-item > p {    margin: 30px 48px 40px 0;}
+
+.username-container {margin: auto;}
+
+.signedin-logo-container {
+    margin: auto;
+   margin-left: 18px;
+}
+
+button {
+    background-color:  #4C92E3 0;
+}
+
+.bid-input-container {
+    margin-top: 20px;
+    margin-bottom: 15px;
+}
+
+
+.bid-progress-container {
+    margin-top: 35px;
+}
+
+
+/* Login Screen */
+
+.login-form {
+  margin-top: 27px;
+  text-align: center
+}
+
+.heading {
+  margin-top: 320px;
+  text-align: center;
 }
