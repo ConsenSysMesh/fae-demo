@@ -33,9 +33,9 @@ h1, h2, h3, h4, h5 {
 
 .auction-container {
     display: flex;
-    margin-left: 200px;
-    margin-right: 200px;
-    margin-top: 80px;
+    margin-left: 280px;
+    margin-right: 280px;
+    margin-top: 125px;
 }
 
 .auction-container-left {
@@ -116,11 +116,12 @@ button{
 
 .main-btns {
     position: absolute;
+    margin-left: 20px;
 }
 
 input[type=text] {
     padding: 5px; 
-    border:2px solid #ccc; 
+    border: 2px solid #ccc; 
     -webkit-border-radius: 5px;
     border-radius: 5px;
     font-size: 16px;
