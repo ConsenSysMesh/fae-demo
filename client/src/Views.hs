@@ -74,7 +74,6 @@ biddingView m@Model {..} =
       [headerView m, mainView m ]
   ]
 
-
 -- container for the main auction content
 mainView :: Model -> View Action
 mainView Model {..} =
@@ -104,49 +103,35 @@ getTableHeader names =
 format24hrTime :: UTCTime -> String
 format24hrTime = formatTime defaultTimeLocale "%H:%M:%S"
 
---use reader monad for selectedAuctionTXID
-getTableRow :: Maybe AucTXID -> (AucTXID, Auction) -> View Action
-getTableRow selectedAuctionTXID (txid@(AucTXID aucTXID), auction@Auction {..}) =
+getTableRow :: TXLogEntry -> View Action
+getTableRow TXLogEntry{..} =
   tr_
-    [ onClick $ AppAction (SelectAuction txid)
-    , class_ $ do bool "auction-row" "auction-row-selected" isSelected
+    [ --onClick $ AppAction (SelectAuction txid)
+     --class_ $ do bool "auction-row" "auction-row-selected" isSelected
     ]
-    [ td_ [] [text $ S.ms truncatedAucTXID]
-    , td_ [] [text $ S.ms createdBy]
-    , td_ [] [text $ S.ms $ iso8601 createdTimestamp]
-    , td_ [] [text $ S.ms numBids]
-    , td_ [] [text $ S.ms $ currentBidValue auction]
-    , td_ [] [text $ S.ms $ auctionStatus auction]
+    [ td_ [] [text $ S.ms truncatedTXID]
+    , td_ [] [text $ S.ms $ format24hrTime entryTimestamp]
+    , td_ [] [text $ S.ms entryUsername]
+    , td_ [] [text $ S.ms $ entryDescription]
     ]
   where
-    isSelected = maybe False (txid ==) selectedAuctionTXID
-    numBids = Li.length bids
-    truncatedAucTXID = Li.take 5 aucTXID 
+    truncatedTXID = Li.take 6 entryTXID 
 
-getTableRows :: Maybe AucTXID -> Map AucTXID Auction -> [View Action]
-getTableRows selectedAucTXID auctions =
-  Li.map (getTableRow selectedAucTXID) $ M.toList auctions
+getTableRows :: [TXLogEntry] -> [View Action]
+getTableRows txLogEntries = getTableRow <$> txLogEntries
 
    -- table m | not $ Li.null txLog
-txLogTable :: Model -> View Action
-txLogTable Model {..} = table
+txLogTable :: [TXLogEntry] -> View Action
+txLogTable txLogEntries = table
   where table =  div_
             [class_ "tx-log-table"]
             [ table_
                 []
                 [ thead_
                     [style_ $ M.fromList [(S.pack "text-align", S.pack "center")]]
-                    [ tr_
-                        []
-                        [ th_ [] [p_ [] [text "Auction ID"]]
-                        , th_ [] [p_ [] [text "Created By"]]
-                        , th_ [] [p_ [] [text "Created At"]]
-                        , th_ [] [p_ [] [text "Bids"]]
-                        , th_ [] [p_ [] [text "Current Bid"]]
-                        , th_ [] [p_ [] [text "Status"]]
-                        ]
+                    [ 
                     ]
-                , tbody_ [] $ getTableRows selectedAuctionTXID auctions
+                , tbody_ [] $ getTableRows txLogEntries
                 ]
             ]
 
