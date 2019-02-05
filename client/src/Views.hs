@@ -157,10 +157,10 @@ getTableRows :: Maybe AucTXID -> Map AucTXID Auction -> [View Action]
 getTableRows selectedAucTXID auctions =
   Li.map (getTableRow selectedAucTXID) $ M.toList auctions
 
-viewAuctionsTable :: Model -> View Action
-viewAuctionsTable Model {..} =
+txLogTable :: Model -> View Action
+txLogTable Model {..} =
   div_
-    [class_ "auctions-table"]
+    [class_ "tx-log-table"]
     [ table_
         []
         [ thead_
