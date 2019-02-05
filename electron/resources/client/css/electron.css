@@ -79,9 +79,12 @@ button {
 
 .bid-input-container {
     margin-top: 20px;
-    margin-bottom: 15px;
+    margin-bottom: 10px;
 }
 
+.bid-input-container > input[type=text]  {
+    width: 126px;
+}
 
 .bid-progress-container {
     margin-top: 35px;
@@ -103,7 +106,7 @@ button {
   
 button{ 
     color: white;
-    padding:5px 15px; 
+    padding: 11px 19px; 
     border:0 none;
     cursor:pointer;
     font-size: 18px;
@@ -114,19 +117,47 @@ button{
     outline:none;
 }
 
-.main-btns {
-    position: absolute;
-    margin-left: 20px;
+.starting-val-container {
+    margin-top: 15px;
+    margin-bottom: 0;
+    width: 100%;
+    display: flex;
+    justify-content: space-around;
 }
 
+.max-bid-container {
+    margin-bottom: 18px;
+    width: 100%;
+    display: flex;
+    justify-content: space-around;
+}
+
+.starting-price-label, .max-bid-label {
+    width: 142px;
+}
+
+.create-auction-container {
+
+}
+
+.auction-container-right input {
+    width: 70px;
+    height: 20px;
+    margin: auto;
+    margin-right: 0;
+    text-align: right;
+}
+
+
 input[type=text] {
+    height: 27px;
     padding: 5px; 
     border: 2px solid #ccc; 
     -webkit-border-radius: 5px;
     border-radius: 5px;
     font-size: 16px;
     font-family: 'Montserrat', 'sans-serif';
-   font-weight: 700;
+    font-weight: 700;
 }
 
 input[type=text]:focus {

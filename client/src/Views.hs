@@ -216,7 +216,7 @@ auctionViewRight maxBidCountField aucTXID bidFieldValue auction@Auction{..} =
               [ --h3_ [class_ "dollar"] [text "$"]
                -- , 
                 input_
-                [ class_ "field-input"
+                [ class_ "bid-field-input"
                 , type_ "text"
                 , placeholder_ "Enter Bid"
                 , value_ $ S.pack $ show bidFieldValue
