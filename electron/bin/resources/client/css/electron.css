@@ -53,8 +53,8 @@
 
 .auction-view {
   text-align: center;
-  width: 300px;
-  left: 350px;
+  width: 360px;
+  left: 380px;
   margin-top: 80px;
   position: absolute;
   border-radius: 10px;
@@ -76,7 +76,7 @@ td {
 }
 
 .auction-view {
-   background-color: #3255BC;
+   background-color: #ffff;
 }
 
 .auction-row {

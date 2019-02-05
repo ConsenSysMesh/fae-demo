@@ -2,21 +2,26 @@ code size summary per package:
 
 aeson-1.1.2.0-ARZIr2aTakl2Ls9jnWNZ66:901662
 attoparsec-0.13.1.0-6Ef7Y1TmrOw2areuhATnJi:101769
-base:                    659954
-bytestring-0.10.8.1-LuPcwKc3fouJt3sssnczhl:71238
+base:                    639951
+bytestring-0.10.8.1-LuPcwKc3fouJt3sssnczhl:77086
 containers-0.5.7.1-Gdn6hEG92Xy5CWPHSqAWuL:92519
 deepseq-1.4.2.0-3s3V7ccQoBOLl60IshKUSF:881
 ghc-prim:                27756
-ghcjs-base-0.2.0.0-78kAsDiGWh11oyqLakpZ7z:29112
+ghcjs-base-0.2.0.0-78kAsDiGWh11oyqLakpZ7z:30214
 ghcjs-prim-0.1.0.0-6E2A607dLAc749CT5dxkNh:10696
+http-api-data-0.3.7.1-7tDpNF7A8etBRHh1zSbJma:502
+http-types-0.9.1-KnO75XnxcxPDbwWLpdhDjJ:26320
 integer-gmp:             86262
 integer-logarithms-1.0.2-3XrjmR6CyOSLaU4AlbDyKK:2545
-main:                    172087
-miso-0.20.0.0-DJ6ky7XOOmaAy1IsGcdOPS:142745
+main:                    190418
+miso-0.20.0.0-EwEoWzNNNWhAUlggMRjTTW:172567
+network-uri-2.6.1.0-2WJ80cglsft6FDdBu3yIRT:327859
+parsec-3.1.11-1qus3qVcWGzBmXHJMx6Gmb:73274
 primitive-0.6.2.0-CrQJFOPTQVY76A6o8V1CkN:339
 scientific-0.3.5.2-FLtXSWkJqHhI6pwb7rtGoi:103320
-shared-0.1.0.0-KSsUrZWVF46LCWNcxhpp91:192308
-text-1.2.2.2-H4e06yb6sPTLJNWbm3JNtk:28052
+servant-0.11-1SpinWPjVWP5yHN5c5eskm:8116
+shared-0.1.0.0-ERsTaXPIygRBCW8rq8XvnN:196970
+text-1.2.2.2-H4e06yb6sPTLJNWbm3JNtk:32319
 time-1.6.0.1-L6Lf0i6IXBr5xRovy5GIXg:392333
 unordered-containers-0.2.8.0-GDoQO9zkFaqvXEkW4wYMT:5493
 vector-0.12.0.1-IcoM5itjOSd1XycIe6iOvR:2366
@@ -49,11 +54,12 @@ attoparsec-0.13.1.0-6Ef7Y1TmrOw2areuhATnJi
 
 base
     Control.Exception.Base:             7345
-    Data.Bool:                          319
     Data.Either:                        369
     Data.Fixed:                         10497
+    Data.Functor.Identity:              1044
     Data.Maybe:                         1011
     Data.OldList:                       1011
+    Data.Proxy:                         66
     Data.Traversable:                   1635
     Data.Typeable.Internal:             2335
     Foreign.C.Error:                    9596
@@ -62,11 +68,11 @@ base
     Foreign.Marshal.Array:              1987
     Foreign.Storable:                   9306
     GHC.Arr:                            3664
-    GHC.Base:                           6829
+    GHC.Base:                           7197
     GHC.Char:                           705
     GHC.Conc.Sync:                      6637
     GHC.Enum:                           25154
-    GHC.Err:                            546
+    GHC.Err:                            729
     GHC.Exception:                      17732
     GHC.Fingerprint:                    1960
     GHC.Fingerprint.Type:               724
@@ -81,30 +87,28 @@ base
     GHC.IO.Device:                      1248
     GHC.IO.Encoding:                    958
     GHC.IO.Encoding.Failure:            617
-    GHC.IO.Encoding.Latin1:             1869
     GHC.IO.Encoding.Types:              983
     GHC.IO.Encoding.UTF8:               60752
     GHC.IO.Exception:                   26166
     GHC.IO.FD:                          33971
     GHC.IO.Handle:                      296
     GHC.IO.Handle.FD:                   7437
-    GHC.IO.Handle.Internals:            39732
-    GHC.IO.Handle.Text:                 15616
-    GHC.IO.Handle.Types:                3715
+    GHC.IO.Handle.Internals:            26375
+    GHC.IO.Handle.Types:                3466
     GHC.Int:                            1743
-    GHC.List:                           11704
+    GHC.List:                           14710
     GHC.MVar:                           174
     GHC.Num:                            3250
     GHC.Ptr:                            174
-    GHC.Read:                           18258
+    GHC.Read:                           22301
     GHC.Real:                           33724
     GHC.STRef:                          180
-    GHC.Show:                           29423
+    GHC.Show:                           31487
     GHC.Stack.CCS:                      4006
     GHC.Stack.Types:                    1491
     GHC.Storable:                       1475
     GHC.TopHandler:                     11365
-    GHC.Unicode:                        2568
+    GHC.Unicode:                        3201
     GHC.Word:                           16856
     Numeric:                            5098
     System.Posix.Internals:             16601
@@ -119,7 +123,7 @@ bytestring-0.10.8.1-LuPcwKc3fouJt3sssnczhl
     Data.ByteString.Builder.ASCII:      17762
     Data.ByteString.Builder.Internal:   23147
     Data.ByteString.Builder.Prim.Internal.Base16:4837
-    Data.ByteString.Internal:           13346
+    Data.ByteString.Internal:           19194
     Data.ByteString.Lazy:               5209
     Data.ByteString.Lazy.Internal:      3393
 
@@ -140,6 +144,7 @@ ghc-prim
 ghcjs-base-0.2.0.0-78kAsDiGWh11oyqLakpZ7z
     Data.JSString:                      7744
     Data.JSString.Internal.Fusion.Common:1516
+    Data.JSString.Internal.Fusion.Types:1102
     Data.JSString.Internal.Type:        426
     Data.JSString.Text:                 293
     GHCJS.Foreign.Internal:             581
@@ -153,6 +158,12 @@ ghcjs-prim-0.1.0.0-6E2A607dLAc749CT5dxkNh
     GHCJS.Prim:                         7497
     GHCJS.Prim.Internal:                3199
 
+http-api-data-0.3.7.1-7tDpNF7A8etBRHh1zSbJma
+    Web.Internal.HttpApiData:           502
+
+http-types-0.9.1-KnO75XnxcxPDbwWLpdhDjJ
+    Network.HTTP.Types.URI:             26320
+
 integer-gmp
     GHC.Integer.Type:                   86262
 
@@ -160,26 +171,39 @@ integer-logarithms-1.0.2-3XrjmR6CyOSLaU4AlbDyKK
     Math.NumberTheory.Logarithms:       2545
 
 main
-    Auction:                            14133
-    Lib:                                21616
+    Auction:                            14129
     Main:                               535
-    Types:                              39231
-    Views:                              96572
+    Model:                              22043
+    Types:                              46899
+    Views:                              106812
 
-miso-0.20.0.0-DJ6ky7XOOmaAy1IsGcdOPS
-    Miso:                               16661
-    Miso.Delegate:                      2626
-    Miso.Diff:                          2831
-    Miso.Effect:                        306
-    Miso.Event.Decoder:                 18174
-    Miso.Event.Types:                   22189
-    Miso.FFI:                           24085
-    Miso.Html.Element:                  5802
-    Miso.Html.Event:                    1012
-    Miso.Html.Internal:                 28844
-    Miso.Html.Property:                 2447
-    Miso.String:                        1147
-    Miso.Subscription.WebSocket:        16621
+miso-0.20.0.0-EwEoWzNNNWhAUlggMRjTTW
+    Miso:                               16671
+    Miso.Concurrent:                    321
+    Miso.Delegate:                      2631
+    Miso.Diff:                          2835
+    Miso.Effect:                        309
+    Miso.Event.Decoder:                 18229
+    Miso.Event.Types:                   22275
+    Miso.FFI:                           24096
+    Miso.Html.Element:                  5855
+    Miso.Html.Event:                    1021
+    Miso.Html.Internal:                 28915
+    Miso.Html.Property:                 2802
+    Miso.Router:                        20737
+    Miso.String:                        1152
+    Miso.Subscription.History:          8040
+    Miso.Subscription.WebSocket:        16678
+
+network-uri-2.6.1.0-2WJ80cglsft6FDdBu3yIRT
+    Network.URI:                        327859
+
+parsec-3.1.11-1qus3qVcWGzBmXHJMx6Gmb
+    Text.Parsec.Char:                   15574
+    Text.Parsec.Combinator:             17789
+    Text.Parsec.Error:                  10749
+    Text.Parsec.Pos:                    2251
+    Text.Parsec.Prim:                   26911
 
 primitive-0.6.2.0-CrQJFOPTQVY76A6o8V1CkN
     Data.Primitive.Array:               339
@@ -189,14 +213,19 @@ scientific-0.3.5.2-FLtXSWkJqHhI6pwb7rtGoi
     Data.Scientific:                    34533
     Utils:                              4269
 
-shared-0.1.0.0-KSsUrZWVF46LCWNcxhpp91
-    SharedTypes:                        192308
+servant-0.11-1SpinWPjVWP5yHN5c5eskm
+    Servant.API.Alternative:            342
+    Servant.Utils.Links:                7774
+
+shared-0.1.0.0-ERsTaXPIygRBCW8rq8XvnN
+    FaeJSON:                            81
+    SharedTypes:                        196889
 
 text-1.2.2.2-H4e06yb6sPTLJNWbm3JNtk
     Data.Text:                          5397
     Data.Text.Array:                    1200
-    Data.Text.Encoding:                 1145
-    Data.Text.Encoding.Error:           7185
+    Data.Text.Encoding:                 4924
+    Data.Text.Encoding.Error:           7673
     Data.Text.Internal:                 1266
     Data.Text.Internal.Fusion.Common:   1360
     Data.Text.Lazy.Builder.RealFloat:   389
@@ -227,5 +256,5 @@ vector-0.12.0.1-IcoM5itjOSd1XycIe6iOvR
 
 
 
-packed metadata: 532510
+packed metadata: 606301
 
