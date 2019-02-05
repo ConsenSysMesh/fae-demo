@@ -12,6 +12,6 @@ import qualified Data.Text as T
 import qualified Network.WebSockets as WS
 import Prelude
 
-import Lib
+import Server
 
 main = runServer
