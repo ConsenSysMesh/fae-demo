@@ -55,12 +55,12 @@ data Model = Model
   , auctions :: M.Map AucTXID Auction
   , bidFieldValue :: Int
   , genNumCoinsField :: Int
+  , maxBidCountField :: Int
+  , auctionStartValField :: Int
   , username :: MisoString
   , loggedIn :: Bool
   , selectedAuctionTXID :: Maybe AucTXID
   , accountBalance :: Int
-  , maxBidCount :: Int
-  , auctionStartVal :: Int
   } deriving (Show, Eq)
 
 data Action
@@ -72,6 +72,7 @@ data AppAction
   = HandleWebSocket (WebSocket Message)
   | SendMessage Message
   | SendServerAction Msg
+  | SendCreateAuctionRequest
   | UpdateUserNameField MisoString
   | Login
   | Logout
@@ -80,20 +81,24 @@ data AppAction
   | UpdateGenNumCoinsField (Maybe Int)
   | SelectAuction AucTXID
   | MintCoinsAndBid AucTXID Int
+  | NewMaxBidCount Int
+  | NewStartingVal Int
   | HandleURI URI
   | ChangeURI URI
   | Noop
 
 -- | Type-level routes
-type API   = Login :<|> Home
+type API   = Login :<|> Home :<|> Create
 type Home  = View AppAction
+type Create = View AppAction
 type Login = "login" :> View AppAction
 
 -- | Type-safe links used in `onClick` event handlers to route the application
 goLogin, goHome :: AppAction
-(goHome, goLogin) = (goto api home, goto api login)
+(goHome, goLogin, goCreate) = (goto api home, goto api login, goto api create)
   where
     goto a b = ChangeURI (linkURI (safeLink a b))
     home  = Proxy :: Proxy Home
+    create = Proxy :: Proxy Create
     login = Proxy :: Proxy Login
     api   = Proxy :: Proxy API

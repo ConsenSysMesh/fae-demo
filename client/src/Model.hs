@@ -56,12 +56,12 @@ getInitialModel currentURI =
     , msg = Message $ S.ms ""
     , bidFieldValue = 0
     , genNumCoinsField = 1
+    , maxBidCountField = 4
+    , auctionStartValField = 1
     , username = S.ms ""
     , loggedIn = False
     , selectedAuctionTXID = Nothing
     , accountBalance = 0
-    , maxBidCount = 4
-    , auctionStartVal = 1
     }
 
 updateModel :: Action -> Model -> Effect Action Model
@@ -111,6 +111,16 @@ handleAppAction Login Model {..} =
 handleAppAction (UpdateUserNameField newUsername) Model {..} =
   noEff Model {username = newUsername, ..}
 
+handleAppAction (NewMaxBidCount newMaxBidCount) Model {..} =
+  noEff Model { maxBidCountField = newMaxBidCount, ..}
+
+handleAppAction (NewStartingVal newAuctionStartVal) Model {..} =
+  noEff Model {auctionStartValField = newAuctionStartVal, ..}
+
+-- gets the auction start params from the fields, constructs the auction request msg and then sends
+handleAppAction SendCreateAuctionRequest m@Model {..} = m <# do send action >> pure (AppAction Noop)
+  where action = CreateAuctionRequest $ AuctionOpts auctionStartValField maxBidCountField
+
 handleAppAction Noop model = noEff model
 
 handleAppAction _ model = noEff model
@@ -129,12 +139,6 @@ handleServerAction a@(BidSubmitted aucTXID bid@Bid{..}) Model {..} =
 handleServerAction a@(CoinsGenerated numCoins) Model {..} =
   noEff Model {accountBalance = newBalance, bidFieldValue = newBalance, ..} -- bidAmount == account balance for simplicity
   where newBalance = accountBalance + numCoins
-
-handleServerAction a@(NewMaxBidCount newMaxBidCount) Model {..} =
-  noEff Model { maxBidCount = newMaxBidCount, ..}
-
-handleServerAction a@(NewStartingVal newAuctionStartVal) Model {..} =
-  noEff Model {auctionStartVal = newAuctionStartVal, ..}
 
 handleServerAction _ model = noEff model
 

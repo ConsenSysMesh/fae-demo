@@ -46,12 +46,15 @@ appView m = view
   view =
     either (const the404) id
       $ runRoute (Proxy :: Proxy API) handlers uri m
-  handlers = login :<|> home
+  handlers = login :<|> home :<|> create
   home (_ :: Model) = div_ [] [
-     homeView m 
+     biddingView m 
     ]
   login (_ :: Model) = div_ [] [
      loginView m
+    ]
+  create (_ :: Model) = div_ [] [
+     createView m
     ]
   the404 = div_ [] [
       text "404 :("
@@ -64,8 +67,11 @@ loginView m@Model {..} = div_ [] [
   , loginForm m
   ]
 
-homeView :: Model -> View Action
-homeView m@Model {..} =
+createView :: Model -> View Action
+createView  m@Model {..} = undefined
+
+biddingView :: Model -> View Action
+biddingView m@Model {..} =
   div_ [] $
   [ div_
       [class_ "main-container"]
@@ -93,7 +99,7 @@ mainBtns Model {..} =
   div_ [ class_ "main-btns" ] $
     [button_
       [ 
-          onClick (AppAction (SendServerAction (CreateAuctionRequest)))
+          onClick (AppAction SendCreateAuctionRequest)
       ]
       [text "Create New Auction"]
       ]
