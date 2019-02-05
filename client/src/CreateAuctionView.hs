@@ -105,13 +105,12 @@ createAuctionViewRight startingValField maxBidCountField =
           ]
       ,
       div_
-        [class_ "startingVal-input-container auction-container-item"]
+        [class_ "starting-val-container auction-container-item"]
         [
-            div_ 
-              [class_ "startingValField-container"] 
-              [ --h3_ [class_ "dollar"] [text "$"]
+               --h3_ [class_ "dollar"] [text "$"]
                -- , 
-                input_
+                h3_ [class_ "starting-price-label"] [text "Starting Price"] 
+                , input_
                 [ class_ "create-field-input"
                 , type_ "text"
                 , placeholder_ "Enter Bid"
@@ -121,13 +120,13 @@ createAuctionViewRight startingValField maxBidCountField =
                   AppAction . UpdateNewStartingValField . read . S.unpack . S.toMisoString
                 ]
               ]
-        ]
       ,
       div_ 
-            [class_ "startingValField-container"] 
+            [class_ "max-bid-container"] 
             [ --h3_ [class_ "dollar"] [text "$"]
-               -- , 
-              input_
+               -- ,
+              h3_ [class_ "max-bid-label"] [text "Max Bids"]
+              , input_
                 [ class_ "create-field-input"
                 , type_ "text"
                 , placeholder_ "Enter Bid"

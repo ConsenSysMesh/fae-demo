@@ -75,7 +75,6 @@ biddingView m@Model {..} =
   ]
 
 
-
 -- container for the main auction content
 mainView :: Model -> View Action
 mainView Model {..} =
