@@ -41,7 +41,7 @@ headerView :: Model -> View Action
 headerView m = div_ [class_ "header-container"] [titleView, signedInView m ]
 
 -- main title
-titleView = h3_ [class_ "title-container header-item"] [text "Fae Auction"]
+titleView = h2_ [class_ "title-container header-item"] [text "Fae Auction"]
 
 -- username and user icon
 signedInView Model{..} = div_ [class_ "signedin-container"] [

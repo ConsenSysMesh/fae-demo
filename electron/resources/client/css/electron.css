@@ -4,6 +4,28 @@
 
 html {font-size: 16px;}
 
+
+h1 {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 35px;
+    font-weight:700;
+
+}
+h2 {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 32px;
+    font-weight:700;
+
+}
+/*   line-height: 1.15;
+*/
+h3 {
+    font-weight:700;
+
+    font-family: 'Montserrat', sans-serif;
+    font-size: 23px;
+}
+
 body {
   background-color: white;
   font-family: 'Roboto', sans-serif;
@@ -12,11 +34,6 @@ body {
   color: #333;
 }
 
-h1, h2, h3, h4, h5 {
-  font-weight:700;
-  font-family: 'Montserrat', sans-serif;
-  line-height: 1.15;
-}
 
 
 .signedin-logo {
@@ -99,8 +116,9 @@ button {
 }
 
 .heading {
-  margin-top: 320px;
+  margin-top: 290px;
   text-align: center;
+  margin-bottom: 80px;
 }
 
   
@@ -110,7 +128,7 @@ button{
     border:0 none;
     cursor:pointer;
     font-size: 18px;
-    font-weight: 400;
+    font-weight: 700;
     font-family: 'Montserrat', 'sans-serif';
     border-radius: 6px; 
     background-color: #4C92E3;
