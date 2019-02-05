@@ -48,7 +48,11 @@ data Msg
   | AuctionCreated AucTXID
                    Auction -- outgoing
   | RequestCoins Int -- incoming 
-  | CoinsGenerated Int -- outgoing 
+  | CoinsGenerated Int -- outgoing
+  | RequestNewStartingVal Int -- incoming
+  | NewStartingVal Int -- outgoing
+  | RequestNewMaxBidCount Int -- incoming
+  | NewMaxBidCount Int -- outgoing
   | ErrMsg Err
   deriving (Show, Generic, FromJSON, ToJSON)
 
