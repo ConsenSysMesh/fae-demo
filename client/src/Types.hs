@@ -54,7 +54,7 @@ data TXLogEntry = TXLogEntry
    , entryTimestamp :: UTCTime
    , entryDescription :: String
    , entryUsername :: String
-}
+} deriving (Show, Eq)
 
 data Model = Model
   {  uri :: URI
@@ -69,6 +69,7 @@ data Model = Model
   , loggedIn :: Bool
   , selectedAuctionTXID :: Maybe AucTXID
   , accountBalance :: Int
+  , txLog :: [TXLogEntry]
   } deriving (Show, Eq)
 
 data Action
@@ -82,6 +83,7 @@ data AppAction
   | SendServerAction Msg
   | SendCreateAuctionRequest
   | UpdateUserNameField MisoString
+  | AddTXLogEntry TXLogEntry
   | Login
   | Logout
   | UpdateMessage MisoString

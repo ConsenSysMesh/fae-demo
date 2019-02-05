@@ -101,8 +101,8 @@ getTableHeader :: [String] -> [View Action]
 getTableHeader names =
   Prelude.map (\name -> th_ [] [p_ [] [text $ S.ms name]]) names
 
-iso8601 :: UTCTime -> String
-iso8601 = formatTime defaultTimeLocale "%H:%M:%S"
+format24hrTime :: UTCTime -> String
+format24hrTime = formatTime defaultTimeLocale "%H:%M:%S"
 
 --use reader monad for selectedAuctionTXID
 getTableRow :: Maybe AucTXID -> (AucTXID, Auction) -> View Action
@@ -149,7 +149,6 @@ txLogTable Model {..} = table
                 , tbody_ [] $ getTableRows selectedAuctionTXID auctions
                 ]
             ]
-
 
 auctionView :: Int -> Int -> AucTXID -> Auction -> Int ->  View Action
 auctionView maxBidCountField startingVal aucTXID@(AucTXID txid) auction@Auction {..} bidFieldValue = 

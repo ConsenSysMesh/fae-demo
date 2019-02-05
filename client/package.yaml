@@ -29,6 +29,7 @@ dependencies:
   - text
   - time
   - shared
+  - transformers
   - servant
   - uuid
 

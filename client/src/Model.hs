@@ -39,6 +39,8 @@ import Servant.API
 import Servant.Utils.Links
 import Types
 import Data.UUID.V4
+import Control.Monad.IO.Class
+
 
 parseServerAction :: MisoString -> Action
 parseServerAction m =
@@ -63,6 +65,7 @@ getInitialModel currentURI =
     , loggedIn = False
     , selectedAuctionTXID = Nothing
     , accountBalance = 0
+    , txLog = []
     }
 
 updateModel :: Action -> Model -> Effect Action Model
@@ -123,6 +126,9 @@ handleAppAction SendCreateAuctionRequest m@Model {..} =
   m <# do send action >> pure (AppAction Noop)
   where action = CreateAuctionRequest $ AuctionOpts auctionStartValField maxBidCountField
 
+handleAppAction (AddTXLogEntry txLogEntry) m@Model {..} = 
+  noEff Model{ txLog = txLog ++ [txLogEntry], ..}
+
 handleAppAction Noop model = noEff model
 
 handleAppAction _ model = noEff model
@@ -133,12 +139,12 @@ handleServerAction a@(AuctionCreated aucTXID auction) Model {..} =
   where
     updatedAuctions = createAuction aucTXID auction auctions
 
-handleServerAction a@(BidSubmitted aucTXID bid@Bid{..}) Model {..} =
-  Model {
-    auctions = updatedAuctions,
-    accountBalance = accountBalance - bidValue, 
-    bidFieldValue = 0,
-    ..} <# pure (AppAction Noop)
+handleServerAction a@(BidSubmitted aucTXID bid@Bid{..}) m@Model {..} = Model {
+  auctions = updatedAuctions,
+  accountBalance = accountBalance - bidValue, 
+  bidFieldValue = 0,
+  ..} <# do
+    (AppAction . AddTXLogEntry) <$> addTXLogEntry bidder a 
   where
     updatedAuctions = bidOnAuction aucTXID bid auctions
 
