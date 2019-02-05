@@ -6,6 +6,7 @@ module SharedTypes where
 
 import Data.Aeson.Types
 import Data.Time.Clock
+import Data.Time.Calendar
 import GHC.Generics
 
 import FaeTypes
@@ -16,6 +17,15 @@ newtype Key =
   Key String
   deriving (Show, Eq, Generic, ToJSON, FromJSON)
   -- id of the tx which created auction
+
+newtype Username =
+    Username String
+  deriving (Show, Eq, Generic, ToJSON, FromJSON)
+
+    
+newtype UTCTimestamp =
+    UTCTimestamp UTCTime
+    deriving (Show, Eq, Generic, ToJSON, FromJSON)
 
 -- id of tx which created coin
 newtype CoinTXID =
@@ -48,9 +58,9 @@ data Msg
   = CreateAuctionRequest AuctionOpts -- incoming
   | BidRequest AucTXID -- incoming
                Int
-  | BidSubmitted AucTXID -- outgoing
+  | BidSubmitted String AucTXID -- outgoing
                  Bid
-  | AuctionCreated AucTXID
+  | AuctionCreated Username AucTXID
                    Auction -- outgoing
   | RequestCoins Int -- incoming 
   | CoinsGenerated Int -- outgoing

@@ -109,7 +109,7 @@ getTableRow TXLogEntry{..} =
     [ --onClick $ AppAction (SelectAuction txid)
      --class_ $ do bool "auction-row" "auction-row-selected" isSelected
     ]
-    [ td_ [] [text $ S.ms truncatedTXID]
+    [ td_ [class_ "hash-cell"] [text $ S.ms truncatedTXID]
     , td_ [] [text $ S.ms $ format24hrTime entryTimestamp]
     , td_ [] [text $ S.ms entryUsername]
     , td_ [] [text $ S.ms $ entryDescription]
