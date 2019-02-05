@@ -22,6 +22,7 @@ import Data.IntMap.Lazy (IntMap)
 import qualified Data.JSString as GJS
 import qualified Data.Map as M
 import Data.Monoid
+import Data.Time
 import Data.Time.Clock
 import GHC.Generics
 import Miso
@@ -47,6 +48,13 @@ instance ToJSON Message
 instance FromJSON Message where
   parseJSON =
     withText "Not a valid string" $ \x -> pure (Message (S.toMisoString x))
+
+data TXLogEntry = TXLogEntry
+ {   entryTXID :: String
+   , entryTimestamp :: UTCTime
+   , entryDescription :: String
+   , entryUsername :: String
+}
 
 data Model = Model
   {  uri :: URI

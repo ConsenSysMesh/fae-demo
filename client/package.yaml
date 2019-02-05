@@ -30,6 +30,7 @@ dependencies:
   - time
   - shared
   - servant
+  - uuid
 
 executables:
   auction-client-exe:

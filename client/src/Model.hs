@@ -38,6 +38,7 @@ import Data.Proxy
 import Servant.API
 import Servant.Utils.Links
 import Types
+import Data.UUID.V4
 
 parseServerAction :: MisoString -> Action
 parseServerAction m =
@@ -133,7 +134,11 @@ handleServerAction a@(AuctionCreated aucTXID auction) Model {..} =
     updatedAuctions = createAuction aucTXID auction auctions
 
 handleServerAction a@(BidSubmitted aucTXID bid@Bid{..}) Model {..} =
-  noEff Model {auctions = updatedAuctions, accountBalance = accountBalance - bidValue, bidFieldValue = 0, ..}
+  Model {
+    auctions = updatedAuctions,
+    accountBalance = accountBalance - bidValue, 
+    bidFieldValue = 0,
+    ..} <# pure (AppAction Noop)
   where
     updatedAuctions = bidOnAuction aucTXID bid auctions
 
@@ -143,10 +148,22 @@ handleServerAction a@(CoinsGenerated numCoins) Model {..} =
 
 handleServerAction _ model = noEff model
 
-
 mintCoinsAndBid :: Int -> AucTXID -> Model -> Effect Action Model
 mintCoinsAndBid coinCount aucTXID model = 
   updateModel mintCoinsMsg model >>= updateModel bidMsg
   where
     mintCoinsMsg = AppAction (SendServerAction (RequestCoins coinCount))
     bidMsg = AppAction (SendServerAction (BidRequest aucTXID coinCount)) 
+
+getTXDescription :: Msg -> String
+getTXDescription (AuctionCreated (AucTXID aucTXID) auction) = "Auction created"
+getTXDescription (BidSubmitted (AucTXID aucTXID) coinCount) = Li.concat ["Raised bid to ", show coinCount, " coins"]
+getTXDescription _ = "unknown msg"
+
+addTXLogEntry :: String -> Msg -> IO TXLogEntry
+addTXLogEntry entryUsername msg = do 
+  entryTimestamp <- getCurrentTime
+  uuid <- nextRandom
+  let entryTXID = show uuid
+  return TXLogEntry {..}
+  where entryDescription = getTXDescription msg

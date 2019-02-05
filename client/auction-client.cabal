@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 4139b853ed82643fd1761caff2b885d90942fe665f1d2b9b0ad6bd2fec0ae381
+-- hash: 9d1d4e205c08b9b48464c85e1bb33b689b55c21998524e26721c4c92ad6898b4
 
 name:           auction-client
 version:        0.1.0.0
@@ -48,4 +48,5 @@ executable auction-client-exe
     , shared
     , text
     , time
+    , uuid
   default-language: Haskell2010
