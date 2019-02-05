@@ -39,8 +39,13 @@ data Bid = Bid
   , isWinningBid :: Bool
   } deriving (Eq, Show, Generic, FromJSON, ToJSON)
 
+data AuctionOpts = AuctionOpts
+ {  startingVal :: Int
+  , maxBidCount :: Int
+}  deriving (Eq, Show, Generic, FromJSON, ToJSON)
+
 data Msg
-  = CreateAuctionRequest -- incoming
+  = CreateAuctionRequest AuctionOpts -- incoming
   | BidRequest AucTXID -- incoming
                Int
   | BidSubmitted AucTXID -- outgoing
@@ -49,10 +54,6 @@ data Msg
                    Auction -- outgoing
   | RequestCoins Int -- incoming 
   | CoinsGenerated Int -- outgoing
-  | RequestNewStartingVal Int -- incoming
-  | NewStartingVal Int -- outgoing
-  | RequestNewMaxBidCount Int -- incoming
-  | NewMaxBidCount Int -- outgoing
   | ErrMsg Err
   deriving (Show, Generic, FromJSON, ToJSON)
 
