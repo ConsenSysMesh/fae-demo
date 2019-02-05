@@ -261,7 +261,7 @@ auctionViewRight aucTXID bidFieldValue auction@Auction{..} =
       div_
           [ class_ "bid-progress-container"]
           [
-            h3_ [] [text $ ("Bids: " <> (S.ms $ show $ Li.length bids)) <> "/5"]
+            h3_ [] [text $ ("Bids: " <> (S.ms $ show $ Li.length bids)) <> "/4"]
           ]
       
       ]

@@ -59,6 +59,8 @@ data Model = Model
   , loggedIn :: Bool
   , selectedAuctionTXID :: Maybe AucTXID
   , accountBalance :: Int
+  , maxBidCount :: Int
+  , auctionStartVal :: Int
   } deriving (Show, Eq)
 
 data Action

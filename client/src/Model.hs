@@ -51,7 +51,7 @@ getInitialModel currentURI =
   Model
     { 
       uri = currentURI
-    ,  auctions = M.empty
+    , auctions = M.empty
     , received = S.ms ""
     , msg = Message $ S.ms ""
     , bidFieldValue = 0
@@ -60,6 +60,8 @@ getInitialModel currentURI =
     , loggedIn = False
     , selectedAuctionTXID = Nothing
     , accountBalance = 0
+    , maxBidCount = 4
+    , auctionStartVal = 1
     }
 
 updateModel :: Action -> Model -> Effect Action Model
@@ -128,7 +130,14 @@ handleServerAction a@(CoinsGenerated numCoins) Model {..} =
   noEff Model {accountBalance = newBalance, bidFieldValue = newBalance, ..} -- bidAmount == account balance for simplicity
   where newBalance = accountBalance + numCoins
 
+handleServerAction a@(NewMaxBidCount newMaxBidCount) Model {..} =
+  noEff Model { maxBidCount = newMaxBidCount, ..}
+
+handleServerAction a@(NewStartingVal newAuctionStartVal) Model {..} =
+  noEff Model {auctionStartVal = newAuctionStartVal, ..}
+
 handleServerAction _ model = noEff model
+
 
 mintCoinsAndBid :: Int -> AucTXID -> Model -> Effect Action Model
 mintCoinsAndBid coinCount aucTXID model = 
