@@ -35,15 +35,15 @@ execute ::
 execute = runReaderT . runExceptT
 
 -- search and replace on tx message source file
-updateStartingBid :: Int -> Int -> IO ()
-updateStartingBid prev next = trace cmd (callCommand cmd)
+updateStartingBid :: Int -> IO ()
+updateStartingBid next = trace cmd (callCommand cmd)
   where 
-    sedQuery = concat ["6s/", show prev, "/", show next, "/"]
+    sedQuery = concat ["6s/1/", show next, "/"]
     cmd = concat ["gsed -i ", sedQuery, " \"Create.hs\""]
 
 -- search and replace on tx message source file
-updateMaxBidCount :: Int -> Int -> IO ()
-updateMaxBidCount prev next = trace cmd (callCommand cmd)
+updateMaxBidCount :: Int -> IO ()
+updateMaxBidCount next = trace cmd (callCommand cmd)
   where 
-    sedQuery = concat ["7s/", show prev, "/", show next, "/"]
+    sedQuery = concat ["7s/4/", show next, "/"]
     cmd = concat ["gsed -i ", sedQuery, " \"Create.hs\""]

@@ -32,7 +32,7 @@ import Text.Pretty.Simple (pPrint)
 msgHandler :: Msg -> ReaderT (MVar ServerState, String) IO ()
 msgHandler (RequestCoins numCoins) =  handleCoinRequest numCoins
 msgHandler (BidRequest aucTXID amount) = handleBidRequest aucTXID amount
-msgHandler CreateAuctionRequest = handleCreateAuctionRequest
+msgHandler (CreateAuctionRequest auctionOpts) = handleCreateAuctionRequest auctionOpts
 
 updateServerState :: MVar ServerState -> ServerState -> IO ()
 updateServerState state newServerState =
@@ -41,7 +41,7 @@ updateServerState state newServerState =
     (\serverState@ServerState {..} -> do
        pPrint serverState
        return newServerState)
--- TODO use reader to pass client and state around  
+
 handleFaeOutput :: Either PostTXError PostTXResponse -> ReaderT (MVar ServerState, String) IO ()
 handleFaeOutput output = do 
     (state, clientName) <- ask
@@ -64,11 +64,11 @@ handleBidRequest aucTXID amount= do
   where
     key = Key "bidder1"
     getWallet (Wallet wallet) = wallet
--- coinTXID should be retrieved based on amount of coins to bid at the
--- moment bid amounts always equal account balance for simplicity to avoid implementing a wallet
 
-handleCreateAuctionRequest :: ReaderT (MVar ServerState, String) IO ()
-handleCreateAuctionRequest = do
+handleCreateAuctionRequest :: AuctionOpts -> ReaderT (MVar ServerState, String) IO ()
+handleCreateAuctionRequest AuctionOpts{..} = do
+  liftIO $ updateStartingBid startingVal
+  liftIO $ updateMaxBidCount maxBidCount
   faeOut <- liftIO $ postCreateAuctionTX key
   handleFaeOutput faeOut
   where
