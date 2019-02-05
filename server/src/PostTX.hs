@@ -1,5 +1,7 @@
 module PostTX
   ( executeContract
+  , updateStartingBid
+  , updateMaxBidCount
   , PostTXResponse(..)
   , TXConfig(..)
   ) where
@@ -23,3 +25,13 @@ execute ::
   -> TXConfig
   -> IO (Either PostTXError PostTXResponse)
 execute = runReaderT . runExceptT
+
+-- search and replace on tx message source file
+updateStartingBid :: Int -> Int -> String
+updateStartingBid prev next = concat ["gsed -i ", sedQuery, " \"Create.hs\""]
+  where sedQuery = concat ["6s/", show prev, "/", show next, "/"]
+
+-- search and replace on tx message source file
+updateMaxBidCount :: Int -> Int -> String
+updateMaxBidCount prev next = concat ["gsed -i ", sedQuery, " \"Create.hs\""]
+  where sedQuery = concat ["7s/", show prev, "/", show next, "/"]
