@@ -6,10 +6,18 @@ module PostTX
   , TXConfig(..)
   ) where
 
+import Data.List
+
+import Debug.Trace
+
+import System.Process
+
 import Control.Monad.Except
 import Control.Monad.Reader
-import PostTX.Outgoing.PostTX
+
 import Prelude
+
+import PostTX.Outgoing.PostTX
 import PostTX.Types
 import SharedTypes
 
@@ -27,11 +35,15 @@ execute ::
 execute = runReaderT . runExceptT
 
 -- search and replace on tx message source file
-updateStartingBid :: Int -> Int -> String
-updateStartingBid prev next = concat ["gsed -i ", sedQuery, " \"Create.hs\""]
-  where sedQuery = concat ["6s/", show prev, "/", show next, "/"]
+updateStartingBid :: Int -> Int -> IO ()
+updateStartingBid prev next = trace cmd (callCommand cmd)
+  where 
+    sedQuery = concat ["6s/", show prev, "/", show next, "/"]
+    cmd = concat ["gsed -i ", sedQuery, " \"Create.hs\""]
 
 -- search and replace on tx message source file
-updateMaxBidCount :: Int -> Int -> String
-updateMaxBidCount prev next = concat ["gsed -i ", sedQuery, " \"Create.hs\""]
-  where sedQuery = concat ["7s/", show prev, "/", show next, "/"]
+updateMaxBidCount :: Int -> Int -> IO ()
+updateMaxBidCount prev next = trace cmd (callCommand cmd)
+  where 
+    sedQuery = concat ["7s/", show prev, "/", show next, "/"]
+    cmd = concat ["gsed -i ", sedQuery, " \"Create.hs\""]
