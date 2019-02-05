@@ -7,6 +7,8 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE ExtendedDefaultRules #-}
+{-# LANGUAGE TemplateHaskell #-}
+
 
 module Model where
 
@@ -41,6 +43,8 @@ import Types
 import Data.UUID.V4
 import Control.Monad.IO.Class
 
+import GHCJS.Marshal
+
 
 parseServerAction :: MisoString -> Action
 parseServerAction m =
@@ -61,7 +65,7 @@ getInitialModel currentURI =
     , genNumCoinsField = 1
     , maxBidCountField = 4
     , auctionStartValField = 1
-    , username = S.ms ""
+    , loggedInUsername = S.ms ""
     , loggedIn = False
     , selectedAuctionTXID = Nothing
     , accountBalance = 0
@@ -110,10 +114,10 @@ handleAppAction (HandleWebSocket (WebSocketMessage msg@(Message m))) model =
 handleAppAction (UpdateMessage m) model = noEff model {msg = Message m}
 
 handleAppAction Login Model {..} =
-  Model {loggedIn = True, ..} <# do send username >> pure (AppAction (goCreate))
+  Model {loggedIn = True, ..} <# do send loggedInUsername >> pure (AppAction (goCreate))
 
 handleAppAction (UpdateUserNameField newUsername) Model {..} =
-  noEff Model {username = newUsername, ..}
+  noEff Model {loggedInUsername = newUsername, ..}
 
 handleAppAction (UpdateNewMaxBidCountField newMaxBidCount) Model {..} =
   noEff Model { maxBidCountField = newMaxBidCount, ..}
@@ -126,27 +130,31 @@ handleAppAction SendCreateAuctionRequest m@Model {..} =
   m <# do send action >> pure (AppAction Noop)
   where action = CreateAuctionRequest $ AuctionOpts auctionStartValField maxBidCountField
 
-handleAppAction (AddTXLogEntry txLogEntry) m@Model {..} = 
-  noEff Model{ txLog = txLog ++ [txLogEntry], ..}
-
 handleAppAction Noop model = noEff model
 
 handleAppAction _ model = noEff model
 
 handleServerAction :: Msg -> Model -> Effect Action Model
-handleServerAction a@(AuctionCreated aucTXID auction) Model {..} =
-  Model {auctions = updatedAuctions, selectedAuctionTXID = Just aucTXID, ..} <# pure (AppAction goAuctionHome)
+handleServerAction a@(AuctionCreated username aucTXID auction) Model {..} =
+  Model {
+    auctions = updatedAuctions,
+    selectedAuctionTXID = Just aucTXID,
+    txLog = newTXLog,
+    ..} <# pure (AppAction goAuctionHome)
   where
+    newTXLog = txLog ++ [getTXLogEntry a]
     updatedAuctions = createAuction aucTXID auction auctions
 
-handleServerAction a@(BidSubmitted aucTXID bid@Bid{..}) m@Model {..} = Model {
-  auctions = updatedAuctions,
-  accountBalance = accountBalance - bidValue, 
-  bidFieldValue = 0,
-  ..} <# do
-    (AppAction . AddTXLogEntry) <$> addTXLogEntry bidder a 
+handleServerAction a@(BidSubmitted _  aucTXID bid@Bid{..}) m@Model {..} =
+  noEff Model {
+      auctions = updatedAuctions,
+      accountBalance = accountBalance - bidValue, 
+      bidFieldValue = 0,
+      txLog = newTXLog,
+      ..}
   where
     updatedAuctions = bidOnAuction aucTXID bid auctions
+    newTXLog = txLog ++ [getTXLogEntry a]
 
 handleServerAction a@(CoinsGenerated numCoins) Model {..} =
   noEff Model {accountBalance = newBalance, bidFieldValue = newBalance, ..} -- bidAmount == account balance for simplicity
@@ -162,14 +170,19 @@ mintCoinsAndBid coinCount aucTXID model =
     bidMsg = AppAction (SendServerAction (BidRequest aucTXID coinCount)) 
 
 getTXDescription :: Msg -> String
-getTXDescription (AuctionCreated (AucTXID aucTXID) auction) = "Auction created"
-getTXDescription (BidSubmitted (AucTXID aucTXID) coinCount) = Li.concat ["Raised bid to ", show coinCount, " coins"]
+getTXDescription (AuctionCreated _ (AucTXID aucTXID) auction) = "Auction created"
+getTXDescription (BidSubmitted _ (AucTXID aucTXID) Bid{..}) = Li.concat ["Raised bid to ", show bidValue, " coins"]
 getTXDescription _ = "unknown msg"
 
-addTXLogEntry :: String -> Msg -> IO TXLogEntry
-addTXLogEntry entryUsername msg = do 
-  entryTimestamp <- getCurrentTime
-  uuid <- nextRandom
-  let entryTXID = show uuid
-  return TXLogEntry {..}
-  where entryDescription = getTXDescription msg
+getTXLogEntry :: Msg -> TXLogEntry
+getTXLogEntry msg@(BidSubmitted entryTXID (AucTXID aucTXID) Bid{..}) =
+  TXLogEntry {..}
+    where
+      entryUsername = bidder
+      entryTimestamp = bidTimestamp
+      entryDescription = getTXDescription msg
+getTXLogEntry msg@(AuctionCreated (Username entryUsername) (AucTXID entryTXID) Auction{..}) =
+  TXLogEntry {..}
+    where
+      entryDescription = getTXDescription msg
+      entryTimestamp = createdTimestamp

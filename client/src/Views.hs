@@ -76,14 +76,14 @@ biddingView m@Model {..} =
 
 -- container for the main auction content
 mainView :: Model -> View Action
-mainView Model {..} =
+mainView m@Model {..} =
   case selectedAuctionTXID of
     Nothing -> ""
     (Just aucTXID) ->
       case M.lookup aucTXID auctions of
         Nothing -> ""
         (Just auction) ->
-          auctionView maxBidCountField auctionStartValField aucTXID auction bidFieldValue
+          auctionView m maxBidCountField auctionStartValField aucTXID auction bidFieldValue
 
 onEnter :: Action -> Attribute Action
 onEnter action = onKeyDown $ bool (AppAction Noop) action . (== KeyCode 13)
@@ -135,14 +135,14 @@ txLogTable txLogEntries = table
                 ]
             ]
 
-auctionView :: Int -> Int -> AucTXID -> Auction -> Int ->  View Action
-auctionView maxBidCountField startingVal aucTXID@(AucTXID txid) auction@Auction {..} bidFieldValue = 
+auctionView :: Model -> Int -> Int -> AucTXID -> Auction -> Int ->  View Action
+auctionView  m maxBidCountField startingVal aucTXID@(AucTXID txid) auction@Auction {..} bidFieldValue = 
   div_ [class_ "auction-container"] [ 
-    auctionViewLeft currentPrice auction, 
+    auctionViewLeft m currentPrice auction, 
     auctionViewRight maxBidCountField aucTXID (bidFieldValue) auction]
   where currentPrice = if Li.null bids then S.ms startingVal else S.ms $ currentBidValue auction
 
-auctionViewLeft currentPrice auction@Auction{..} =
+auctionViewLeft m@Model{..} currentPrice auction@Auction{..} =
   div_
     [class_ "auction-container-left"]
       [ div_
@@ -172,7 +172,7 @@ auctionViewLeft currentPrice auction@Auction{..} =
       div_
           [ class_ "auction-container-item no-margin-top"]
           [
-            p_ [] [text description]
+            p_ [] [text (S.ms description)]
           ]
       ,
       div_
@@ -180,6 +180,8 @@ auctionViewLeft currentPrice auction@Auction{..} =
           [
             h3_ [] [text "Fae Transaction Log"]
           ]
+      ,
+      txLogTable txLog
       ]
 
 

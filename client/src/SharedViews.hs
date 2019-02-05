@@ -45,7 +45,7 @@ titleView = h2_ [class_ "title-container header-item"] [text "Fae Auction"]
 
 -- username and user icon
 signedInView Model{..} = div_ [class_ "signedin-container"] [
-    div_ [class_ "header-item username-container"] [h3_ [class_ "username"] [text username]]
+    div_ [class_ "header-item username-container"] [h3_ [class_ "username"] [text loggedInUsername]]
     , 
     div_ [class_ "header-item signedin-logo-container"] [img_ [class_ "signedin-logo", src_ $ S.pack "https://openclipart.org/download/247319/abstract-user-flat-3.svg"]]
     ]

@@ -9,6 +9,8 @@
 {-# LANGUAGE ExtendedDefaultRules #-}
 {-# LANGUAGE DeriveAnyClass #-}
 {-# LANGUAGE TypeSynonymInstances #-}
+{-# LANGUAGE TemplateHaskell #-}
+
 
 module Types where
 
@@ -65,12 +67,12 @@ data Model = Model
   , genNumCoinsField :: Int
   , maxBidCountField :: Int
   , auctionStartValField :: Int
-  , username :: MisoString
+  , loggedInUsername :: MisoString
   , loggedIn :: Bool
   , selectedAuctionTXID :: Maybe AucTXID
   , accountBalance :: Int
   , txLog :: [TXLogEntry]
-  } deriving (Show, Eq)
+  } deriving (Show, Eq, Generic)
 
 data Action
   = AppAction AppAction
@@ -83,7 +85,6 @@ data AppAction
   | SendServerAction Msg
   | SendCreateAuctionRequest
   | UpdateUserNameField MisoString
-  | AddTXLogEntry TXLogEntry
   | Login
   | Logout
   | UpdateMessage MisoString

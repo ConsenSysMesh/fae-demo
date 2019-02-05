@@ -92,9 +92,10 @@ updateAuction (BidTX txid aucTXID coinTXID hasWon) = do
     getNewBid clientName bidAmount = do
       currentTime <- getCurrentTime
       return Bid {bidder = clientName, bidValue = bidAmount, bidTimestamp = currentTime, isWinningBid = hasWon}
-    outgoingMsg = BidSubmitted aucTXID 
+    outgoingMsg = BidSubmitted (show txid) aucTXID 
 updateAuction (AuctionCreatedTX (txid)) = do
   (state, clientName) <- ask
+  let outgoingMsg = AuctionCreated (Username clientName) auctionId
   ServerState {..} <- liftIO $ readMVar state
   newAuction <- liftIO $ getNewAuction clientName
   let updatedAuctions = createAuction auctionId newAuction auctions
@@ -106,7 +107,6 @@ updateAuction (AuctionCreatedTX (txid)) = do
       currentTime <- getCurrentTime
       return Auction
         {createdBy = clientName, bids = [], createdTimestamp = currentTime }
-    outgoingMsg = AuctionCreated auctionId
 
 handleCoinRequest :: Int ->  ReaderT (MVar ServerState, String) IO ()
 handleCoinRequest numCoins  = do
@@ -122,7 +122,7 @@ grantCoins numCoins newWallet = do
   (state, clientName) <- ask
   ServerState {..} <- liftIO $ readMVar state
   let client@Client{..} = fromJust $ getClient clients (T.pack clientName) --ugh fix fromJust
-  liftIO $ updateServerState state ServerState {clients = updateClientWallet clients  name newWallet, ..}
+  liftIO $ updateServerState state ServerState {clients = updateClientWallet clients name newWallet, ..}
   liftIO $ sendMsg conn $ CoinsGenerated numCoins
 
   
