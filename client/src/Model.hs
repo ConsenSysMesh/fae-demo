@@ -111,10 +111,10 @@ handleAppAction Login Model {..} =
 handleAppAction (UpdateUserNameField newUsername) Model {..} =
   noEff Model {username = newUsername, ..}
 
-handleAppAction (NewMaxBidCount newMaxBidCount) Model {..} =
+handleAppAction (UpdateNewMaxBidCountField newMaxBidCount) Model {..} =
   noEff Model { maxBidCountField = newMaxBidCount, ..}
 
-handleAppAction (NewStartingVal newAuctionStartVal) Model {..} =
+handleAppAction (UpdateNewStartingValField newAuctionStartVal) Model {..} =
   noEff Model {auctionStartValField = newAuctionStartVal, ..}
 
 -- gets the auction start params from the fields, constructs the auction request msg and then sends

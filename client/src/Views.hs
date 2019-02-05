@@ -34,11 +34,13 @@ import qualified Miso.String as S
 import Text.Read
 import Types
 import SharedTypes
+import CreateAuctionView
 
 import Data.Proxy
 import Servant.API
 
-bookDescription = "An Inquiry into the Nature and Causes of the Wealth of Nations. Smith, Adam. 1776 \n Lot #685 London: Printed for W. Strahan; and T. Cadell, 1776. First edition of the Adam Smith’s magnum opus and cornerstone of economic thought."
+import SharedViews
+
 
 appView :: Model -> View Action
 appView m = either (const the404) id $ runRoute (Proxy :: Proxy API) handlers uri m
@@ -51,7 +53,7 @@ appView m = either (const the404) id $ runRoute (Proxy :: Proxy API) handlers ur
      loginView m
     ]
   create (_ :: Model) = div_ [] [
-     createView m
+     createAuctionView m
     ]
   the404 = div_ [] [
       text "404 :("
@@ -64,9 +66,6 @@ loginView m@Model {..} = div_ [] [
   , loginForm m
   ]
 
-createView :: Model -> View Action
-createView m@Model {..} = div_ [] [createAuctionBtn m]
-
 biddingView :: Model -> View Action
 biddingView m@Model {..} =
   div_ [] $
@@ -75,34 +74,7 @@ biddingView m@Model {..} =
       [headerView m, mainView m ]
   ]
 
-headerView :: Model -> View Action
-headerView m = div_ [class_ "header-container"] [titleView, signedInView m ]
 
--- main title
-titleView = h3_ [class_ "title-container header-item"] [text "Fae Auction"]
-
--- username and user icon
-signedInView Model{..} = div_ [class_ "signedin-container"] [
-    div_ [class_ "header-item username-container"] [h3_ [class_ "username"] [text username]]
-    , 
-    div_ [class_ "header-item signedin-logo-container"] [img_ [class_ "signedin-logo", src_ $ S.pack "https://openclipart.org/download/247319/abstract-user-flat-3.svg"]]
-    ]
-
--- use this for tx log
---auctionTableView = [viewAuctionsTable m | not $ M.null auctions] 
-
-createAuctionBtn :: Model -> View Action
-createAuctionBtn Model {..} =
-  div_ [ class_ "create-auction-container" ] $
-    [button_
-      [ 
-          onClick (AppAction SendCreateAuctionRequest)
-      ]
-      [text "Create New Auction"]
-      ]
-
-bookImg :: View Action
-bookImg = img_ [class_ "book-view", src_ $ S.pack "https://www.baumanrarebooks.com/BookImages/86406.jpg", width_ "250px"]
 
 -- container for the main auction content
 mainView :: Model -> View Action
@@ -113,8 +85,7 @@ mainView Model {..} =
       case M.lookup aucTXID auctions of
         Nothing -> ""
         (Just auction) ->
-          auctionView aucTXID auction bidFieldValue (S.fromMisoString username) accountBalance
-          -- TODO dont pass auction down instead use reader to pass down auction state and use selected auction id to get auction data
+          auctionView maxBidCountField auctionStartValField aucTXID auction bidFieldValue
 
 onEnter :: Action -> Attribute Action
 onEnter action = onKeyDown $ bool (AppAction Noop) action . (== KeyCode 13)
@@ -157,35 +128,38 @@ getTableRows :: Maybe AucTXID -> Map AucTXID Auction -> [View Action]
 getTableRows selectedAucTXID auctions =
   Li.map (getTableRow selectedAucTXID) $ M.toList auctions
 
+   -- table m | not $ Li.null txLog
 txLogTable :: Model -> View Action
-txLogTable Model {..} =
-  div_
-    [class_ "tx-log-table"]
-    [ table_
-        []
-        [ thead_
-            [style_ $ M.fromList [(S.pack "text-align", S.pack "center")]]
-            [ tr_
+txLogTable Model {..} = table
+  where table =  div_
+            [class_ "tx-log-table"]
+            [ table_
                 []
-                [ th_ [] [p_ [] [text "Auction ID"]]
-                , th_ [] [p_ [] [text "Created By"]]
-                , th_ [] [p_ [] [text "Created At"]]
-                , th_ [] [p_ [] [text "Bids"]]
-                , th_ [] [p_ [] [text "Current Bid"]]
-                , th_ [] [p_ [] [text "Status"]]
+                [ thead_
+                    [style_ $ M.fromList [(S.pack "text-align", S.pack "center")]]
+                    [ tr_
+                        []
+                        [ th_ [] [p_ [] [text "Auction ID"]]
+                        , th_ [] [p_ [] [text "Created By"]]
+                        , th_ [] [p_ [] [text "Created At"]]
+                        , th_ [] [p_ [] [text "Bids"]]
+                        , th_ [] [p_ [] [text "Current Bid"]]
+                        , th_ [] [p_ [] [text "Status"]]
+                        ]
+                    ]
+                , tbody_ [] $ getTableRows selectedAuctionTXID auctions
                 ]
             ]
-        , tbody_ [] $ getTableRows selectedAuctionTXID auctions
-        ]
-    ]
 
-description = S.pack "Lot #685 London: Printed for W. Strahan; and T. Cadell, 1776. First edition of the Adam Smith’s magnum opus and cornerstone of economic thought."
 
-auctionView :: AucTXID -> Auction -> Int -> String -> Int -> View Action
-auctionView aucTXID@(AucTXID txid) auction@Auction {..} bidFieldValue username accountBalance = 
-  div_ [class_ "auction-container"] [ auctionViewLeft auction, auctionViewRight aucTXID bidFieldValue auction]
+auctionView :: Int -> Int -> AucTXID -> Auction -> Int ->  View Action
+auctionView maxBidCountField startingVal aucTXID@(AucTXID txid) auction@Auction {..} bidFieldValue = 
+  div_ [class_ "auction-container"] [ 
+    auctionViewLeft currentPrice auction, 
+    auctionViewRight maxBidCountField aucTXID (bidFieldValue) auction]
+  where currentPrice = if Li.null bids then S.ms startingVal else S.ms $ currentBidValue auction
 
-auctionViewLeft auction =
+auctionViewLeft currentPrice auction@Auction{..} =
   div_
     [class_ "auction-container-left"]
       [ div_
@@ -203,7 +177,7 @@ auctionViewLeft auction =
        div_
           [ class_ "auction-container-item no-margin-top"]
           [
-            h3_ [] [text $ "Current Price  $ " <> (S.ms (currentBidValue auction))]
+            h3_ [] [text $ "Current Price  $ " <> (currentPrice)]
           ]
       ,
       div_
@@ -215,7 +189,7 @@ auctionViewLeft auction =
       div_
           [ class_ "auction-container-item no-margin-top"]
           [
-            p_ [] [text bookDescription]
+            p_ [] [text description]
           ]
       ,
       div_
@@ -226,7 +200,7 @@ auctionViewLeft auction =
       ]
 
 
-auctionViewRight aucTXID bidFieldValue auction@Auction{..} =
+auctionViewRight maxBidCountField aucTXID bidFieldValue auction@Auction{..} =
   div_
     [class_ "auction-container-right"]
       [ div_
@@ -257,14 +231,14 @@ auctionViewRight aucTXID bidFieldValue auction@Auction{..} =
        div_
           [ class_ "auction-container-item"]
           [
-            button_ [class_ "bid-field-btn", onClick (AppAction $ MintCoinsAndBid aucTXID bidFieldValue),
+            button_ [class_ "bid-field-btn", onClick (AppAction $ MintCoinsAndBid aucTXID (bidFieldValue)),
             disabled_ $ auctionEnded auction] [text "Submit Bid"]
           ]
       ,
       div_
           [ class_ "bid-progress-container"]
           [
-            h3_ [] [text $ ("Bids: " <> (S.ms $ show $ Li.length bids)) <> "/4"]
+            h3_ [] [text $ ("Bids: " <> (S.ms $ show $ Li.length bids)) <> "/" <> (S.ms $ show maxBidCountField)]
           ]
       
       ]

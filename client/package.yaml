@@ -39,6 +39,8 @@ executables:
     - src
     other-modules:
     - Auction
+    - CreateAuctionView
+    - SharedViews
     - Model
     - Types
     - Views

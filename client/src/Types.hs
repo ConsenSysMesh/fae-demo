@@ -81,8 +81,8 @@ data AppAction
   | UpdateGenNumCoinsField (Maybe Int)
   | SelectAuction AucTXID
   | MintCoinsAndBid AucTXID Int
-  | NewMaxBidCount Int
-  | NewStartingVal Int
+  | UpdateNewMaxBidCountField Int
+  | UpdateNewStartingValField Int
   | HandleURI URI
   | ChangeURI URI
   | Noop
