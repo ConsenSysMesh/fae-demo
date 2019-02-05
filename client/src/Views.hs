@@ -41,13 +41,10 @@ import Servant.API
 bookDescription = "An Inquiry into the Nature and Causes of the Wealth of Nations. Smith, Adam. 1776 \n Lot #685 London: Printed for W. Strahan; and T. Cadell, 1776. First edition of the Adam Smith’s magnum opus and cornerstone of economic thought."
 
 appView :: Model -> View Action
-appView m = view
+appView m = either (const the404) id $ runRoute (Proxy :: Proxy API) handlers uri m
   where
-  view =
-    either (const the404) id
-      $ runRoute (Proxy :: Proxy API) handlers uri m
-  handlers = login :<|> home :<|> create
-  home (_ :: Model) = div_ [] [
+  handlers = login :<|> auctionHome :<|> create
+  auctionHome (_ :: Model) = div_ [] [
      biddingView m 
     ]
   login (_ :: Model) = div_ [] [
@@ -68,14 +65,14 @@ loginView m@Model {..} = div_ [] [
   ]
 
 createView :: Model -> View Action
-createView  m@Model {..} = undefined
+createView m@Model {..} = div_ [] [createAuctionBtn m]
 
 biddingView :: Model -> View Action
 biddingView m@Model {..} =
   div_ [] $
   [ div_
       [class_ "main-container"]
-      [mainBtns m, headerView m, mainView m ]
+      [headerView m, mainView m ]
   ]
 
 headerView :: Model -> View Action
@@ -94,9 +91,9 @@ signedInView Model{..} = div_ [class_ "signedin-container"] [
 -- use this for tx log
 --auctionTableView = [viewAuctionsTable m | not $ M.null auctions] 
 
-mainBtns :: Model -> View Action
-mainBtns Model {..} =
-  div_ [ class_ "main-btns" ] $
+createAuctionBtn :: Model -> View Action
+createAuctionBtn Model {..} =
+  div_ [ class_ "create-auction-container" ] $
     [button_
       [ 
           onClick (AppAction SendCreateAuctionRequest)

@@ -106,7 +106,7 @@ handleAppAction (HandleWebSocket (WebSocketMessage msg@(Message m))) model =
 handleAppAction (UpdateMessage m) model = noEff model {msg = Message m}
 
 handleAppAction Login Model {..} =
-  Model {loggedIn = True, ..} <# do send username >> pure (AppAction (goHome))
+  Model {loggedIn = True, ..} <# do send username >> pure (AppAction (goCreate))
 
 handleAppAction (UpdateUserNameField newUsername) Model {..} =
   noEff Model {username = newUsername, ..}
@@ -118,7 +118,8 @@ handleAppAction (NewStartingVal newAuctionStartVal) Model {..} =
   noEff Model {auctionStartValField = newAuctionStartVal, ..}
 
 -- gets the auction start params from the fields, constructs the auction request msg and then sends
-handleAppAction SendCreateAuctionRequest m@Model {..} = m <# do send action >> pure (AppAction Noop)
+handleAppAction SendCreateAuctionRequest m@Model {..} = 
+  m <# do send action >> pure (AppAction Noop)
   where action = CreateAuctionRequest $ AuctionOpts auctionStartValField maxBidCountField
 
 handleAppAction Noop model = noEff model
@@ -127,7 +128,7 @@ handleAppAction _ model = noEff model
 
 handleServerAction :: Msg -> Model -> Effect Action Model
 handleServerAction a@(AuctionCreated aucTXID auction) Model {..} =
-  noEff Model {auctions = updatedAuctions, selectedAuctionTXID= Just aucTXID, ..}
+  Model {auctions = updatedAuctions, selectedAuctionTXID = Just aucTXID, ..} <# pure (AppAction goAuctionHome)
   where
     updatedAuctions = createAuction aucTXID auction auctions
 
