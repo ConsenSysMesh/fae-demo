@@ -8,8 +8,10 @@ import FaeFrontend
 
 newtype AucStartingValue = AucStartingValue Int deriving (Show, Eq)
 
+newtype MaxBidCount = MaxBidCount Int deriving (Show, Eq)
+
 data PostTXResponse
-  = AuctionCreatedTX TransactionID AucStartingValue
+  = AuctionCreatedTX TransactionID AucStartingValue MaxBidCount
   | BidTX TransactionID
         AucTXID
         CoinTXID
@@ -23,7 +25,7 @@ data TXConfig
   = BidConfig Key
               AucTXID
               CoinTXID
-  | CreateAuctionConfig Key AucStartingValue
+  | CreateAuctionConfig Key AucStartingValue MaxBidCount
   | GetCoinConfig Key
   | GetMoreCoinsConfig Key
                        CoinTXID

@@ -29,8 +29,8 @@ createAuction ::
      AucTXID -> Auction -> Map AucTXID Auction -> Map AucTXID Auction
 createAuction = Map.insert
 
-postCreateAuctionTX :: Key -> Int -> IO (Either PostTXError PostTXResponse)
-postCreateAuctionTX key startingVal = executeContract (CreateAuctionConfig key (AucStartingValue startingVal))
+postCreateAuctionTX :: Key -> Int -> Int -> IO (Either PostTXError PostTXResponse)
+postCreateAuctionTX key startingVal aucMaxBidCount = executeContract (CreateAuctionConfig key (AucStartingValue startingVal) (MaxBidCount aucMaxBidCount))
 
 postBidTX ::
      Key -> AucTXID -> CoinTXID -> IO (Either PostTXError PostTXResponse)
@@ -38,7 +38,7 @@ postBidTX key aucTXID coinTXID = executeContract (BidConfig key aucTXID coinTXID
 
 auctionStatus :: Auction -> String
 auctionStatus auc@Auction {..}
-  | numBids auc < 4 = highBidder <> "is Winning"
+  | numBids auc < aucMaxBidCount = highBidder <> "is Winning"
   | numBids auc == 0 = "No Bids yet"
   | otherwise = highBidder <> " Has Won!"
   where

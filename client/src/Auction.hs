@@ -55,8 +55,8 @@ auctionStatus auc@Auction {..}
     getBidder Bid{..} = bidder
 
 auctionEnded :: Auction -> Bool
-auctionEnded Auction{..} | length bids == 0  = False
-                         | otherwise         = getIsWinningBid $ Li.head bids
+auctionEnded Auction{..} | length bids == maxBidCount = False
+                         | otherwise = getIsWinningBid $ Li.head bids
 
 getIsWinningBid :: Bid -> Bool
 getIsWinningBid Bid{..} = isWinningBid

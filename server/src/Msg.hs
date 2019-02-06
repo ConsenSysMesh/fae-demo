@@ -70,7 +70,7 @@ handleCreateAuctionRequest :: AuctionOpts -> ReaderT (MVar ServerState, String) 
 handleCreateAuctionRequest AuctionOpts{..} = do
   liftIO $ updateStartingBid startingVal
   liftIO $ updateMaxBidCount maxBidCount
-  faeOut <- liftIO $ postCreateAuctionTX key startingVal
+  faeOut <- liftIO $ postCreateAuctionTX key startingVal maxBidCount
   handleFaeOutput faeOut
   where
     key = Key "bidder1"
@@ -94,7 +94,7 @@ updateAuction (BidTX txid aucTXID coinTXID hasWon) = do
       currentTime <- getCurrentTime
       return Bid {bidder = clientName, bidValue = bidAmount, bidTimestamp = currentTime, isWinningBid = hasWon}
     outgoingMsg = BidSubmitted (show txid) aucTXID 
-updateAuction (AuctionCreatedTX (txid) (AucStartingValue startingValue)) = do
+updateAuction (AuctionCreatedTX txid (AucStartingValue startingValue) (MaxBidCount aucMaxBidCount)) = do
   (state, clientName) <- ask
   let outgoingMsg = AuctionCreated (Username clientName) auctionId
   ServerState {..} <- liftIO $ readMVar state

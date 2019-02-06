@@ -94,9 +94,9 @@ placeBid = do
 
 createAuction :: ExceptT PostTXError (ReaderT TXConfig IO) PostTXResponse
 createAuction = do
-  (CreateAuctionConfig key aucStartingValue) <- ask
+  (CreateAuctionConfig key aucStartingValue maxBidCount) <- ask
   TXSummary{..} <- postTX (CreateAuctionTXin key)
-  return $ AuctionCreatedTX transactionID aucStartingValue
+  return $ AuctionCreatedTX transactionID aucStartingValue maxBidCount
 
 getCoin :: ExceptT PostTXError (ReaderT TXConfig IO) PostTXResponse
 getCoin = do
