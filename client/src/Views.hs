@@ -213,11 +213,10 @@ auctionViewRight maxBidCountField aucTXID bidFieldValue auction@Auction{..} =
               ]
         ]
       ,
-       div_
+        div_
           [ class_ "auction-container-item"]
           [
-            button_ [class_ "bid-field-btn", onClick (AppAction $ MintCoinsAndBid aucTXID (bidFieldValue)),
-            disabled_ $ auctionEnded auction] [text "Submit Bid"]
+            bidBtn | not $ auctionEnded auction
           ]
       ,
       div_
@@ -225,8 +224,17 @@ auctionViewRight maxBidCountField aucTXID bidFieldValue auction@Auction{..} =
           [
             h3_ [] [text $ ("Bids: " <> (S.ms $ show $ Li.length bids)) <> "/" <> (S.ms $ show maxBidCountField)]
           ]
-      
       ]
+      where 
+        isBidDisabled = (auctionEnded auction) || (bidFieldValue =< currentBidValue auction)
+        bidBtn = button_ [
+              class_ "bid-field-btn",
+              onClick (AppAction $ MintCoinsAndBid aucTXID (bidFieldValue)),
+              disabled_ isBidDisabled
+              ] 
+              [
+                text "Submit Bid"
+              ]
 --
        --     h3_ [] [text $ "Auction " <> (S.pack $ show truncatedAucTXID)],
        --     div_ [class_ "auction-info"] [ h3_ [class_ "book_title"] [

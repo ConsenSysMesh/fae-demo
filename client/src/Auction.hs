@@ -73,9 +73,7 @@ getBidder Bid {..} = bidder
 currentBidValue :: Auction -> Int
 currentBidValue Auction {..}
   | length bids > 0 = (getBidValue . Li.head) bids
-  | otherwise = initialValue
-  where
-    initialValue = 1
+  | otherwise = startingValue
 
 highestBidder :: Auction -> String
 highestBidder Auction {..}

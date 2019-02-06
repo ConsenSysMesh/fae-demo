@@ -14,6 +14,7 @@ import PostTX
 import Prelude
 import Types
 import SharedTypes 
+import PostTX.Types
 
 updateAuctionState :: ServerState -> Map AucTXID Auction -> ServerState
 updateAuctionState ServerState {..} auctionState =
@@ -28,8 +29,8 @@ createAuction ::
      AucTXID -> Auction -> Map AucTXID Auction -> Map AucTXID Auction
 createAuction = Map.insert
 
-postCreateAuctionTX :: Key -> IO (Either PostTXError PostTXResponse)
-postCreateAuctionTX key = executeContract (CreateAuctionConfig key)
+postCreateAuctionTX :: Key -> Int -> IO (Either PostTXError PostTXResponse)
+postCreateAuctionTX key startingVal = executeContract (CreateAuctionConfig key (AucStartingValue startingVal))
 
 postBidTX ::
      Key -> AucTXID -> CoinTXID -> IO (Either PostTXError PostTXResponse)

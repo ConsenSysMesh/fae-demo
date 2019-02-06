@@ -40,6 +40,7 @@ data Auction = Auction
   { bids :: [Bid]
   , createdBy :: String
   , createdTimestamp :: UTCTime
+  , startingValue :: Int
   } deriving (Eq, Show, Generic, FromJSON, ToJSON)
 
 data Bid = Bid

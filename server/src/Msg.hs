@@ -27,6 +27,7 @@ import qualified Network.WebSockets as WS
 import Control.Monad.Reader
 import PostTX
 import SharedTypes
+import PostTX.Types
 import Text.Pretty.Simple (pPrint)
 
 msgHandler :: Msg -> ReaderT (MVar ServerState, String) IO ()
@@ -69,7 +70,7 @@ handleCreateAuctionRequest :: AuctionOpts -> ReaderT (MVar ServerState, String) 
 handleCreateAuctionRequest AuctionOpts{..} = do
   liftIO $ updateStartingBid startingVal
   liftIO $ updateMaxBidCount maxBidCount
-  faeOut <- liftIO $ postCreateAuctionTX key
+  faeOut <- liftIO $ postCreateAuctionTX key startingVal
   handleFaeOutput faeOut
   where
     key = Key "bidder1"
@@ -93,7 +94,7 @@ updateAuction (BidTX txid aucTXID coinTXID hasWon) = do
       currentTime <- getCurrentTime
       return Bid {bidder = clientName, bidValue = bidAmount, bidTimestamp = currentTime, isWinningBid = hasWon}
     outgoingMsg = BidSubmitted (show txid) aucTXID 
-updateAuction (AuctionCreatedTX (txid)) = do
+updateAuction (AuctionCreatedTX (txid) (AucStartingValue startingValue)) = do
   (state, clientName) <- ask
   let outgoingMsg = AuctionCreated (Username clientName) auctionId
   ServerState {..} <- liftIO $ readMVar state
@@ -106,7 +107,7 @@ updateAuction (AuctionCreatedTX (txid)) = do
     getNewAuction clientName = do
       currentTime <- getCurrentTime
       return Auction
-        {createdBy = clientName, bids = [], createdTimestamp = currentTime }
+        {createdBy = clientName, bids = [], createdTimestamp = currentTime, .. }
 
 handleCoinRequest :: Int ->  ReaderT (MVar ServerState, String) IO ()
 handleCoinRequest numCoins  = do
