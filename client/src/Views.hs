@@ -110,7 +110,7 @@ getTableRow TXLogEntry{..} =
      --class_ $ do bool "auction-row" "auction-row-selected" isSelected
     ]
     [ td_ [class_ "hash-cell"] [text $ S.ms truncatedTXID]
-    , td_ [] [text $ S.ms $ format24hrTime entryTimestamp]
+    , td_ [class_ "timestamp-cell"] [text $ S.ms $ format24hrTime entryTimestamp]
     , td_ [] [text $ S.ms entryUsername]
     , td_ [] [text $ S.ms $ entryDescription]
     ]
@@ -226,7 +226,7 @@ auctionViewRight maxBidCountField aucTXID bidFieldValue auction@Auction{..} =
           ]
       ]
       where 
-        isBidDisabled = (auctionEnded auction) || (bidFieldValue =< currentBidValue auction)
+        isBidDisabled = (auctionEnded auction) || (bidFieldValue <= currentBidValue auction)
         bidBtn = button_ [
               class_ "bid-field-btn",
               onClick (AppAction $ MintCoinsAndBid aucTXID (bidFieldValue)),

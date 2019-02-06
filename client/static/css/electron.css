@@ -1,5 +1,5 @@
 
-@import url('https://fonts.googleapis.com/css?family=Montserrat:400,700,800|Roboto');
+@import url('https://fonts.googleapis.com/css?family=Montserrat:400,700,800|Roboto:300,400|Roboto+Condensed:300,400,700|Roboto+Mono:300,400,500,700');
 
 
 html {font-size: 16px;}
@@ -122,17 +122,23 @@ button {
 }
 
   
-button{ 
+button { 
     color: white;
-    padding: 11px 19px; 
-    border:0 none;
-    cursor:pointer;
-    font-size: 18px;
+    padding: 11px 20px; 
+    border: 0 none;
+    cursor: pointer;
+    font-size: 16px;
     font-weight: 700;
     font-family: 'Montserrat', 'sans-serif';
     border-radius: 6px; 
     background-color: #4C92E3;
+    text-transform: uppercase;
     outline:none;
+}
+
+button:hover {
+    background-color: rgba(76, 146, 227, 0.907);
+  transition: ease-in;
 }
 
 .starting-val-container {
@@ -168,16 +174,23 @@ button{
 
 .hash-cell {
     text-transform: uppercase;
+    font-family: 'Roboto Mono', 'sans-serif';
 }
+
+
 
 td {
     padding-right: 8px;
+    font-weight: 700;
+    font-family: 'Roboto Condensed', 'sans-serif';
+    font-size: 16px;
 }
 
 input[type=text] {
     height: 27px;
     padding: 5px; 
     border: 2px solid #ccc; 
+    -webkit-border-radius: 5px;
     border-radius: 5px;
     font-size: 16px;
     font-family: 'Montserrat', 'sans-serif';
