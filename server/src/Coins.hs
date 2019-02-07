@@ -62,7 +62,7 @@ depositCoin key wallet = do
     numCoins = 1
 
 getCoin :: Key -> IO (Either PostTXError PostTXResponse)
-getCoin key = executeContract (GetCoinConfig key)
+getCoin key = putStrLn "\n get coin \n">> executeContract (GetCoinConfig key)
 
 getCoins :: Key -> CoinTXID -> Int -> IO (Either PostTXError PostTXResponse)
 getCoins key coinTXID@(CoinTXID txid) numCoins

@@ -40,7 +40,7 @@ updateServerState state newServerState =
   modifyMVar_
     state
     (\serverState@ServerState {..} -> do
-       pPrint serverState
+       --pPrint serverState
        return newServerState)
 
 handleFaeOutput :: Either PostTXError PostTXResponse -> ReaderT (MVar ServerState, String) IO ()
@@ -51,7 +51,8 @@ handleFaeOutput output = do
     either (\err -> liftIO $ sendMsg conn $ ErrMsg $ PostTXErr err) updateAuction output
 
 handleBidRequest :: AucTXID -> Int -> ReaderT (MVar ServerState, String) IO ()
-handleBidRequest aucTXID amount= do 
+handleBidRequest aucTXID amount = do
+  liftIO $ putStrLn $ concat ["Requested to bid - ", show amount]
   (state, clientName) <- ask
   ServerState {..} <- liftIO $ readMVar state
   let client@Client{..} = fromJust $ getClient clients $ T.pack clientName --ugh fix fromJust --also just change the client name to be Text
@@ -76,7 +77,9 @@ handleCreateAuctionRequest AuctionOpts{..} = do
     key = Key "bidder1"
 
 updateAuction :: PostTXResponse -> ReaderT (MVar ServerState, String) IO ()
-updateAuction (BidTX txid aucTXID coinTXID hasWon) = do
+updateAuction (BidTX txid aucTXID coinTXID (TXResult txResult))
+  | txResult /= "You won!" || txResult  /= "Bid accepted" = error ("Bid was not accepted by Fae, error: " ++ txResult) 
+  | otherwise = do
   (state, clientName) <- ask
   ServerState {..} <- liftIO $ readMVar state
   currentTime <- liftIO getCurrentTime
@@ -92,7 +95,7 @@ updateAuction (BidTX txid aucTXID coinTXID hasWon) = do
     getWallet (Wallet wallet) = wallet
     getNewBid clientName bidAmount = do
       currentTime <- getCurrentTime
-      return Bid {bidder = clientName, bidValue = bidAmount, bidTimestamp = currentTime, isWinningBid = hasWon}
+      return Bid {bidder = clientName, bidValue = bidAmount, bidTimestamp = currentTime, isWinningBid = txResult == "You won!"}
     outgoingMsg = BidSubmitted (show txid) aucTXID 
 updateAuction (AuctionCreatedTX txid (AucStartingValue startingValue) (MaxBidCount aucMaxBidCount)) = do
   (state, clientName) <- ask
@@ -109,11 +112,12 @@ updateAuction (AuctionCreatedTX txid (AucStartingValue startingValue) (MaxBidCou
       return Auction
         {createdBy = clientName, bids = [], createdTimestamp = currentTime, .. }
 
-handleCoinRequest :: Int ->  ReaderT (MVar ServerState, String) IO ()
+handleCoinRequest :: Int -> ReaderT (MVar ServerState, String) IO ()
 handleCoinRequest numCoins  = do
+  liftIO $ putStrLn $ concat ["Requested generation of ", show numCoins]
   (state, clientName) <- ask
   ServerState {..} <- liftIO $ readMVar state
-  let Client{..} = fromJust $ getClient clients (T.pack clientName) --ugh fix fromJust
+  let Client{..} = fromJust $ getClient clients (T.pack clientName) --ugh fix fromJust - throw error with msg instead
   newWallet <- liftIO $ runExceptT $ generateCoins key numCoins wallet
   either (liftIO . sendMsg conn . ErrMsg . PostTXErr) (grantCoins numCoins) newWallet
   where key = Key "bidder1"
@@ -122,7 +126,7 @@ grantCoins :: Int -> Wallet -> ReaderT (MVar ServerState, String) IO ()
 grantCoins numCoins newWallet = do
   (state, clientName) <- ask
   ServerState {..} <- liftIO $ readMVar state
-  let client@Client{..} = fromJust $ getClient clients (T.pack clientName) --ugh fix fromJust
+  let client@Client{..} = fromJust $ getClient clients (T.pack clientName) --ugh fix fromJust - throw error with msg instead
   liftIO $ updateServerState state ServerState {clients = updateClientWallet clients name newWallet, ..}
   liftIO $ sendMsg conn $ CoinsGenerated numCoins
 

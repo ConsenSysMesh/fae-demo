@@ -28,11 +28,11 @@ data PostTXOpts = PostTXOpts {
 -- to post the auction TX
 getPostTXopts (BidTXin (Key key) (AucTXID aucTXID) (CoinTXID coinTXID)) = 
   PostTXOpts { contractName = "Bid", args = [], env = env}
-  where env = [ ("key", key), ("aucTX", aucTXID), ("coinTX", coinTXID) ]
+  where env = [ ("key", key), ("self", key), ("aucTX", aucTXID), ("coinTX", coinTXID) ]
 
 getPostTXopts (CreateAuctionTXin (Key key)) =
   PostTXOpts { contractName = "Create", args = ["--","--json"], env = env}
-  where env = [("key", key)]
+  where env = [("key", key),  ("self", key)]
 
 getPostTXopts (WithdrawTXin (Key key) (AucTXID aucTXID)) = 
   PostTXOpts { contractName = "Collect", args = [], env = env}
@@ -44,4 +44,4 @@ getPostTXopts (GetCoinTXin (Key key)) =
 
 getPostTXopts (GetMoreCoinsTXin (Key key) (CoinTXID coinTXID)) = 
   PostTXOpts { contractName = "GetMoreCoins", args = ["--","--json"], env = env}
-  where env = [("ver", "Current"), ("self", "bidder1"), ("key", "bidder1"), ("coinTX", coinTXID)]
+  where env = [("ver", "Current"), ("self", key), ("key", key), ("coinTX", coinTXID)]

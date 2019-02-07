@@ -44,53 +44,36 @@ postTX ::
      AuctionTXin
   -> ExceptT PostTXError (ReaderT TXConfig IO) (TXSummary)
 postTX tx = do
-  stdout <- liftIO $ readProcess "stack" ["exec", "posttx", "Create","--","--json"] []
-  liftIO $ putStrLn stdout
-  either (throwError . TXSummaryParseFailed) return (parseTXSummary $ T.pack stdout)
+  liftIO $ print command
+  (_pIn, pOut, pErr, handle) <- liftIO $ runInteractiveCommand command
+  -- Wait for the process to finish and store its exit code
+  exitCode <- liftIO $ waitForProcess handle
+  -- Get the standard output.
+  stdOutput <- liftIO $ hGetContents pOut
+  -- return both the output and the exit code.
+  liftIO $ print opts
+  liftIO $ putStrLn stdOutput
+  either (throwError . TXSummaryParseFailed) return (parseTXSummary $ T.pack stdOutput)
   where
-    PostTXOpts {..} = traceShow (getPostTXopts tx) (getPostTXopts tx)
-    finalArgs = []
-{-  (exitCode, stdOut, stdErr) <- liftIO $ readProcessWithExitCode cmd args []
-  liftIO $ System.IO.putStrLn stdOut
-  liftIO $ System.IO.putStrLn stdErr
-  return (exitCode, stdOut, stdErr)
-  where
-    args = traceShow (getPostTXargs tx ++ ["--json"]) (getPostTXargs tx  ++ ["--json"])
-    cmd = "stack exec postTX"
-    -}
-
-{-
-
--- | Useful for Fae clients communicating with faeServer
-data TXSummary = TXSummary {
-  transactionID :: TransactionID,
-  txResult :: String,
-  txOutputs:: Vector VersionID,
-  txInputSummaries :: InputSummaries,
-  txMaterialsSummaries :: MaterialsSummaries,
-  txSSigners :: [(String, PublicKey)]
-} deriving (Generic)
-
-data TXInputSummary = TXInputSummary {
-  txInputStatus :: Status,
-  txInputOutputs :: Vector VersionID,
-  txInputMaterialsSummaries :: MaterialsSummaries,
-  txInputVersion :: VersionID
-} deriving (Generic)
-
-type InputSummary = (ContractID, TXInputSummary)
-type InputSummaries = Vector InputSummary
-type MaterialsSummaries = Vector (String, InputSummary)
-
--}
+    opts@PostTXOpts {..} = traceShow (getPostTXopts tx) (getPostTXopts tx)
+    envString = concat $ intersperse " " ((\(a, b) -> concat [ a, "=", b ]) <$> env)
+    command = concat $ intersperse " "
+        [
+          envString,
+          "stack",
+          "exec",
+          "postTX",
+          contractName,
+          "--",
+          "--json"
+        ]
 
 placeBid :: ExceptT PostTXError (ReaderT TXConfig IO) PostTXResponse
 placeBid = do
   config@(BidConfig key aucTXID coinTXID) <- ask
   TXSummary{..} <-
     postTX (BidTXin key aucTXID coinTXID)
-  let hasWon = txResult == "You won!"
-  return $ BidTX transactionID aucTXID coinTXID hasWon
+  return $ BidTX transactionID aucTXID coinTXID (TXResult txResult)
 
 createAuction :: ExceptT PostTXError (ReaderT TXConfig IO) PostTXResponse
 createAuction = do
