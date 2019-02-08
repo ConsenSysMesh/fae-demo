@@ -40,7 +40,7 @@ updateServerState state newServerState =
   modifyMVar_
     state
     (\serverState@ServerState {..} -> do
-       --pPrint serverState
+       pPrint serverState
        return newServerState)
 
 handleFaeOutput :: Either PostTXError PostTXResponse -> ReaderT (MVar ServerState, String) IO ()
@@ -78,7 +78,8 @@ handleCreateAuctionRequest AuctionOpts{..} = do
 
 updateAuction :: PostTXResponse -> ReaderT (MVar ServerState, String) IO ()
 updateAuction (BidTX txid aucTXID coinTXID (TXResult txResult))
-  | txResult /= "You won!" || txResult  /= "Bid accepted" = error ("Bid was not accepted by Fae, error: " ++ txResult) 
+  | txResult /= "\"You won!\"" && txResult  /= "\"Bid accepted\"" = 
+    error ("Bid was not accepted by Fae, error: " ++ txResult) 
   | otherwise = do
   (state, clientName) <- ask
   ServerState {..} <- liftIO $ readMVar state

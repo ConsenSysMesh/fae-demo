@@ -210,8 +210,8 @@ auctionViewRight maxBidCountField aucTXID bidFieldValue auction@Auction{..} =
                 , onInput $
                   AppAction . UpdateBidField . readMaybe . S.unpack . S.toMisoString
                 ]
-              ]
-        ]
+              ] | not $ auctionEnded auction
+        ]  
       ,
         div_
           [ class_ "auction-container-item"]
@@ -220,9 +220,15 @@ auctionViewRight maxBidCountField aucTXID bidFieldValue auction@Auction{..} =
           ]
       ,
       div_
+      [ class_ "auction-container-item"]
+      [
+        h3_ [] [text $ S.ms $ highestBidder auction <> " has won" | auctionEnded auction]
+      ]
+      ,
+      div_
           [ class_ "bid-progress-container"]
           [
-            h3_ [] [text $ ("Bids: " <> (S.ms $ show $ Li.length bids)) <> "/" <> (S.ms $ show maxBidCountField)]
+            h3_ [] [text $ ("Bids: " <> (S.ms $ show $ Li.length bids)) <> "/" <> (S.ms $ show aucMaxBidCount)]
           ]
       ]
       where 
@@ -235,6 +241,7 @@ auctionViewRight maxBidCountField aucTXID bidFieldValue auction@Auction{..} =
               [
                 text "Submit Bid"
               ]
+
 --
        --     h3_ [] [text $ "Auction " <> (S.pack $ show truncatedAucTXID)],
        --     div_ [class_ "auction-info"] [ h3_ [class_ "book_title"] [

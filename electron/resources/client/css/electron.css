@@ -177,12 +177,10 @@ button:hover {
     font-family: 'Roboto Mono', 'sans-serif';
 }
 
-
-
 td {
     padding-right: 8px;
     font-weight: 700;
-    font-family: 'Roboto Condensed', 'sans-serif';
+    font-family: 'Montserrat', 'sans-serif';
     font-size: 16px;
 }
 
@@ -190,7 +188,6 @@ input[type=text] {
     height: 27px;
     padding: 5px; 
     border: 2px solid #ccc; 
-    -webkit-border-radius: 5px;
     border-radius: 5px;
     font-size: 16px;
     font-family: 'Montserrat', 'sans-serif';

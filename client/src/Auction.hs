@@ -25,17 +25,14 @@ import Types
 import SharedTypes
 
 validBid :: Bid -> Auction -> Bool
-validBid Bid {..} a@Auction {..} = bidValue > (currentBidValue a)
+validBid Bid {..} a@Auction {..} = undefined
   where
     numBids = length bids
 
 bidOnAuction :: AucTXID -> Bid -> Map AucTXID Auction -> Map AucTXID Auction
 bidOnAuction key (bid@Bid {..}) =
   Map.adjust
-    (\auction@Auction {..} ->
-       case validBid bid auction of
-         True -> Auction {bids = bid : bids, ..}
-         False -> auction)
+    (\auction@Auction {..} -> Auction {bids = bid : bids, ..})
     key
 
 createAuction ::
@@ -70,9 +67,11 @@ getBidder :: Bid -> String
 getBidder Bid {..} = bidder
 
 currentBidValue :: Auction -> Int
-currentBidValue Auction {..}
-  | length bids > 0 = (getBidValue . Li.head) bids
+currentBidValue auc@Auction {..}
+  | length bids > 0 = sum $ bidValue <$> bids
   | otherwise = startingValue
+  where
+    highBidder = highestBidder auc
 
 highestBidder :: Auction -> String
 highestBidder Auction {..}

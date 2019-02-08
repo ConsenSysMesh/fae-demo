@@ -12,7 +12,9 @@
 
 module Model where
 
+import Control.Exception
 import Auction
+import Prelude
 import Data.Aeson as A
 import Data.Bool
 import qualified Data.ByteString.Lazy as L
@@ -163,15 +165,18 @@ handleServerAction a@(CoinsGenerated numCoins) Model {..} =
 handleServerAction _ model = noEff model
 
 mintCoinsAndBid :: Int -> AucTXID -> Model -> Effect Action Model
-mintCoinsAndBid coinCount aucTXID model = 
+mintCoinsAndBid targetBid aucTXID model@Model{..} = 
   updateModel mintCoinsMsg model >>= updateModel bidMsg
   where
-    mintCoinsMsg = AppAction (SendServerAction (RequestCoins coinCount))
-    bidMsg = AppAction (SendServerAction (BidRequest aucTXID coinCount)) 
+    mintCoinsMsg = AppAction $ SendServerAction $ RequestCoins coinsNeededForBid
+    bidMsg = AppAction $ SendServerAction $ BidRequest aucTXID targetBid
+    noKeyErrMsg = "aucTXID key not found in auctions map"
+    auction@Auction{..} = fromMaybe (error noKeyErrMsg) (M.lookup aucTXID auctions)
+    coinsNeededForBid = if Li.length bids == 0 then targetBid else targetBid - currentBidValue auction
 
 getTXDescription :: Msg -> String
 getTXDescription (AuctionCreated _ (AucTXID aucTXID) auction) = "Auction created"
-getTXDescription (BidSubmitted _ (AucTXID aucTXID) Bid{..}) = Li.concat ["Raised bid to ", show bidValue, " coins"]
+getTXDescription (BidSubmitted _ (AucTXID aucTXID) Bid{..}) = Li.concat ["Raised bid by ", show bidValue, " coins"]
 getTXDescription _ = "unknown msg"
 
 getTXLogEntry :: Msg -> TXLogEntry
