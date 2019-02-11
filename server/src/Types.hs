@@ -18,6 +18,8 @@ import Data.Map.Lazy
 import Data.Monoid
 import Data.Time.Clock
 import GHC.Generics
+import Control.Monad.State.Lazy
+
 import SharedTypes
 
 data Client = Client
@@ -42,4 +44,11 @@ newtype Wallet =
   deriving (Show, Eq)
 
 
-  
+  {- type CoinCount = Int
+
+type Wallet = Map CoinTXID CoinCount
+
+data Wallet =
+  StateT Wallet (CoinTXID CoinCount)
+  deriving (Show, Eq)
+-}

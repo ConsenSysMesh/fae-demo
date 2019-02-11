@@ -120,14 +120,14 @@ handleCoinRequest numCoins  = do
   ServerState {..} <- liftIO $ readMVar state
   let Client{..} = fromJust $ getClient clients (T.pack clientName) --ugh fix fromJust - throw error with msg instead
   newWallet <- liftIO $ runExceptT $ generateCoins key numCoins wallet
-  either (liftIO . sendMsg conn . ErrMsg . PostTXErr) (grantCoins numCoins) newWallet
+  either (liftIO . sendMsg conn . ErrMsg . PostTXErr) (grantCoins "tzxid" numCoins) newWallet
   where key = Key "bidder1"
 
-grantCoins :: Int -> Wallet -> ReaderT (MVar ServerState, String) IO ()
-grantCoins numCoins newWallet = do
+grantCoins :: String -> Int -> Wallet -> ReaderT (MVar ServerState, String) IO ()
+grantCoins txid numCoins newWallet = do
   (state, clientName) <- ask
   currentTime <- liftIO $ getCurrentTime
   ServerState {..} <- liftIO $ readMVar state
   let client@Client{..} = fromJust $ getClient clients (T.pack clientName) --ugh fix fromJust - throw error with msg instead
   liftIO $ updateServerState state ServerState {clients = updateClientWallet clients name newWallet, ..}
-  liftIO $ sendMsg conn $ CoinsGenerated "TXID-EXAMPLE" (Username clientName) currentTime numCoins
+  liftIO $ sendMsg conn $ CoinsGenerated txid (Username clientName) currentTime numCoins
