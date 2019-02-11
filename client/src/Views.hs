@@ -11,6 +11,7 @@
 module Views where
 
 import Auction
+import LobbyView
 import Data.Aeson as A
 import Data.Bool
 import qualified Data.ByteString.Lazy as L
@@ -69,14 +70,6 @@ loginView m@Model {..} = div_ [] [
   , loginForm m
   ]
 
-lobbyView :: Model -> View Action
-lobbyView m@Model {..} =
-  div_ [] $
-  [ div_
-      [class_ "main-container"]
-      [headerView m, mainView m ]
-  ]
-
 biddingView :: Model -> View Action
 biddingView m@Model {..} =
   div_ [] $
@@ -111,8 +104,6 @@ getTableHeader :: [String] -> [View Action]
 getTableHeader names =
   Prelude.map (\name -> th_ [] [p_ [] [text $ S.ms name]]) names
 
-format24hrTime :: UTCTime -> String
-format24hrTime = formatTime defaultTimeLocale "%H:%M:%S"
 
 getTableRow :: TXLogEntry -> View Action
 getTableRow TXLogEntry{..} =

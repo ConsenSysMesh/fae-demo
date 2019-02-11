@@ -37,6 +37,9 @@ import SharedTypes
 import Data.Proxy
 import Servant.API
 
+format24hrTime :: UTCTime -> String
+format24hrTime = formatTime defaultTimeLocale "%H:%M:%S"
+
 headerView :: Model -> View Action
 headerView m = div_ [class_ "header-container"] [titleView, signedInView m ]
 

@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 507ee4b2abc3f5f8b0d9a8ced6bf12346a91a3a2f29051563f6475f90048aa87
+-- hash: cdb4fc6ddd7b8f7e5cba4ca3bf4e7f20ae026dfa531341b7633dfdfdaf5effcb
 
 name:           auction-client
 version:        0.1.0.0
@@ -29,6 +29,7 @@ executable auction-client-exe
   other-modules:
       Auction
       CreateAuctionView
+      LobbyView
       SharedViews
       Model
       Types

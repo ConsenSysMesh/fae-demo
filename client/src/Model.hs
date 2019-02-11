@@ -142,7 +142,7 @@ handleServerAction a@(AuctionCreated username aucTXID auction) Model {..} =
     auctions = updatedAuctions,
     selectedAuctionTXID = Just aucTXID,
     txLog = newTXLog,
-    ..} <# pure (AppAction goAuctionHome)
+    ..} <# pure (AppAction goLobby)
   where
     newTXLog = txLog ++ [getTXLogEntry a]
     updatedAuctions = createAuction aucTXID auction auctions

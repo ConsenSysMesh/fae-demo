@@ -42,6 +42,7 @@ executables:
     other-modules:
     - Auction
     - CreateAuctionView
+    - LobbyView
     - SharedViews
     - Model
     - Types
