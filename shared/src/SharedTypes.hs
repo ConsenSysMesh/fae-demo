@@ -65,7 +65,7 @@ data Msg
   | AuctionCreated Username AucTXID
                    Auction -- outgoing
   | RequestCoins Int -- incoming 
-  | CoinsGenerated Int -- outgoing
+  | CoinsGenerated String Username UTCTime Int -- outgoing
   | ErrMsg Err
   deriving (Show, Generic, FromJSON, ToJSON)
 

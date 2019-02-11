@@ -158,8 +158,8 @@ handleServerAction a@(BidSubmitted _  aucTXID bid@Bid{..}) m@Model {..} =
     updatedAuctions = bidOnAuction aucTXID bid auctions
     newTXLog = txLog ++ [getTXLogEntry a]
 
-handleServerAction a@(CoinsGenerated numCoins) Model {..} =
-  noEff Model {accountBalance = newBalance, bidFieldValue = newBalance, ..} -- bidAmount == account balance for simplicity
+handleServerAction a@(CoinsGenerated txid (Username username) timestamp numCoins) Model {..} =
+  noEff Model {accountBalance = newBalance, bidFieldValue = newBalance, txLog = txLog ++ [getTXLogEntry a], ..} -- bidAmount == account balance for simplicity
   where newBalance = accountBalance + numCoins
 
 handleServerAction _ model = noEff model
@@ -176,7 +176,8 @@ mintCoinsAndBid targetBid aucTXID model@Model{..} =
 
 getTXDescription :: Msg -> String
 getTXDescription (AuctionCreated _ (AucTXID aucTXID) auction) = "Auction created"
-getTXDescription (BidSubmitted _ (AucTXID aucTXID) Bid{..}) = Li.concat ["Raised bid by ", show bidValue, " coins"]
+getTXDescription (BidSubmitted _ (AucTXID aucTXID) Bid{..}) = Li.concat ["Raised bid by ", show bidValue, " ", bool "coin" "coins" (bidValue > 1)]
+getTXDescription (CoinsGenerated _ (Username username) _ coinCount) = Li.concat ["Minted ", show coinCount, " ", bool "coin" "coins" (coinCount > 1)]
 getTXDescription _ = "unknown msg"
 
 getTXLogEntry :: Msg -> TXLogEntry
@@ -191,3 +192,8 @@ getTXLogEntry msg@(AuctionCreated (Username entryUsername) (AucTXID entryTXID) A
     where
       entryDescription = getTXDescription msg
       entryTimestamp = createdTimestamp
+getTXLogEntry msg@(CoinsGenerated entryTXID (Username entryUsername) timestamp coinCount) =
+  TXLogEntry {..}
+    where
+      entryDescription = getTXDescription msg
+      entryTimestamp = timestamp
