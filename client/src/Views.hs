@@ -45,7 +45,7 @@ import SharedViews
 appView :: Model -> View Action
 appView m = either (const the404) id $ runRoute (Proxy :: Proxy API) handlers uri m
   where
-  handlers = login :<|> auctionHome :<|> create
+  handlers = login :<|> auctionHome :<|> create :<|> lobby
   auctionHome (_ :: Model) = div_ [] [
      biddingView m 
     ]
@@ -54,6 +54,9 @@ appView m = either (const the404) id $ runRoute (Proxy :: Proxy API) handlers ur
     ]
   create (_ :: Model) = div_ [] [
      createAuctionView m
+    ]
+  lobby (_ :: Model) = div_ [] [
+     lobbyView m
     ]
   the404 = div_ [] [
       text "404 :("
@@ -64,6 +67,14 @@ loginView :: Model -> View Action
 loginView m@Model {..} = div_ [] [
   h1_ [class_ "heading"] [ text "Fae Auction"]
   , loginForm m
+  ]
+
+lobbyView :: Model -> View Action
+lobbyView m@Model {..} =
+  div_ [] $
+  [ div_
+      [class_ "main-container"]
+      [headerView m, mainView m ]
   ]
 
 biddingView :: Model -> View Action

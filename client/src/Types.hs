@@ -99,17 +99,20 @@ data AppAction
   | Noop
 
 -- | Type-level routes
-type API   = Login :<|> AuctionHome :<|> Create
+type API   = Login :<|> AuctionHome :<|> Create :<|> Lobby
 type AuctionHome = "auctionHome" :> View AppAction
 type Create = "create" :> View AppAction
 type Login = "login" :> View AppAction
+type Lobby = "lobby" :> View AppAction
+
 
 -- | Type-safe links used in `onClick` event handlers to route the application
-goLogin, goCreate, goAuctionHome :: AppAction
-(goLogin, goCreate, goAuctionHome) = (goto api login, goto api create, goto api auctionHome)
+goLogin, goCreate, goAuctionHome, goLobby :: AppAction
+(goLogin, goCreate, goAuctionHome, goLobby) = (goto api login, goto api create, goto api auctionHome, goto api lobby)
   where
     goto a b = ChangeURI (linkURI (safeLink a b))
     auctionHome = Proxy :: Proxy AuctionHome
     create = Proxy :: Proxy Create
     login = Proxy :: Proxy Login
+    lobby = Proxy :: Proxy Lobby
     api   = Proxy :: Proxy API

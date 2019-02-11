@@ -178,7 +178,7 @@ getTXDescription :: Msg -> String
 getTXDescription (AuctionCreated _ (AucTXID aucTXID) auction) = "Auction created"
 getTXDescription (BidSubmitted _ (AucTXID aucTXID) Bid{..}) = Li.concat ["Raised bid by ", show bidValue, " ", bool "coin" "coins" (bidValue > 1)]
 getTXDescription (CoinsGenerated _ (Username username) _ coinCount) = Li.concat ["Minted ", show coinCount, " ", bool "coin" "coins" (coinCount > 1)]
-getTXDescription _ = "unknown msg"
+getTXDescription _ = " "
 
 getTXLogEntry :: Msg -> TXLogEntry
 getTXLogEntry msg@(BidSubmitted entryTXID (AucTXID aucTXID) Bid{..}) =
