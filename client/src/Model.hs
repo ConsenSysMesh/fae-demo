@@ -116,7 +116,7 @@ handleAppAction (HandleWebSocket (WebSocketMessage msg@(Message m))) model =
 handleAppAction (UpdateMessage m) model = noEff model {msg = Message m}
 
 handleAppAction Login Model {..} =
-  Model {loggedIn = True, ..} <# do send loggedInUsername >> pure (AppAction (goCreate))
+  Model {loggedIn = True, ..} <# do send loggedInUsername >> pure (AppAction (goLobby))
 
 handleAppAction (UpdateUserNameField newUsername) Model {..} =
   noEff Model {loggedInUsername = newUsername, ..}
@@ -142,7 +142,7 @@ handleServerAction a@(AuctionCreated username aucTXID auction) Model {..} =
     auctions = updatedAuctions,
     selectedAuctionTXID = Just aucTXID,
     txLog = newTXLog,
-    ..} <# pure (AppAction goLobby)
+    ..} <# pure (AppAction goAuctionHome)
   where
     newTXLog = txLog ++ [getTXLogEntry a]
     updatedAuctions = createAuction aucTXID auction auctions

@@ -35,7 +35,6 @@ body {
 }
 
 
-
 .signedin-logo {
     width: 40px;
     height: 40px;
@@ -204,4 +203,33 @@ input[type=text]:focus {
 
 .no-margin-top p {
     margin-top: 0;
+}
+
+/* Auction table list */
+.auction-row {
+    background-color: #0074D9;
+    transition-timing-function: ease;
+    transition-duration: 0.2s;
+  }
+  
+  .auction-row:hover {
+    opacity: 0.87;
+    transition-timing-function: ease;
+    transition-property: opacity;
+    transition-duration: 0.22s;
+  }
+  
+  .auction-row-selected {
+    background-color: #3255BC;
+    transition-timing-function: ease;
+    transition-property: background-color;
+    transition-duration: 0.2s;
+  }
+
+.tx-log-table {
+    overflow-y: auto;
+    height: 100px;
+}
+::-webkit-scrollbar-track {
+    display: none;
 }

@@ -120,7 +120,7 @@ getTableRow TXLogEntry{..} =
     truncatedTXID = Li.take 6 entryTXID 
 
 getTableRows :: [TXLogEntry] -> [View Action]
-getTableRows txLogEntries = getTableRow <$> txLogEntries
+getTableRows txLogEntries = getTableRow <$> (Li.reverse txLogEntries)
 
    -- table m | not $ Li.null txLog
 txLogTable :: [TXLogEntry] -> View Action

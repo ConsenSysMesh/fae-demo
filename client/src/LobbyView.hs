@@ -34,6 +34,7 @@ import Miso.String (MisoString)
 import qualified Miso.String as S
 import Text.Read
 import Types
+import Debug.Trace
 import SharedTypes
 import SharedViews
 
@@ -45,8 +46,18 @@ lobbyView m@Model {..} =
   div_ [] $
   [ div_
       [class_ "main-container"]
-      [headerView m, lobbyTable m ]
+      [headerView m, createAuctionBtn, lobbyTable m]
   ]
+
+createAuctionBtn :: View Action
+createAuctionBtn = button_ [ class_ "create-auction-btn", onClick (AppAction goCreate) ] [
+        text "create auction"
+      ]
+
+joinAuctionBtn :: View Action
+joinAuctionBtn = button_ [ class_ "join-auction-btn", onClick (AppAction goAuctionHome) ] [
+        text "join auction"
+      ]
 
 lobbyTable :: Model -> View Action
 lobbyTable Model {..} =
@@ -71,8 +82,8 @@ lobbyTable Model {..} =
     ]
 
 getLobbyTableRows :: Maybe AucTXID -> Map AucTXID Auction -> [View Action]
-getLobbyTableRows selectedAucTXID auctions =
-  Li.map (getLobbyTableRow selectedAucTXID) $ M.toList auctions
+getLobbyTableRows selectedAucTXID auctions = traceShow (M.elems auctions) tab
+   where tab =   Li.map (getLobbyTableRow selectedAucTXID) $ M.toList auctions
 
 getLobbyTableRow :: Maybe AucTXID -> (AucTXID, Auction) -> View Action
 getLobbyTableRow selectedAuctionTXID (txid@(AucTXID aucTXID), auction@Auction {..}) =

@@ -35,7 +35,6 @@ body {
 }
 
 
-
 .signedin-logo {
     width: 40px;
     height: 40px;
@@ -177,12 +176,10 @@ button:hover {
     font-family: 'Roboto Mono', 'sans-serif';
 }
 
-
-
 td {
     padding-right: 8px;
     font-weight: 700;
-    font-family: 'Roboto Condensed', 'sans-serif';
+    font-family: 'Montserrat', 'sans-serif';
     font-size: 16px;
 }
 
@@ -190,7 +187,6 @@ input[type=text] {
     height: 27px;
     padding: 5px; 
     border: 2px solid #ccc; 
-    -webkit-border-radius: 5px;
     border-radius: 5px;
     font-size: 16px;
     font-family: 'Montserrat', 'sans-serif';
@@ -207,4 +203,32 @@ input[type=text]:focus {
 
 .no-margin-top p {
     margin-top: 0;
+}
+
+/* Auction table list */
+.auction-row {
+    background-color: #0074D9;
+    transition-timing-function: ease;
+    transition-duration: 0.2s;
+  }
+  
+  .auction-row:hover {
+    opacity: 0.87;
+    transition-timing-function: ease;
+    transition-property: opacity;
+    transition-duration: 0.22s;
+  }
+  
+  .auction-row-selected {
+    background-color: #3255BC;
+    transition-timing-function: ease;
+    transition-property: background-color;
+    transition-duration: 0.2s;
+  }
+
+
+
+.tx-log-table {
+    overflow-y: auto;
+    height: 100px;
 }
