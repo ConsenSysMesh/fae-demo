@@ -137,12 +137,12 @@ handleAppAction Noop model = noEff model
 handleAppAction _ model = noEff model
 
 handleServerAction :: Msg -> Model -> Effect Action Model
-handleServerAction a@(AuctionCreated username aucTXID auction) Model {..} =
+handleServerAction a@(AuctionCreated (Username username) aucTXID auction) Model {..} =
   Model {
     auctions = updatedAuctions,
     selectedAuctionTXID = Just aucTXID,
     txLog = newTXLog,
-    ..} <# pure (AppAction goAuctionHome)
+    ..} <# (if (S.ms username == loggedInUsername) then (pure $ AppAction goAuctionHome) else (pure $ AppAction Noop))
   where
     newTXLog = txLog ++ [getTXLogEntry a]
     updatedAuctions = createAuction aucTXID auction auctions

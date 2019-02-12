@@ -46,7 +46,7 @@ lobbyView m@Model {..} =
   div_ [] $
   [ div_
       [class_ "main-container"]
-      [headerView m, createAuctionBtn, lobbyTable m]
+      [headerView m, joinAuctionBtn, createAuctionBtn, lobbyTable m]
   ]
 
 createAuctionBtn :: View Action
