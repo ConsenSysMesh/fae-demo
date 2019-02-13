@@ -209,24 +209,23 @@ input[type=text]:focus {
 
 /* Auction table list */
 .auction-row {
-    background-color: #0074D9;
+    background-color: rgba(76, 146, 227, 0.907);
+    color: white;
     transition: ease-in;
     transition-duration: 0.2s;
   }
   
   .auction-row:hover {
-    background-color: #3255BC;
+    background-color: rgba(76, 146, 227, 1);
     color: white;
-    opacity: 0.87;
     transition-timing-function: ease;
     transition-property: opacity;
     transition-duration: 0.22s;
   }
   
   .auction-row-selected {
-    background-color: #3255BC;
+     background-color: rgba(76, 146, 227, 1);;
     transition: ease-in;
-    border-radius: 5px;
     transition-property: background-color;
     transition-duration: 0.2s;
     color: white;
@@ -250,21 +249,14 @@ table {
     align-items: center;
 }
 
-.create-auction-btn {
-
-}
 
 .disabled {
   background-color:  #4C92E3;
-  opacity: 0.9;
+  opacity: 0.8;
 }
 
 .or {
-    text-align: center;
-}
-
-.join-auction-btn {
-
+  text-align: center;
 }
 
 .join-auction-btn, .create-auction-btn {
@@ -274,11 +266,11 @@ table {
 
 .auctions-table {
     margin-top: 3em;
-
 }
 
 .auctions-table td {
-    padding: 20px 20px 20px 20px;
+    padding: 20px 0px;
+    width: 150px;
     font-weight: 700;
     font-family: 'Roboto', 'sans-serif';
     text-align: center;
