@@ -58,7 +58,7 @@ createAuctionBtn = button_ [ class_ "create-auction-btn", onClick (AppAction goC
       ]
 
 joinAuctionBtn :: Bool -> View Action
-joinAuctionBtn isDisabled = button_ [ class_ "join-auction-btn", disabled_ isDisabled, onClick (AppAction goAuctionHome) ] [
+joinAuctionBtn isDisabled = button_ [ class_ (bool "join-auction-btn" "join-auction-btn disabled" isDisabled), disabled_ isDisabled, onClick (AppAction goAuctionHome) ] [
         text "join auction"
       ]
 
@@ -76,7 +76,7 @@ lobbyTable Model {..} =
                 , th_ [] [p_ [] [text "Created By"]]
                 , th_ [] [p_ [] [text "Created At"]]
                 , th_ [] [p_ [] [text "Bids"]]
-                , th_ [] [p_ [] [text "Current Bid"]]
+                , th_ [] [p_ [] [text "Price"]]
                 , th_ [] [p_ [] [text "Status"]]
                 ]
             ]
@@ -94,7 +94,7 @@ getLobbyTableRow selectedAuctionTXID (txid@(AucTXID aucTXID), auction@Auction {.
     [ onClick $ AppAction (SelectAuction txid)
     , class_ $ do bool "auction-row" "auction-row-selected" isSelected
     ]
-    [ td_ [] [text $ S.ms truncatedAucTXID]
+    [ td_ [class_ "hash-cell"] [text $ S.ms truncatedAucTXID]
     , td_ [] [text $ S.ms createdBy]
     , td_ [] [text $ S.ms $ format24hrTime createdTimestamp]
     , td_ [] [text $ S.ms numBids]

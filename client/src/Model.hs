@@ -141,6 +141,7 @@ handleServerAction a@(AuctionCreated (Username username) aucTXID auction) Model 
   Model {
     auctions = updatedAuctions,
     txLog = newTXLog,
+    selectedAuctionTXID = if (S.ms username == loggedInUsername) then pure aucTXID else selectedAuctionTXID,
     ..} <# (if (S.ms username == loggedInUsername) then (pure $ AppAction goAuctionHome) else (pure $ AppAction Noop))
   where
     newTXLog = txLog ++ [getTXLogEntry a]
