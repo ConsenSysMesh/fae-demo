@@ -46,7 +46,10 @@ lobbyView m@Model {..} =
   div_ [] $
   [ div_
       [class_ "main-container"]
-      [headerView m, joinAuctionBtn, createAuctionBtn, lobbyTable m]
+      [
+        headerView m, 
+        div_ [class_ "lobby-container"] [ createAuctionBtn, h4_ [class_ "or"] [text "OR"], joinAuctionBtn (isNothing selectedAuctionTXID), lobbyTable m]
+      ]
   ]
 
 createAuctionBtn :: View Action
@@ -54,8 +57,8 @@ createAuctionBtn = button_ [ class_ "create-auction-btn", onClick (AppAction goC
         text "create auction"
       ]
 
-joinAuctionBtn :: View Action
-joinAuctionBtn = button_ [ class_ "join-auction-btn", onClick (AppAction goAuctionHome) ] [
+joinAuctionBtn :: Bool -> View Action
+joinAuctionBtn isDisabled = button_ [ class_ "join-auction-btn", disabled_ isDisabled, onClick (AppAction goAuctionHome) ] [
         text "join auction"
       ]
 

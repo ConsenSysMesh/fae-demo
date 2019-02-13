@@ -140,7 +140,6 @@ handleServerAction :: Msg -> Model -> Effect Action Model
 handleServerAction a@(AuctionCreated (Username username) aucTXID auction) Model {..} =
   Model {
     auctions = updatedAuctions,
-    selectedAuctionTXID = Just aucTXID,
     txLog = newTXLog,
     ..} <# (if (S.ms username == loggedInUsername) then (pure $ AppAction goAuctionHome) else (pure $ AppAction Noop))
   where
