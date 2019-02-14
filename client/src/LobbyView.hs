@@ -96,7 +96,7 @@ getLobbyTableRow selectedAuctionTXID (txid@(AucTXID aucTXID), auction@Auction {.
     ]
     [ td_ [class_ "hash-cell"] [text $ S.ms truncatedAucTXID]
     , td_ [] [text $ S.ms createdBy]
-    , td_ [] [text $ S.ms $ format24hrTime createdTimestamp]
+    , td_ [class_ "hash-cell"] [text $ S.ms $ format24hrTime createdTimestamp]
     , td_ [] [text $ S.ms numBids]
     , td_ [] [text $ S.ms $ currentBidValue auction]
     , td_ [] [text $ S.ms $ auctionStatus auction]

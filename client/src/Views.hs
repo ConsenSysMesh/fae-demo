@@ -112,7 +112,7 @@ getTableRow TXLogEntry{..} =
      --class_ $ do bool "auction-row" "auction-row-selected" isSelected
     ]
     [ td_ [class_ "hash-cell"] [text $ S.ms truncatedTXID]
-    , td_ [class_ "timestamp-cell"] [text $ S.ms $ format24hrTime entryTimestamp]
+    , td_ [class_ "timestamp-cell hash-cell"] [text $ S.ms $ format24hrTime entryTimestamp]
     , td_ [] [text $ S.ms entryUsername]
     , td_ [] [text $ S.ms $ entryDescription]
     ]
@@ -147,7 +147,7 @@ auctionView  m maxBidCountField startingVal aucTXID@(AucTXID txid) auction@Aucti
 auctionViewLeft m@Model{..} currentPrice auction@Auction{..} =
   div_
     [class_ "auction-container-left"]
-      [ div_
+      ([ div_
           [ class_ "auction-container-item no-margin-top"]
           [
             h3_ [] [text "Seller London Book House"]
@@ -178,13 +178,15 @@ auctionViewLeft m@Model{..} currentPrice auction@Auction{..} =
           ]
       ,
       div_
-          [ class_ "auction-container-item book-description"]
+          [ class_ "auction-container-item view-types", onClick (AppAction ToggleShowBidHistory)   ]
           [
-            h3_ [] [text "Fae Transaction Log"]
+             button_ [ class_ "segmented-btn l"] [text "Fae TX Log"], 
+             button_ [ class_ "segmented-btn r"] [text "Bid History"] 
           ]
-      ,
-      txLogTable txLog
-      ]
+      ] ++ [ txLogTable txLog | not showBidHistory ]
+        ++  [ text "bid history" | showBidHistory && Li.length bids /= 0 ]
+        ++  [ text "No Bids Yet" | showBidHistory && Li.length bids == 0 ])
+      
 
 
 auctionViewRight maxBidCountField aucTXID bidFieldValue auction@Auction{..} =

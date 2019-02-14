@@ -67,6 +67,7 @@ getInitialModel currentURI =
     , genNumCoinsField = 1
     , maxBidCountField = 4
     , auctionStartValField = 1
+    , showBidHistory = False
     , loggedInUsername = S.ms ""
     , loggedIn = False
     , selectedAuctionTXID = Nothing
@@ -126,6 +127,9 @@ handleAppAction (UpdateNewMaxBidCountField newMaxBidCount) Model {..} =
 
 handleAppAction (UpdateNewStartingValField newAuctionStartVal) Model {..} =
   noEff Model {auctionStartValField = newAuctionStartVal, ..}
+
+handleAppAction ToggleShowBidHistory Model {..} =
+  noEff Model {showBidHistory = not showBidHistory, ..}
 
 -- gets the auction start params from the fields, constructs the auction request msg and then sends
 handleAppAction SendCreateAuctionRequest m@Model {..} = 

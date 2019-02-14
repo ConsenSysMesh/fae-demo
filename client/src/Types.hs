@@ -67,6 +67,7 @@ data Model = Model
   , genNumCoinsField :: Int
   , maxBidCountField :: Int
   , auctionStartValField :: Int
+  , showBidHistory :: Bool
   , loggedInUsername :: MisoString
   , loggedIn :: Bool
   , selectedAuctionTXID :: Maybe AucTXID
@@ -84,6 +85,7 @@ data AppAction
   | SendMessage Message
   | SendServerAction Msg
   | SendCreateAuctionRequest
+  | ToggleShowBidHistory
   | UpdateUserNameField MisoString
   | Login
   | Logout
