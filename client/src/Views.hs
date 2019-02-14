@@ -184,10 +184,8 @@ auctionViewLeft m@Model{..} currentPrice auction@Auction{..} =
              button_ [ class_ "segmented-btn r"] [text "Bid History"] 
           ]
       ] ++ [ txLogTable txLog | not showBidHistory ]
-        ++  [ text "bid history" | showBidHistory && Li.length bids /= 0 ]
+        ++  [ bidHistoryTable auction | showBidHistory && Li.length bids /= 0 ]
         ++  [ text "No Bids Yet" | showBidHistory && Li.length bids == 0 ])
-      
-
 
 auctionViewRight maxBidCountField aucTXID bidFieldValue auction@Auction{..} =
   div_
@@ -299,3 +297,32 @@ loginForm Model {..} =
             [text "Login"]
         ]
     ]
+
+
+bidHistoryTable Auction{..} = table
+  where table =  div_
+            [class_ "tx-log-table"]
+            [ table_
+                []
+                [ thead_
+                    [style_ $ M.fromList [(S.pack "text-align", S.pack "center")]]
+                    [ 
+                    ]
+                , tbody_ [] (getBidHistTableRows bids)
+                ]
+            ]
+
+getBidHistTableRow :: Bid -> View Action
+getBidHistTableRow Bid{..} =
+  tr_
+    [ --onClick $ AppAction (SelectAuction txid)
+     --class_ $ do bool "auction-row" "auction-row-selected" isSelected
+    ]
+    [ 
+      td_ [class_ "timestamp-cell hash-cell"] [text $ S.ms $ format24hrTime bidTimestamp]
+    , td_ [] [text $ S.ms bidder]
+    , td_ [] [text $ S.ms $ bidValue]
+    ]
+
+
+getBidHistTableRows bids = getBidHistTableRow <$> bids

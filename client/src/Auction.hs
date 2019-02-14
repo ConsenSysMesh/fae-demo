@@ -67,11 +67,9 @@ getBidder :: Bid -> String
 getBidder Bid {..} = bidder
 
 currentBidValue :: Auction -> Int
-currentBidValue auc@Auction {..}
-  | length bids > 0 = sum $ bidValue <$> bids
+currentBidValue Auction {..}
+  | length bids > 0 = (getBidValue . head) bids
   | otherwise = startingValue
-  where
-    highBidder = highestBidder auc
 
 highestBidder :: Auction -> String
 highestBidder Auction {..}

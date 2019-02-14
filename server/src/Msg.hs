@@ -86,8 +86,10 @@ updateAuction (BidTX txid aucTXID coinTXID (TXResult txResult))
   currentTime <- liftIO getCurrentTime
   let Client{..} = fromJust $ getClient clients $ T.pack clientName --ugh fix fromJust
   let unwrappedWallet = getWallet wallet
-  let bidAmount = fromMaybe 0 $ M.lookup coinTXID unwrappedWallet
-  newBid <- liftIO $ getNewBid clientName bidAmount
+  let bidAmount = fromMaybe (error "no such CoinTXID") $ M.lookup coinTXID unwrappedWallet
+  let cumulativeBidValue = (+) bidAmount (currentBidValue $ fromMaybe (error "no such aucTXID") (M.lookup aucTXID auctions))
+  newBid <- liftIO $ getNewBid clientName cumulativeBidValue
+  liftIO $ print cumulativeBidValue
   let updatedAuctions = updateAuctionWithBid aucTXID newBid auctions
   let newWallet = Wallet $ M.delete coinTXID $ unwrappedWallet  -- remove spent coin cache
   liftIO $ updateServerState state ServerState {clients = updateClientWallet clients name newWallet, auctions = updatedAuctions}
@@ -98,6 +100,7 @@ updateAuction (BidTX txid aucTXID coinTXID (TXResult txResult))
       currentTime <- getCurrentTime
       return Bid {bidder = clientName, bidValue = bidAmount, bidTimestamp = currentTime, isWinningBid = txResult == "You won!"}
     outgoingMsg = BidSubmitted (show txid) aucTXID 
+
 updateAuction (AuctionCreatedTX txid (AucStartingValue startingValue) (MaxBidCount aucMaxBidCount)) = do
   (state, clientName) <- ask
   let outgoingMsg = AuctionCreated (Username clientName) auctionId
