@@ -180,8 +180,8 @@ auctionViewLeft m@Model{..} currentPrice auction@Auction{..} =
       div_
           [ class_ "auction-container-item view-types", onClick (AppAction ToggleShowBidHistory)   ]
           [
-             button_ [ class_ (bool "segmented-btn l" "segmented-btn-active l" (not showBidHistory))] [text "Fae TX Log"], 
-             button_ [ class_ (bool "segmented-btn r" "segmented-btn-active r" showBidHistory)] [text "Bid History"] 
+             button_ [ class_ (bool "segmented-btn l" "segmented-btn-active l" (showBidHistory))] [text "Fae TX Log"], 
+             button_ [ class_ (bool "segmented-btn r" "segmented-btn-active r" (not showBidHistory))] [text "Bid History"] 
           ]
       ] ++ [ txLogTable txLog | not showBidHistory ]
         ++  [ bidHistoryTable auction | showBidHistory && Li.length bids /= 0 ]
@@ -230,7 +230,7 @@ auctionViewRight maxBidCountField aucTXID bidFieldValue auction@Auction{..} =
       div_
           [ class_ "bid-progress-container"]
           [
-            h3_ [] [text $ ("Bids: " <> (S.ms $ show $ Li.length bids)) <> "/" <> (S.ms $ show aucMaxBidCount)]
+            radialChart (Li.length bids) aucMaxBidCount
           ]
       ]
       where 
@@ -243,6 +243,15 @@ auctionViewRight maxBidCountField aucTXID bidFieldValue auction@Auction{..} =
               [
                 text "Submit Bid"
               ]
+
+radialChart :: Int -> Int -> View Action
+radialChart bidCount 0 = div_ [class_ "c100 p0"] [ txt, div_ [class_ "slice"] [ div_ [class_ "bar"] [], div_ [class_ "fill"] [] ] ]
+  where 
+    txt = span_ [ class_ "mont" ] [ text (S.ms " ") ]
+radialChart bidCount maxBidCount = div_ [class_ (S.ms ("c100 p" <> show percentage))] [ txt, div_ [class_ "slice"] [ div_ [class_ "bar"] [], div_ [class_ "fill"] [] ] ]
+  where
+    percentage = round $ (fromIntegral bidCount / fromIntegral maxBidCount) * 100   
+    txt = span_ [ class_ "mont" ] [ text (S.ms ((show bidCount) <> " / " <> (show maxBidCount))) ]
 
 --
        --     h3_ [] [text $ "Auction " <> (S.pack $ show truncatedAucTXID)],

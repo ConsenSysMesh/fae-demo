@@ -51,7 +51,7 @@ body {
     display: flex;
     margin-left: 280px;
     margin-right: 280px;
-    margin-top: 105px;
+    margin-top: 80px;
 }
 
 .auction-container-left {
@@ -294,7 +294,11 @@ table {
 /* segmented switch view btns */
 
 .segmented-btn { 
-    color: black;
+    color: white;
+}
+
+.mont {
+  font-family: 'Montserrat', sans-serif;
 }
 
 .segmented-btn-active { 
