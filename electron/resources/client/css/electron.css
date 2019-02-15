@@ -91,6 +91,9 @@ body {
 
 button {
     background-color:  #4C92E3 0;
+    transition: ease-in;
+    transition-property: background-color;
+    transition-duration: 0.12s;
 }
 
 .bid-input-container {
@@ -138,6 +141,8 @@ button {
 button:hover {
   background-color: rgba(76, 146, 227, 0.907);
   transition: ease-in;
+  transition-property: background-color;
+  transition-duration: 0.12;
 }
 
 .starting-val-container {
@@ -183,7 +188,9 @@ td {
     font-size: 16px;
 }
 
-
+.uppercase {
+    text-transform: uppercase;
+}
 
 input[type=text] {
     height: 27px;
@@ -234,6 +241,7 @@ input[type=text]:focus {
 .tx-log-table {
     overflow-y: auto;
     height: 100px;
+    margin-top: 22px;
 }
 
 table {
@@ -280,4 +288,30 @@ table {
     font-weight: 700;
     font-family: 'Montserrat', 'sans-serif';
     font-size: 16px;
+}
+
+
+/* segmented switch view btns */
+
+.segmented-btn { 
+    color: black;
+}
+
+.segmented-btn-active { 
+    color: black;
+    background-color: white;
+    transition: ease-in-out;
+    transition-property: background-color;
+    transition-duration: 0.12s;
+}
+
+.r {
+    border-radius: 0px 40px 40px 0px;
+    border: 0px 4px 4px 0px solid #4C92E3;
+
+}
+
+.l {
+    border-radius: 40px 0px 0px 40px;
+    border: 4px 0px 0px 4px solid #4C92E3;
 }

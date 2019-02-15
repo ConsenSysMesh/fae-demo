@@ -113,7 +113,7 @@ getTableRow TXLogEntry{..} =
     ]
     [ td_ [class_ "hash-cell"] [text $ S.ms truncatedTXID]
     , td_ [class_ "timestamp-cell hash-cell"] [text $ S.ms $ format24hrTime entryTimestamp]
-    , td_ [] [text $ S.ms entryUsername]
+    , td_ [class_ "uppercase"] [text $ S.ms entryUsername]
     , td_ [] [text $ S.ms $ entryDescription]
     ]
   where
@@ -180,12 +180,12 @@ auctionViewLeft m@Model{..} currentPrice auction@Auction{..} =
       div_
           [ class_ "auction-container-item view-types", onClick (AppAction ToggleShowBidHistory)   ]
           [
-             button_ [ class_ "segmented-btn l"] [text "Fae TX Log"], 
-             button_ [ class_ "segmented-btn r"] [text "Bid History"] 
+             button_ [ class_ (bool "segmented-btn l" "segmented-btn-active l" (not showBidHistory))] [text "Fae TX Log"], 
+             button_ [ class_ (bool "segmented-btn r" "segmented-btn-active r" showBidHistory)] [text "Bid History"] 
           ]
       ] ++ [ txLogTable txLog | not showBidHistory ]
         ++  [ bidHistoryTable auction | showBidHistory && Li.length bids /= 0 ]
-        ++  [ text "No Bids Yet" | showBidHistory && Li.length bids == 0 ])
+        ++  [ h4_ [] [ text "No Bids Yet" ] | showBidHistory && Li.length bids == 0 ])
 
 auctionViewRight maxBidCountField aucTXID bidFieldValue auction@Auction{..} =
   div_
@@ -320,8 +320,8 @@ getBidHistTableRow Bid{..} =
     ]
     [ 
       td_ [class_ "timestamp-cell hash-cell"] [text $ S.ms $ format24hrTime bidTimestamp]
-    , td_ [] [text $ S.ms bidder]
-    , td_ [] [text $ S.ms $ bidValue]
+    , td_ [class_ "uppercase"] [text $ S.ms bidder]
+    , td_ [class_ "hash-cell"] [text $ S.ms $ bidValue]
     ]
 
 
