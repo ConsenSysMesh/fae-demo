@@ -124,8 +124,8 @@ handleCoinRequest numCoins  = do
   (state, clientName) <- ask
   ServerState {..} <- liftIO $ readMVar state
   let Client{..} = fromMaybe (error "client doesn\'t exist in Map") (getClient clients (T.pack clientName))
-  newWallet <- liftIO $ runStateT (runExceptT $ generateCoins key numCoins wallet) wallet
-  either (liftIO . sendMsg conn . ErrMsg . PostTXErr) (grantCoins "tzxid" numCoins) newWallet
+  (coinTXID, newWallet) <- liftIO $ runStateT (runExceptT $ generateCoins key numCoins wallet) wallet
+  grantCoins (show coinTXID) numCoins newWallet
   where key = Key "bidder1"
 
 grantCoins :: String -> Int -> Wallet -> ReaderT (MVar ServerState, String) IO ()
