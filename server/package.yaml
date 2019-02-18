@@ -30,6 +30,7 @@ dependencies:
 - process
 - time
 - regex-pcre
+- transformers
 - pretty-simple
 - errors
 - mtl
