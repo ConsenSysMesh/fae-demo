@@ -15,6 +15,8 @@ import Control.Concurrent (MVar, modifyMVar, modifyMVar_, readMVar)
 import Control.Monad
 import Control.Monad.Except
 import Data.Maybe
+import Control.Monad.Trans.State.Lazy
+
 import Data.Text (Text)
 import Data.List
 import qualified Data.Text as T
@@ -121,8 +123,8 @@ handleCoinRequest numCoins  = do
   liftIO $ putStrLn $ concat ["Requested generation of ", show numCoins]
   (state, clientName) <- ask
   ServerState {..} <- liftIO $ readMVar state
-  let Client{..} = fromJust $ getClient clients (T.pack clientName) --ugh fix fromJust - throw error with msg instead
-  newWallet <- liftIO $ runExceptT $ generateCoins key numCoins wallet
+  let Client{..} = fromMaybe (error "client doesn\'t exist in Map") (getClient clients (T.pack clientName))
+  newWallet <- liftIO $ execStateT (runExceptT $ generateCoins key numCoins wallet) wallet
   either (liftIO . sendMsg conn . ErrMsg . PostTXErr) (grantCoins "tzxid" numCoins) newWallet
   where key = Key "bidder1"
 
@@ -131,6 +133,6 @@ grantCoins txid numCoins newWallet = do
   (state, clientName) <- ask
   currentTime <- liftIO $ getCurrentTime
   ServerState {..} <- liftIO $ readMVar state
-  let client@Client{..} = fromJust $ getClient clients (T.pack clientName) --ugh fix fromJust - throw error with msg instead
+  let client@Client{..} =  fromMaybe (error "client doesn\'t exist in Map") (getClient clients (T.pack clientName))
   liftIO $ updateServerState state ServerState {clients = updateClientWallet clients name newWallet, ..}
   liftIO $ sendMsg conn $ CoinsGenerated txid (Username clientName) currentTime numCoins
