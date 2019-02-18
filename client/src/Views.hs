@@ -112,9 +112,9 @@ getTableRow TXLogEntry{..} =
      --class_ $ do bool "auction-row" "auction-row-selected" isSelected
     ]
     [ td_ [class_ "hash-cell"] [text $ S.ms truncatedTXID]
-    , td_ [class_ "timestamp-cell hash-cell"] [text $ S.ms $ format24hrTime entryTimestamp]
-    , td_ [class_ "uppercase"] [text $ S.ms entryUsername]
-    , td_ [] [text $ S.ms $ entryDescription]
+    , td_ [class_ "timestamp-cell hash-cell padded"] [text $ S.ms $ format24hrTime entryTimestamp]
+    , td_ [class_ "padded hash-cell"] [text $ S.ms entryUsername]
+    , td_ [class_ "padded hash-cell"] [text $ S.ms $ entryDescription]
     ]
   where
     truncatedTXID = Li.take 6 entryTXID 
@@ -130,8 +130,12 @@ txLogTable txLogEntries = table
             [ table_
                 []
                 [ thead_
-                    [style_ $ M.fromList [(S.pack "text-align", S.pack "center")]]
+                    [style_ $ M.fromList [(S.pack "text-align", S.pack "left")]]
                     [ 
+                        th_ [class_ ""] [text "TXID"]
+                      , th_ [class_ "padded"] [text "Time"]
+                      , th_ [class_ "padded"] [text "Bidder"]
+                      , th_ [class_ "padded"] [text "Info"]
                     ]
                 , tbody_ [] $ getTableRows txLogEntries
                 ]
@@ -172,7 +176,7 @@ auctionViewLeft m@Model{..} currentPrice auction@Auction{..} =
           ]
       ,
       div_
-          [ class_ "auction-container-item no-margin-top"]
+          [ class_ "auction-container-item no-margin-top", style_ $ M.fromList [(S.pack "width", S.pack "80%")] ]
           [
             p_ [] [text (S.ms description)]
           ]
@@ -248,7 +252,7 @@ radialChart :: Int -> Int -> View Action
 radialChart bidCount 0 = div_ [class_ "c100 p0"] [ txt, div_ [class_ "slice"] [ div_ [class_ "bar"] [], div_ [class_ "fill"] [] ] ]
   where 
     txt = span_ [ class_ "mont" ] [ text (S.ms " ") ]
-radialChart bidCount maxBidCount = div_ [class_ (S.ms ("c100 p" <> show percentage))] [ txt, div_ [class_ "slice"] [ div_ [class_ "bar"] [], div_ [class_ "fill"] [] ] ]
+radialChart bidCount maxBidCount = div_ [style_ $ M.fromList [(S.pack "margin", S.pack "auto")], class_ (S.ms ("c100 p" <> show percentage))] [ txt, div_ [class_ "slice"] [ div_ [class_ "bar"] [], div_ [class_ "fill"] [] ] ]
   where
     percentage = round $ (fromIntegral bidCount / fromIntegral maxBidCount) * 100   
     txt = span_ [ class_ "mont" ] [ text (S.ms ((show bidCount) <> " / " <> (show maxBidCount))) ]
@@ -314,8 +318,11 @@ bidHistoryTable Auction{..} = table
             [ table_
                 []
                 [ thead_
-                    [style_ $ M.fromList [(S.pack "text-align", S.pack "center")]]
+                    [style_ $ M.fromList [(S.pack "text-align", S.pack "left")]]
                     [ 
+                         th_ [class_ ""] [text "Time"]
+                       , th_ [class_ "padded"] [text "Bidder"]
+                       , th_ [class_ "padded"] [text "Amount"]
                     ]
                 , tbody_ [] (getBidHistTableRows bids)
                 ]
@@ -329,8 +336,8 @@ getBidHistTableRow Bid{..} =
     ]
     [ 
       td_ [class_ "timestamp-cell hash-cell"] [text $ S.ms $ format24hrTime bidTimestamp]
-    , td_ [class_ "uppercase"] [text $ S.ms bidder]
-    , td_ [class_ "hash-cell"] [text $ S.ms $ bidValue]
+    , td_ [class_ "hash-cell padded"] [text $ S.ms bidder]
+    , td_ [class_ "hash-cell padded"] [text $ S.ms $ bidValue]
     ]
 
 
