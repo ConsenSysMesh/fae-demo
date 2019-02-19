@@ -62,6 +62,8 @@ data Msg
                Int
   | BidSubmitted String AucTXID -- outgoing
                  Bid
+  | CollectRequest -- incoming
+  | Collected String -- outgoing
   | AuctionCreated Username AucTXID
                    Auction -- outgoing
   | RequestCoins Int -- incoming 
