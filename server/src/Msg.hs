@@ -91,7 +91,8 @@ updateAuction (BidTX txid aucTXID coinTXID (TXResult txResult))
   let Client{..} = fromJust $ getClient clients $ T.pack clientName --ugh fix fromJust
   let unwrappedWallet = getWallet wallet
   let bidAmount = fromMaybe (error "no such CoinTXID") $ M.lookup coinTXID unwrappedWallet
-  let cumulativeBidValue = (+) bidAmount (currentBidValue $ fromMaybe (error "no such aucTXID") (M.lookup aucTXID auctions))
+  let auction@Auction{..} = fromMaybe (error "no such aucTXID") (M.lookup aucTXID auctions)
+  let cumulativeBidValue = if length bids == 0 then bidAmount else (+) bidAmount (currentBidValue $ auction)
   newBid <- liftIO $ getNewBid clientName cumulativeBidValue
   liftIO $ print cumulativeBidValue
   let updatedAuctions = updateAuctionWithBid aucTXID newBid auctions
