@@ -23,6 +23,7 @@ data PostTXResponse
   | GetCoinTX TransactionID
   | GetMoreCoinsTX TransactionID
   | WithdrawTX TransactionID
+  | Collect TransactionID
   deriving (Show, Eq)
 
 data TXConfig
@@ -31,7 +32,6 @@ data TXConfig
               CoinTXID
   | CreateAuctionConfig Key AucStartingValue MaxBidCount
   | GetCoinConfig Key
-  | GetMoreCoinsConfig Key
-                       CoinTXID
-  | WithdrawConfig Key
-                   AucTXID
+  | GetMoreCoinsConfig Key CoinTXID
+  | WithdrawConfig Key AucTXID
+  | CollectConfig Key AucTXID
