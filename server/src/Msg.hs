@@ -14,6 +14,7 @@ import Coins
 import Control.Concurrent (MVar, modifyMVar, modifyMVar_, readMVar)
 import Control.Monad
 import Control.Monad.Except
+import Data.Either
 import Data.Maybe
 import Control.Monad.Trans.State.Lazy
 
@@ -30,6 +31,7 @@ import Control.Monad.Reader
 import PostTX
 import SharedTypes
 import PostTX.Types
+import FaeFrontend
 import Text.Pretty.Simple (pPrint)
 
 msgHandler :: Msg -> ReaderT (MVar ServerState, String) IO ()
@@ -124,15 +126,16 @@ handleCoinRequest numCoins  = do
   (state, clientName) <- ask
   ServerState {..} <- liftIO $ readMVar state
   let Client{..} = fromMaybe (error "client doesn\'t exist in Map") (getClient clients (T.pack clientName))
-  (coinTXID, newWallet) <- liftIO $ runStateT (runExceptT $ generateCoins key numCoins wallet) wallet
-  grantCoins (show coinTXID) numCoins newWallet
+  postTXResult <- liftIO $ runStateT (runExceptT $ generateCoins key numCoins wallet) wallet
+  either (liftIO . sendMsg conn . ErrMsg . PostTXErr) ((flip (grantCoins numCoins)) (snd postTXResult)) (fst postTXResult)
   where key = Key "bidder1"
+--either (liftIO . sendMsg conn . ErrMsg . PostTXErr) 
 
-grantCoins :: String -> Int -> Wallet -> ReaderT (MVar ServerState, String) IO ()
-grantCoins txid numCoins newWallet = do
+grantCoins :: Int -> TransactionID -> Wallet -> ReaderT (MVar ServerState, String) IO ()
+grantCoins numCoins txid newWallet = do
   (state, clientName) <- ask
   currentTime <- liftIO $ getCurrentTime
   ServerState {..} <- liftIO $ readMVar state
   let client@Client{..} =  fromMaybe (error "client doesn\'t exist in Map") (getClient clients (T.pack clientName))
   liftIO $ updateServerState state ServerState {clients = updateClientWallet clients name newWallet, ..}
-  liftIO $ sendMsg conn $ CoinsGenerated txid (Username clientName) currentTime numCoins
+  liftIO $ sendMsg conn $ CoinsGenerated (show txid) (Username clientName) currentTime numCoins
