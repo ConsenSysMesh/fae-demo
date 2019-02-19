@@ -23,11 +23,8 @@ import qualified Data.Text.Lazy.Encoding as D
 import Prelude
 import Types
 import SharedTypes
+import Debug.Trace
 
-validBid :: Bid -> Auction -> Bool
-validBid Bid {..} a@Auction {..} = undefined
-  where
-    numBids = length bids
 
 bidOnAuction :: AucTXID -> Bid -> Map AucTXID Auction -> Map AucTXID Auction
 bidOnAuction key (bid@Bid {..}) =
@@ -65,6 +62,9 @@ numBids Auction {..} = Prelude.length bids
 
 getBidder :: Bid -> String
 getBidder Bid {..} = bidder
+
+hasBid :: String -> [Bid] -> Bool
+hasBid username bids = (Li.any ((== username) . bidder) bids)
 
 currentBidValue :: Auction -> Int
 currentBidValue Auction {..}

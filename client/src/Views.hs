@@ -13,6 +13,7 @@ module Views where
 import Auction
 import LobbyView
 import Data.Aeson as A
+import Debug.Trace
 import Data.Bool
 import qualified Data.ByteString.Lazy as L
 import Data.ByteString.Lazy.Char8 as BL
@@ -87,7 +88,7 @@ mainView m@Model {..} =
       case M.lookup aucTXID auctions of
         Nothing -> ""
         (Just auction) ->
-          auctionView m maxBidCountField auctionStartValField aucTXID auction bidFieldValue
+          auctionView m auctionStartValField aucTXID auction
 
 onEnter :: Action -> Attribute Action
 onEnter action = onKeyDown $ bool (AppAction Noop) action . (== KeyCode 13)
@@ -141,11 +142,11 @@ txLogTable txLogEntries = table
                 ]
             ]
 
-auctionView :: Model -> Int -> Int -> AucTXID -> Auction -> Int ->  View Action
-auctionView  m maxBidCountField startingVal aucTXID@(AucTXID txid) auction@Auction {..} bidFieldValue = 
+auctionView :: Model -> Int -> AucTXID -> Auction -> View Action
+auctionView  m@Model{..} startingVal aucTXID@(AucTXID txid) auction@Auction {..} = 
   div_ [class_ "auction-container"] [ 
     auctionViewLeft m currentPrice auction, 
-    auctionViewRight maxBidCountField aucTXID (bidFieldValue) auction]
+    auctionViewRight (S.fromMisoString loggedInUsername) maxBidCountField aucTXID (bidFieldValue) auction]
   where currentPrice = if Li.null bids then S.ms startingVal else S.ms $ currentBidValue auction
 
 auctionViewLeft m@Model{..} currentPrice auction@Auction{..} =
@@ -191,7 +192,7 @@ auctionViewLeft m@Model{..} currentPrice auction@Auction{..} =
         ++  [ bidHistoryTable auction | showBidHistory && Li.length bids /= 0 ]
         ++  [ h4_ [] [ text "No Bids Yet" ] | showBidHistory && Li.length bids == 0 ])
 
-auctionViewRight maxBidCountField aucTXID bidFieldValue auction@Auction{..} =
+auctionViewRight username maxBidCountField aucTXID bidFieldValue auction@Auction{..} =
   div_
     [class_ "auction-container-right"]
       [ div_
@@ -223,6 +224,11 @@ auctionViewRight maxBidCountField aucTXID bidFieldValue auction@Auction{..} =
           [ class_ "auction-container-item"]
           [
             bidBtn | not $ auctionEnded auction
+          ]
+      , div_
+          [ class_ "auction-container-item"]
+          [
+            retractBidsBtn | ((not $ auctionEnded auction) && hasBid username bids)
           ]
       ,
       div_
@@ -342,3 +348,11 @@ getBidHistTableRow Bid{..} =
 
 
 getBidHistTableRows bids = getBidHistTableRow <$> bids
+
+retractBidsBtn :: View Action
+retractBidsBtn =
+  button_
+      [ 
+          onClick (AppAction $ SendServerAction CollectRequest)
+      ]
+      [text "Retract Bids"]
