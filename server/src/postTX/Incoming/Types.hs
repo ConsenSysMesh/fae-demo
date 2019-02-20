@@ -18,6 +18,7 @@ data BidTXout = BidTXout
 data AuctionTXout
   = CreateAuctionTXout TransactionID
   | WithdrawTXout TransactionID
+  | CollectTXout TransactionID
   | GetCoinTXout TransactionID
   | GetMoreCoinsTXout TransactionID
   deriving (Show, Eq)

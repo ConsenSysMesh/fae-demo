@@ -30,14 +30,16 @@ import qualified Network.WebSockets as WS
 import Control.Monad.Reader
 import PostTX
 import SharedTypes
+import Debug.Trace
 import PostTX.Types
 import FaeFrontend
 import Text.Pretty.Simple (pPrint)
 
 msgHandler :: Msg -> ReaderT (MVar ServerState, String) IO ()
-msgHandler (RequestCoins numCoins) =  handleCoinRequest numCoins
+msgHandler (RequestCoins numCoins) = handleCoinRequest numCoins
 msgHandler (BidRequest aucTXID amount) = handleBidRequest aucTXID amount
 msgHandler (CreateAuctionRequest auctionOpts) = handleCreateAuctionRequest auctionOpts
+msgHandler a@(CollectRequest aucTXID) = traceShow a (handleCollectRequest aucTXID) 
 
 updateServerState :: MVar ServerState -> ServerState -> IO ()
 updateServerState state newServerState =
@@ -51,8 +53,19 @@ handleFaeOutput :: Either PostTXError PostTXResponse -> ReaderT (MVar ServerStat
 handleFaeOutput output = do 
     (state, clientName) <- ask
     ServerState {..} <- liftIO $ readMVar state
-    let Client{..} = fromJust $ getClient clients $ T.pack clientName --ugh fix fromJust
-    either (\err -> liftIO $ sendMsg conn $ ErrMsg $ PostTXErr err) updateAuction output
+    let Client{..} = fromMaybe (error "Couldn't find client with given name in map") (getClient clients $ T.pack clientName) 
+    either (\err -> liftIO $ sendMsg conn $ ErrMsg $ PostTXErr err) handleFaeResponse output
+
+handleCollectRequest :: AucTXID -> ReaderT (MVar ServerState, String) IO ()
+handleCollectRequest aucTXID = do
+  liftIO $ putStrLn "Requested to collect - "
+  (state, clientName) <- ask
+  ServerState {..} <- liftIO $ readMVar state
+  liftIO $ print "---------POSTING COLLECT TX-----------"
+  faeOut <- liftIO $ postCollectTX key aucTXID
+  ServerState {..} <- liftIO $ readMVar state
+  handleFaeOutput faeOut
+  where  key = Key "bidder1"
 
 handleBidRequest :: AucTXID -> Int -> ReaderT (MVar ServerState, String) IO ()
 handleBidRequest aucTXID amount = do
@@ -80,8 +93,8 @@ handleCreateAuctionRequest AuctionOpts{..} = do
   where
     key = Key "bidder1"
 
-updateAuction :: PostTXResponse -> ReaderT (MVar ServerState, String) IO ()
-updateAuction (BidTX txid aucTXID coinTXID (TXResult txResult))
+handleFaeResponse :: PostTXResponse -> ReaderT (MVar ServerState, String) IO ()
+handleFaeResponse (BidTX txid aucTXID coinTXID (TXResult txResult))
   | txResult /= "\"You won!\"" && txResult  /= "\"Bid accepted\"" = 
     error ("Bid was not accepted by Fae, error: " ++ txResult) 
   | otherwise = do
@@ -106,7 +119,7 @@ updateAuction (BidTX txid aucTXID coinTXID (TXResult txResult))
       return Bid {bidder = clientName, bidValue = bidAmount, bidTimestamp = currentTime, isWinningBid = txResult == "You won!"}
     outgoingMsg = BidSubmitted (show txid) aucTXID 
 
-updateAuction (AuctionCreatedTX txid (AucStartingValue startingValue) (MaxBidCount aucMaxBidCount)) = do
+handleFaeResponse (AuctionCreatedTX txid (AucStartingValue startingValue) (MaxBidCount aucMaxBidCount)) = do
   (state, clientName) <- ask
   let outgoingMsg = AuctionCreated (Username clientName) auctionId
   ServerState {..} <- liftIO $ readMVar state
@@ -120,6 +133,7 @@ updateAuction (AuctionCreatedTX txid (AucStartingValue startingValue) (MaxBidCou
       currentTime <- getCurrentTime
       return Auction
         {createdBy = clientName, bids = [], createdTimestamp = currentTime, .. }
+handleFaeResponse (CollectTX txid) = undefined
 
 handleCoinRequest :: Int -> ReaderT (MVar ServerState, String) IO ()
 handleCoinRequest numCoins  = do

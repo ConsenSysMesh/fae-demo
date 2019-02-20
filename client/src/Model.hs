@@ -25,7 +25,6 @@ import qualified Data.IntMap.Lazy as IntMap
 import qualified Data.JSString as GJS
 import qualified Data.List as Li
 import qualified Data.Map as M
-import qualified Data.Map as M
 import Data.Maybe
 import Data.Monoid
 import qualified Data.Text.Lazy as W
@@ -44,7 +43,6 @@ import Servant.Utils.Links
 import Types
 import Data.UUID.V4
 import Control.Monad.IO.Class
-
 import GHCJS.Marshal
 
 

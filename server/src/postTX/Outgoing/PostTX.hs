@@ -37,42 +37,10 @@ import SharedTypes
 
 import FaeTXSummary
 
-parseTXSummary :: Text -> Either String TXSummary
-parseTXSummary jsonTxt = eitherDecode $ C.pack $ T.unpack jsonTxt
-
-postTX ::
-     AuctionTXin
-  -> ExceptT PostTXError (ReaderT TXConfig IO) (TXSummary)
-postTX tx = do
-  liftIO $ print command
-  (_pIn, pOut, pErr, handle) <- liftIO $ runInteractiveCommand command
-  -- Wait for the process to finish and store its exit code
-  exitCode <- liftIO $ waitForProcess handle
-  -- Get the standard output.
-  stdOutput <- liftIO $ hGetContents pOut
-  -- return both the output and the exit code.
-  liftIO $ print opts
-  liftIO $ putStrLn stdOutput
-  either (throwError . TXSummaryParseFailed) return (parseTXSummary $ T.pack stdOutput)
-  where
-    opts@PostTXOpts {..} = traceShow (getPostTXopts tx) (getPostTXopts tx)
-    envString = concat $ intersperse " " ((\(a, b) -> concat [ a, "=", b ]) <$> env)
-    command = concat $ intersperse " "
-        [
-          envString,
-          "stack",
-          "exec",
-          "postTX",
-          contractName,
-          "--",
-          "--json"
-        ]
-
 placeBid :: ExceptT PostTXError (ReaderT TXConfig IO) PostTXResponse
 placeBid = do
   config@(BidConfig key aucTXID coinTXID) <- ask
-  TXSummary{..} <-
-    postTX (BidTXin key aucTXID coinTXID)
+  TXSummary{..} <- postTX (BidTXin key aucTXID coinTXID)
   return $ BidTX transactionID aucTXID coinTXID (TXResult txResult)
 
 createAuction :: ExceptT PostTXError (ReaderT TXConfig IO) PostTXResponse
@@ -99,3 +67,38 @@ withdraw = do
   (WithdrawConfig key aucTXID) <- ask
   TXSummary{..} <- postTX (WithdrawTXin key aucTXID)
   return $ WithdrawTX transactionID
+
+collect :: ExceptT PostTXError (ReaderT TXConfig IO) PostTXResponse
+collect = do
+  (CollectConfig key aucTXID) <- ask
+  TXSummary{..} <- postTX (CollectTXin key aucTXID)
+  return $ CollectTX transactionID
+
+parseTXSummary :: Text -> Either String TXSummary
+parseTXSummary jsonTxt = eitherDecode $ C.pack $ T.unpack jsonTxt
+
+postTX :: AuctionTXin -> ExceptT PostTXError (ReaderT TXConfig IO) (TXSummary)
+postTX tx = do
+  liftIO $ print command
+  (_pIn, pOut, pErr, handle) <- liftIO $ runInteractiveCommand command
+  -- Wait for the process to finish and store its exit code
+  exitCode <- liftIO $ waitForProcess handle
+  -- Get the standard output.
+  stdOutput <- liftIO $ hGetContents pOut
+  -- return both the output and the exit code.
+  liftIO $ print opts
+  liftIO $ putStrLn stdOutput
+  either (throwError . TXSummaryParseFailed) return (parseTXSummary $ T.pack stdOutput)
+  where
+    opts@PostTXOpts {..} = traceShow (getPostTXopts tx) (getPostTXopts tx)
+    envString = concat $ intersperse " " ((\(a, b) -> concat [ a, "=", b ]) <$> env)
+    command = concat $ intersperse " "
+        [
+          envString,
+          "stack",
+          "exec",
+          "postTX",
+          contractName,
+          "--",
+          "--json"
+        ]

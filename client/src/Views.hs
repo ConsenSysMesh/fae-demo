@@ -228,7 +228,7 @@ auctionViewRight username maxBidCountField aucTXID bidFieldValue auction@Auction
       , div_
           [ class_ "auction-container-item"]
           [
-            retractBidsBtn | ((not $ auctionEnded auction) && hasBid username bids)
+            retractBidsBtn aucTXID | ((not $ auctionEnded auction) && hasBid username bids)
           ]
       ,
       div_
@@ -349,10 +349,10 @@ getBidHistTableRow Bid{..} =
 
 getBidHistTableRows bids = getBidHistTableRow <$> bids
 
-retractBidsBtn :: View Action
-retractBidsBtn =
+retractBidsBtn :: AucTXID -> View Action
+retractBidsBtn aucTXID =
   button_
       [ 
-          onClick (AppAction $ SendServerAction CollectRequest)
+          onClick (AppAction $ SendServerAction $ CollectRequest aucTXID)
       ]
       [text "Retract Bids"]

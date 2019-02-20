@@ -45,3 +45,7 @@ getPostTXopts (GetCoinTXin (Key key)) =
 getPostTXopts (GetMoreCoinsTXin (Key key) (CoinTXID coinTXID)) = 
   PostTXOpts { contractName = "GetMoreCoins", args = ["--","--json"], env = env}
   where env = [("ver", "Current"), ("self", key), ("key", key), ("coinTX", coinTXID)]
+
+getPostTXopts (CollectTXin (Key key) (AucTXID aucTXID)) = 
+  PostTXOpts { contractName = "Collect", args = ["--","--json"], env = env}
+  where env = [("self", key), ("key", key), ("aucTXID", aucTXID)]
