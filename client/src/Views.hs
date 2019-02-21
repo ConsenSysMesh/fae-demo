@@ -183,11 +183,23 @@ auctionViewLeft m@Model{..} currentPrice auction@Auction{..} =
           ]
       ,
       div_
-          [ class_ "auction-container-item view-types", onClick (AppAction ToggleShowBidHistory)   ]
-          [
-             button_ [ class_ (bool "segmented-btn l" "segmented-btn-active l" (showBidHistory))] [text "Fae TX Log"], 
-             button_ [ class_ (bool "segmented-btn r" "segmented-btn-active r" (not showBidHistory))] [text "Bid History"] 
-          ]
+          [ class_ "auction-container-item view-types" ]
+            [
+               button_ [ 
+               onClick (AppAction ToggleShowBidHistory), 
+               class_ (bool "segmented-btn l" "segmented-btn-active l" (showBidHistory))
+              ]
+              [
+                text "Fae TX Log"
+              ], 
+             button_ [ 
+               onClick (AppAction ToggleShowBidHistory),
+               class_ (bool "segmented-btn r" "segmented-btn-active r" (not showBidHistory))
+              ] 
+               [ 
+                 text "Bid History"
+               ]
+            ]
       ] ++ [ txLogTable txLog | not showBidHistory ]
         ++  [ bidHistoryTable auction | showBidHistory && Li.length bids /= 0 ]
         ++  [ h4_ [] [ text "No Bids Yet" ] | showBidHistory && Li.length bids == 0 ])
