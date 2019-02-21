@@ -183,9 +183,15 @@ button:hover {
 
 td {
     padding-right: 8px;
-    font-weight: 700;
-    font-family: 'Montserrat', 'sans-serif';
+    padding-top: 3px;
+    font-weight: 400;
+    font-family: 'Roboto', 'sans-serif';
     font-size: 16px;
+    padding-right: 8px;
+}
+
+.auction-container tr:first-child {
+    padding-left: 0;
 }
 
 .uppercase {
@@ -240,7 +246,7 @@ input[type=text]:focus {
 
 .tx-log-table {
     overflow-y: auto;
-    height: 100px;
+    height: 145px;
     margin-top: 22px;
 }
 
@@ -276,20 +282,26 @@ table {
     margin-top: 3em;
 }
 
-.auctions-table td {
-    padding: 20px 0px;
-    width: 150px;
-    font-weight: 700;
-    font-family: 'Roboto', 'sans-serif';
-    text-align: center;
-}
 
 .auctions-table th {
     font-weight: 700;
-    font-family: 'Montserrat', 'sans-serif';
+    font-family: 'Roboto', 'sans-serif';
     font-size: 16px;
+    padding-right: 8px;
 }
 
+th, td {
+    width: 6.2em;
+}
+
+th {
+    padding-bottom: 0.5em;
+}
+
+.info {
+    width: 12em;
+    font-family: 'Roboto', sans-serif;
+}
 
 /* segmented switch view btns */
 
@@ -319,3 +331,4 @@ table {
     border-radius: 40px 0px 0px 40px;
     border: 4px 0px 0px 4px solid #4C92E3;
 }
+

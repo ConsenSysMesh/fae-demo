@@ -115,7 +115,7 @@ getTableRow TXLogEntry{..} =
     [ td_ [class_ "hash-cell"] [text $ S.ms truncatedTXID]
     , td_ [class_ "timestamp-cell hash-cell padded"] [text $ S.ms $ format24hrTime entryTimestamp]
     , td_ [class_ "padded hash-cell"] [text $ S.ms entryUsername]
-    , td_ [class_ "padded hash-cell"] [text $ S.ms $ entryDescription]
+    , td_ [class_ "padded info"] [text $ S.ms $ entryDescription]
     ]
   where
     truncatedTXID = Li.take 6 entryTXID 
@@ -136,7 +136,7 @@ txLogTable txLogEntries = table
                         th_ [class_ ""] [text "TXID"]
                       , th_ [class_ "padded"] [text "Time"]
                       , th_ [class_ "padded"] [text "Bidder"]
-                      , th_ [class_ "padded"] [text "Info"]
+                      , th_ [class_ "padded info"] [text "Info"]
                     ]
                 , tbody_ [] $ getTableRows txLogEntries
                 ]
