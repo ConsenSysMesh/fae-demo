@@ -48,4 +48,4 @@ getPostTXopts (GetMoreCoinsTXin (Key key) (CoinTXID coinTXID)) =
 
 getPostTXopts (CollectTXin (Key key) (AucTXID aucTXID)) = 
   PostTXOpts { contractName = "Collect", args = ["--","--json"], env = env}
-  where env = [("self", key), ("key", key), ("aucTXID", aucTXID)]
+  where env = [("key", key), ("aucTX", aucTXID)]

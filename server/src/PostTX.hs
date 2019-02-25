@@ -26,7 +26,6 @@ executeContract conf@BidConfig {} = execute placeBid conf
 executeContract conf@CreateAuctionConfig {} = execute createAuction conf
 executeContract conf@GetCoinConfig {} = execute getCoin conf
 executeContract conf@GetMoreCoinsConfig {} = execute getMoreCoins conf
-executeContract conf@WithdrawConfig {} = execute withdraw conf
 executeContract conf@CollectConfig {} = execute collect conf
 
 execute ::

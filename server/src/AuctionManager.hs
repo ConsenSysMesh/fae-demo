@@ -1,5 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE TupleSections #-}
 
 ----------------------------------------------
 -- Post Auction Transactions To Fae
@@ -14,7 +15,11 @@ import PostTX
 import Prelude
 import Types
 import SharedTypes 
+import Data.Maybe 
+
+
 import PostTX.Types
+
 
 updateAuctionState :: ServerState -> Map AucTXID Auction -> ServerState
 updateAuctionState ServerState {..} auctionState =
@@ -61,3 +66,19 @@ highestBidder :: Auction -> String
 highestBidder Auction {..}
   | length bids > 0 = (getBidder . Li.last) bids
   | otherwise = "No Bidders"
+
+-- if the auction has ended then the collection by the loser doesn't affect the auction
+-- otherwise if the auction is in progress then any bidder who isn't winning can retract their
+-- bids through calling collect
+collect :: Username -> Auction -> (Auction, CoinCollection)
+collect (Username username) auc@Auction{..} 
+    | isUserHighestBidder = (,) auc $ CoinCollectionErr HighBidderCan'tCollect
+    | not aucStarted = (,) auc $ CoinCollectionErr AuctionNotStarted
+    | aucEnded = (,) Auction { bids = retractBids username bids, .. } $ BidsRetracted userBidsVal 
+    | otherwise = (,) auc $ LoserRefunded userBidsVal
+  where 
+      aucStarted = Li.length bids == 0
+      aucEnded = aucMaxBidCount == Li.length bids
+      isUserHighestBidder = highestBidder auc == username
+      userBidsVal = foldr (\Bid{..} bidsSum -> if bidder == username then bidValue + bidsSum else bidsSum) 0 bids
+      retractBids username = Li.filter (\Bid{..} -> bidder /= username)

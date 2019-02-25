@@ -23,7 +23,7 @@ data PostTXResponse
   | GetCoinTX TransactionID
   | GetMoreCoinsTX TransactionID
   | WithdrawTX TransactionID
-  | CollectTX TransactionID
+  | CollectTX TransactionID AucTXID
   deriving (Show, Eq)
 
 data TXConfig

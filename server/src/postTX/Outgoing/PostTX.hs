@@ -1,5 +1,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE FunctionalDependencies #-}
+
 
 module PostTX.Outgoing.PostTX where
 
@@ -41,38 +43,38 @@ placeBid :: ExceptT PostTXError (ReaderT TXConfig IO) PostTXResponse
 placeBid = do
   config@(BidConfig key aucTXID coinTXID) <- ask
   TXSummary{..} <- postTX (BidTXin key aucTXID coinTXID)
-  return $ BidTX transactionID aucTXID coinTXID (TXResult txResult)
+  if txResult /= "Bid accepted" then throwError $ TXFailed txResult else
+    return $ BidTX transactionID aucTXID coinTXID (TXResult txResult)
 
 createAuction :: ExceptT PostTXError (ReaderT TXConfig IO) PostTXResponse
 createAuction = do
   (CreateAuctionConfig key aucStartingValue maxBidCount) <- ask
   TXSummary{..} <- postTX (CreateAuctionTXin key)
-  return $ AuctionCreatedTX transactionID aucStartingValue maxBidCount
+  if txResult /= "()" then throwError $ TXFailed txResult else
+   return $ AuctionCreatedTX transactionID aucStartingValue maxBidCount
 
 getCoin :: ExceptT PostTXError (ReaderT TXConfig IO) PostTXResponse
 getCoin = do
   (GetCoinConfig key) <- ask
   TXSummary{..} <- postTX (GetCoinTXin key)
-  return $ GetCoinTX transactionID
+  if txResult /= "()" then throwError $ TXFailed txResult else
+    return $ GetCoinTX transactionID
 
 -- take the coins from an old cache destroy the cache and deposit the old coins + 1 new coin to a new cache
 getMoreCoins :: ExceptT PostTXError (ReaderT TXConfig IO) PostTXResponse
 getMoreCoins = do
   (GetMoreCoinsConfig key coinTXID) <- ask
   TXSummary{..} <- postTX (GetMoreCoinsTXin key coinTXID)
-  return $ GetMoreCoinsTX transactionID
+  if txResult /= "()" then throwError $ TXFailed txResult else
+    return $ GetMoreCoinsTX transactionID
 
-withdraw :: ExceptT PostTXError (ReaderT TXConfig IO) PostTXResponse
-withdraw = do
-  (WithdrawConfig key aucTXID) <- ask
-  TXSummary{..} <- postTX (WithdrawTXin key aucTXID)
-  return $ WithdrawTX transactionID
 
 collect :: ExceptT PostTXError (ReaderT TXConfig IO) PostTXResponse
 collect = do
   (CollectConfig key aucTXID) <- ask
   TXSummary{..} <- postTX (CollectTXin key aucTXID)
-  return $ CollectTX transactionID
+  if txResult /= "Collected" then throwError $ TXFailed txResult else
+    return $ CollectTX transactionID aucTXID
 
 parseTXSummary :: Text -> Either String TXSummary
 parseTXSummary jsonTxt = eitherDecode $ C.pack $ T.unpack jsonTxt
@@ -93,8 +95,7 @@ postTX tx = do
     opts@PostTXOpts {..} = traceShow (getPostTXopts tx) (getPostTXopts tx)
     envString = concat $ intersperse " " ((\(a, b) -> concat [ a, "=", b ]) <$> env)
     command = concat $ intersperse " "
-        [
-          envString,
+        [ envString,
           "stack",
           "exec",
           "postTX",

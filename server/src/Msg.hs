@@ -60,17 +60,18 @@ handleCollectRequest :: AucTXID -> ReaderT (MVar ServerState, String) IO ()
 handleCollectRequest aucTXID = do
   liftIO $ putStrLn "Requested to collect - "
   (state, clientName) <- ask
+  let key = Key clientName
   ServerState {..} <- liftIO $ readMVar state
   liftIO $ print "---------POSTING COLLECT TX-----------"
   faeOut <- liftIO $ postCollectTX key aucTXID
   ServerState {..} <- liftIO $ readMVar state
   handleFaeOutput faeOut
-  where  key = Key "bidder1"
 
 handleBidRequest :: AucTXID -> Int -> ReaderT (MVar ServerState, String) IO ()
 handleBidRequest aucTXID amount = do
   liftIO $ putStrLn $ concat ["Requested to bid - ", show amount]
   (state, clientName) <- ask
+  let key = Key clientName
   ServerState {..} <- liftIO $ readMVar state
   let client@Client{..} = fromJust $ getClient clients $ T.pack clientName --ugh fix fromJust --also just change the client name to be Text
   let clientWallet = getWallet wallet
@@ -80,18 +81,16 @@ handleBidRequest aucTXID amount = do
        ServerState {..} <- liftIO $ readMVar state
        handleFaeOutput faeOut
   else liftIO $ sendMsg conn $ ErrMsg NoCoins
-  where
-    key = Key "bidder1"
-    getWallet (Wallet wallet) = wallet
+  where getWallet (Wallet wallet) = wallet
 
 handleCreateAuctionRequest :: AuctionOpts -> ReaderT (MVar ServerState, String) IO ()
 handleCreateAuctionRequest AuctionOpts{..} = do
+  (state, clientName) <- ask
   liftIO $ updateStartingBid startingVal
   liftIO $ updateMaxBidCount maxBidCount
+  let key = Key clientName
   faeOut <- liftIO $ postCreateAuctionTX key startingVal maxBidCount
   handleFaeOutput faeOut
-  where
-    key = Key "bidder1"
 
 handleFaeResponse :: PostTXResponse -> ReaderT (MVar ServerState, String) IO ()
 handleFaeResponse (BidTX txid aucTXID coinTXID (TXResult txResult))
@@ -99,6 +98,7 @@ handleFaeResponse (BidTX txid aucTXID coinTXID (TXResult txResult))
     error ("Bid was not accepted by Fae, error: " ++ txResult) 
   | otherwise = do
   (state, clientName) <- ask
+  let key = Key clientName
   ServerState {..} <- liftIO $ readMVar state
   currentTime <- liftIO getCurrentTime
   let Client{..} = fromJust $ getClient clients $ T.pack clientName --ugh fix fromJust
@@ -133,18 +133,27 @@ handleFaeResponse (AuctionCreatedTX txid (AucStartingValue startingValue) (MaxBi
       currentTime <- getCurrentTime
       return Auction
         {createdBy = clientName, bids = [], createdTimestamp = currentTime, .. }
-handleFaeResponse (CollectTX txid) = undefined
+
+handleFaeResponse (CollectTX txid aucTXID) = do
+  (state, clientName) <- ask
+  let username = (Username clientName)
+  currentTime <- liftIO $ getCurrentTime
+  ServerState {..} <- liftIO $ readMVar state
+  let auc = fromMaybe (error "no such aucTXID") (M.lookup aucTXID auctions)
+  let (newAuction, collectionResult) = collect username auc
+  let updatedAuctions = M.insert aucTXID newAuction auctions
+  liftIO $ updateServerState state ServerState {auctions = updatedAuctions, ..}
+  liftIO $ broadcast state $ CollectionSubmitted (Username clientName) currentTime collectionResult aucTXID newAuction
 
 handleCoinRequest :: Int -> ReaderT (MVar ServerState, String) IO ()
 handleCoinRequest numCoins  = do
   liftIO $ putStrLn $ concat ["Requested generation of ", show numCoins]
   (state, clientName) <- ask
+  let key = Key clientName
   ServerState {..} <- liftIO $ readMVar state
   let Client{..} = fromMaybe (error "client doesn\'t exist in Map") (getClient clients (T.pack clientName))
   postTXResult <- liftIO $ runStateT (runExceptT $ generateCoins key numCoins wallet) wallet
   either (liftIO . sendMsg conn . ErrMsg . PostTXErr) ((flip (grantCoins numCoins)) (snd postTXResult)) (fst postTXResult)
-  where key = Key "bidder1"
---either (liftIO . sendMsg conn . ErrMsg . PostTXErr) 
 
 grantCoins :: Int -> TransactionID -> Wallet -> ReaderT (MVar ServerState, String) IO ()
 grantCoins numCoins txid newWallet = do

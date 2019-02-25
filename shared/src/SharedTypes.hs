@@ -8,20 +8,27 @@ import Data.Aeson.Types
 import Data.Time.Clock
 import Data.Time.Calendar
 import GHC.Generics
+import Data.Map.Lazy (Map)
+import  qualified Data.Map.Lazy as M
 
 import FaeTypes
 import FaeCrypto
 import FaeJSON
 
+import Data.Aeson
+import Data.Aeson.TH
+import qualified Data.Map as Map
+
+
 newtype Key =
   Key String
   deriving (Show, Eq, Generic, ToJSON, FromJSON)
-  -- id of the tx which created auction
 
 newtype Username =
     Username String
   deriving (Show, Eq, Generic, ToJSON, FromJSON)
 
+type CoinCount = Int
     
 newtype UTCTimestamp =
     UTCTimestamp UTCTime
@@ -42,14 +49,14 @@ data Auction = Auction
   , createdTimestamp :: UTCTime
   , startingValue :: Int
   , aucMaxBidCount :: Int
-  } deriving (Eq, Show, Generic, FromJSON, ToJSON)
+  } deriving (Eq, Ord, Show, Generic, FromJSON, ToJSON)
 
 data Bid = Bid
   { bidValue :: Int
   , bidder :: String
   , bidTimestamp :: UTCTime
   , isWinningBid :: Bool
-  } deriving (Eq, Show, Generic, FromJSON, ToJSON)
+  } deriving (Eq, Show, Ord, Generic, FromJSON, ToJSON)
 
 data AuctionOpts = AuctionOpts
  {  startingVal :: Int
@@ -63,13 +70,14 @@ data Msg
   | BidSubmitted String AucTXID -- outgoing
                  Bid
   | CollectRequest AucTXID-- incoming
-  | Collected String -- outgoing
+  | CollectionSubmitted Username UTCTime CoinCollection AucTXID Auction -- outgoing
   | AuctionCreated Username AucTXID
                    Auction -- outgoing
   | RequestCoins Int -- incoming 
   | CoinsGenerated String Username UTCTime Int -- outgoing
   | ErrMsg Err
   deriving (Show, Generic, FromJSON, ToJSON)
+
 
 data Err
   = PostTXErr PostTXError -- outgoing
@@ -82,3 +90,10 @@ data PostTXError
   | TXSummaryParseFailed String
   | TXInputFailed Int
   deriving (Show, Eq, Generic, ToJSON, FromJSON)
+
+-- Represents a user getting their coins back from an auction either through bid cancellation or losing the auction
+data CoinCollection = LoserRefunded CoinCount | BidsRetracted CoinCount | CoinCollectionErr CollectErr
+    deriving (Show, Eq, Generic, FromJSON, ToJSON)
+
+data CollectErr = HighBidderCan'tCollect | UserNotBidded | AuctionNotStarted
+    deriving (Show, Eq, Generic, FromJSON, ToJSON)
