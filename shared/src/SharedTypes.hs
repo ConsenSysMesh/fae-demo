@@ -70,7 +70,7 @@ data Msg
   | BidSubmitted String AucTXID -- outgoing
                  Bid
   | CollectRequest AucTXID-- incoming
-  | CollectionSubmitted Username UTCTime CoinCollection AucTXID Auction -- outgoing
+  | CollectionSubmitted String Username UTCTime CoinCollection AucTXID Auction -- outgoing
   | AuctionCreated Username AucTXID
                    Auction -- outgoing
   | RequestCoins Int -- incoming 

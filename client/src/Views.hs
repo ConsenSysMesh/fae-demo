@@ -239,14 +239,14 @@ auctionViewRight username maxBidCountField aucTXID bidFieldValue auction@Auction
           ]
       , div_
           [ class_ "auction-container-item"]
-          [
-            retractBidsBtn aucTXID | ((not $ auctionEnded auction) && hasBid username bids)
-          ]
+          auxActionBtns
       ,
       div_
       [ class_ "auction-container-item"]
       [
-        h3_ [] [text $ S.ms $ highestBidder auction <> " has won" | auctionEnded auction]
+        h3_ [] [
+              (text $ S.ms $ (bool ((highestBidder auction) <> " has won")  "You have won" (highestBidder auction == username))) | auctionEnded auction
+            ]
       ]
       ,
       div_
@@ -265,6 +265,10 @@ auctionViewRight username maxBidCountField aucTXID bidFieldValue auction@Auction
               [
                 text "Submit Bid"
               ]
+        canRetractBids = (not $ auctionEnded auction) && hasBid username bids && (not (username == highestBidder auction))
+        canWithdrawCoins = (auctionEnded auction) && hasBid username bids && (not (username == highestBidder auction))
+        auxActionBtns = [ withdrawCoinsBtn aucTXID | canWithdrawCoins ] ++ [ retractBidsBtn aucTXID | canRetractBids ]
+ 
 
 radialChart :: Int -> Int -> View Action
 radialChart bidCount 0 = div_ [class_ "c100 p0"] [ txt, div_ [class_ "slice"] [ div_ [class_ "bar"] [], div_ [class_ "fill"] [] ] ]
@@ -368,3 +372,21 @@ retractBidsBtn aucTXID =
           onClick (AppAction $ SendServerAction $ CollectRequest aucTXID)
       ]
       [text "Retract Bids"]
+
+-- any losing bidders can get their coins back this way
+withdrawCoinsBtn :: AucTXID -> View Action
+withdrawCoinsBtn aucTXID =
+  button_
+      [ 
+          onClick (AppAction $ SendServerAction $ CollectRequest aucTXID)
+      ]
+      [text "Retrieve Coins"]
+
+collectPrizeBtn :: AucTXID -> View Action
+collectPrizeBtn aucTXID =
+  button_
+      [ 
+          onClick (AppAction $ SendServerAction $ CollectRequest aucTXID)
+      ]
+      [text "Collect Prize"]
+      

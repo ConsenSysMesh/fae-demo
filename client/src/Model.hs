@@ -88,6 +88,11 @@ handleAppAction (ChangeURI u) m = m <# do
 handleAppAction (MintCoinsAndBid aucTXID coinCount) model = 
   mintCoinsAndBid coinCount aucTXID model
 
+handleAppAction (SendServerAction action@(BidRequest _ _)) Model{..} =
+  Model{ bidFieldValue = 0, ..} <# do
+    send action
+    pure (AppAction Noop)
+
 handleAppAction (SendServerAction action) model =
   model <# do
     send action
@@ -153,15 +158,25 @@ handleServerAction a@(BidSubmitted _  aucTXID bid@Bid{..}) m@Model {..} =
   noEff Model {
       auctions = updatedAuctions,
       accountBalance = accountBalance - bidValue, 
-      bidFieldValue = 0,
       txLog = newTXLog,
       ..}
   where
     updatedAuctions = bidOnAuction aucTXID bid auctions
     newTXLog = txLog ++ [getTXLogEntry a]
 
+handleServerAction a@(CollectionSubmitted _ _ _ (CoinCollectionErr _ ) _ _) model = noEff model
+
+handleServerAction a@(CollectionSubmitted _ _ _ collectionResult aucTXID newAuction) m@Model {..} =
+  noEff Model {
+      auctions = updatedAuctions,
+      txLog = newTXLog,
+      ..}
+  where
+    updatedAuctions = M.insert aucTXID newAuction auctions
+    newTXLog = txLog ++ [getTXLogEntry a]
+
 handleServerAction a@(CoinsGenerated txid (Username username) timestamp numCoins) Model {..} =
-  noEff Model {accountBalance = newBalance, bidFieldValue = newBalance, txLog = txLog ++ [getTXLogEntry a], ..} -- bidAmount == account balance for simplicity
+  noEff Model {accountBalance = newBalance, txLog = txLog ++ [getTXLogEntry a], ..} -- bidAmount == account balance for simplicity
   where newBalance = accountBalance + numCoins
 
 handleServerAction _ model = noEff model
@@ -180,6 +195,9 @@ getTXDescription :: Msg -> String
 getTXDescription (AuctionCreated _ (AucTXID aucTXID) auction) = "Auction created"
 getTXDescription (BidSubmitted _ (AucTXID aucTXID) Bid{..}) = Li.concat ["Raised bid by ", show bidValue, " ", bool "coin" "coins" (bidValue > 1)]
 getTXDescription (CoinsGenerated _ (Username username) _ coinCount) = Li.concat ["Minted ", show coinCount, " ", bool "coin" "coins" (coinCount > 1)]
+getTXDescription (CollectionSubmitted _ (Username clientName) currentTime collectionResult aucTXID newAuction) = case collectionResult of 
+  LoserRefunded coinCount -> Li.concat ["Coins refunded", show coinCount, " ", bool "coin" "coins" (coinCount > 1)]
+  BidsRetracted coinCount -> Li.concat ["Retracted bids and refunded", show coinCount, " ", bool "coin" "coins" (coinCount > 1)]
 getTXDescription _ = " "
 
 getTXLogEntry :: Msg -> TXLogEntry
@@ -195,6 +213,11 @@ getTXLogEntry msg@(AuctionCreated (Username entryUsername) (AucTXID entryTXID) A
       entryDescription = getTXDescription msg
       entryTimestamp = createdTimestamp
 getTXLogEntry msg@(CoinsGenerated entryTXID (Username entryUsername) timestamp coinCount) =
+  TXLogEntry {..}
+    where
+      entryDescription = getTXDescription msg
+      entryTimestamp = timestamp
+getTXLogEntry msg@(CollectionSubmitted entryTXID (Username entryUsername) timestamp collectionResult aucTXID newAuction) =
   TXLogEntry {..}
     where
       entryDescription = getTXDescription msg

@@ -143,7 +143,7 @@ handleFaeResponse (CollectTX txid aucTXID) = do
   let (newAuction, collectionResult) = collect username auc
   let updatedAuctions = M.insert aucTXID newAuction auctions
   liftIO $ updateServerState state ServerState {auctions = updatedAuctions, ..}
-  liftIO $ broadcast state $ CollectionSubmitted (Username clientName) currentTime collectionResult aucTXID newAuction
+  liftIO $ broadcast state $ CollectionSubmitted (show txid) (Username clientName) currentTime collectionResult aucTXID newAuction
 
 handleCoinRequest :: Int -> ReaderT (MVar ServerState, String) IO ()
 handleCoinRequest numCoins  = do
