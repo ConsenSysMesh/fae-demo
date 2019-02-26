@@ -147,7 +147,7 @@ auctionView  m@Model{..} startingVal aucTXID@(AucTXID txid) auction@Auction {..}
   div_ [class_ "auction-container"] [ 
     auctionViewLeft m currentPrice auction, 
     auctionViewRight (S.fromMisoString loggedInUsername) maxBidCountField aucTXID (bidFieldValue) auction]
-  where currentPrice = if Li.null bids then S.ms startingVal else S.ms $ currentBidValue auction
+  where currentPrice = if Li.null bids then S.ms startingVal else S.ms $ show $ currentBidValue auction
 
 auctionViewLeft m@Model{..} currentPrice auction@Auction{..} =
   div_
@@ -268,7 +268,6 @@ auctionViewRight username maxBidCountField aucTXID bidFieldValue auction@Auction
         canRetractBids = (not $ auctionEnded auction) && hasBid username bids && (not (username == highestBidder auction))
         canWithdrawCoins = (auctionEnded auction) && hasBid username bids && (not (username == highestBidder auction))
         auxActionBtns = [ withdrawCoinsBtn aucTXID | canWithdrawCoins ] ++ [ retractBidsBtn aucTXID | canRetractBids ]
- 
 
 radialChart :: Int -> Int -> View Action
 radialChart bidCount 0 = div_ [class_ "c100 p0"] [ txt, div_ [class_ "slice"] [ div_ [class_ "bar"] [], div_ [class_ "fill"] [] ] ]

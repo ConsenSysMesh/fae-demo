@@ -33,6 +33,7 @@ clientListener state clientName conn msgCallback =
     msg <- WS.receiveData conn
     s <- readMVar state
     for_ (parseMsg msg) $ \parsedMsg -> do
+      print msg
       runReaderT (msgCallback parsedMsg) (state, (T.unpack clientName)) -- fix this by using Text consistently for client names
 
 clientExists :: Client -> [Client] -> Bool

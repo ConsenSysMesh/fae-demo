@@ -43,13 +43,18 @@ placeBid :: ExceptT PostTXError (ReaderT TXConfig IO) PostTXResponse
 placeBid = do
   config@(BidConfig key aucTXID coinTXID) <- ask
   TXSummary{..} <- postTX (BidTXin key aucTXID coinTXID)
-  if txResult /= "Bid accepted" then throwError $ TXFailed txResult else
+  liftIO $ putStrLn txResult
+  liftIO $ print $ txResult /= "\"Bid accepted\"" 
+  if txResult /= "\"Bid accepted\"" && txResult /= "\"You won!\"" then throwError $ TXFailed txResult else
     return $ BidTX transactionID aucTXID coinTXID (TXResult txResult)
 
 createAuction :: ExceptT PostTXError (ReaderT TXConfig IO) PostTXResponse
 createAuction = do
   (CreateAuctionConfig key aucStartingValue maxBidCount) <- ask
   TXSummary{..} <- postTX (CreateAuctionTXin key)
+  liftIO $ putStrLn txResult
+  liftIO $ print $ txResult /= "()"
+  liftIO $ putStrLn txResult
   if txResult /= "()" then throwError $ TXFailed txResult else
    return $ AuctionCreatedTX transactionID aucStartingValue maxBidCount
 
@@ -57,6 +62,8 @@ getCoin :: ExceptT PostTXError (ReaderT TXConfig IO) PostTXResponse
 getCoin = do
   (GetCoinConfig key) <- ask
   TXSummary{..} <- postTX (GetCoinTXin key)
+  liftIO $ putStrLn txResult
+  liftIO $ print $ txResult /= "()" 
   if txResult /= "()" then throwError $ TXFailed txResult else
     return $ GetCoinTX transactionID
 
@@ -73,7 +80,7 @@ collect :: ExceptT PostTXError (ReaderT TXConfig IO) PostTXResponse
 collect = do
   (CollectConfig key aucTXID) <- ask
   TXSummary{..} <- postTX (CollectTXin key aucTXID)
-  if txResult /= "Collected" then throwError $ TXFailed txResult else
+  if txResult /= "\"Collected\"" then throwError $ TXFailed txResult else
     return $ CollectTX transactionID aucTXID
 
 parseTXSummary :: Text -> Either String TXSummary

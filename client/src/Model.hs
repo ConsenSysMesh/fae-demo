@@ -45,6 +45,7 @@ import Data.UUID.V4
 import Control.Monad.IO.Class
 import GHCJS.Marshal
 
+import Debug.Trace
 
 parseServerAction :: MisoString -> Action
 parseServerAction m =
@@ -183,17 +184,19 @@ handleServerAction _ model = noEff model
 
 mintCoinsAndBid :: Int -> AucTXID -> Model -> Effect Action Model
 mintCoinsAndBid targetBid aucTXID model@Model{..} = 
-  updateModel mintCoinsMsg model >>= updateModel bidMsg
+  traceShow (coinsNeededForBid) (updateModel mintCoinsMsg model >>= updateModel bidMsg) 
   where
     mintCoinsMsg = AppAction $ SendServerAction $ RequestCoins coinsNeededForBid
     bidMsg = AppAction $ SendServerAction $ BidRequest aucTXID targetBid
     noKeyErrMsg = "aucTXID key not found in auctions map"
-    auction@Auction{..} = fromMaybe (error noKeyErrMsg) (M.lookup aucTXID auctions)
-    coinsNeededForBid = if Li.length bids == 0 then targetBid else targetBid - currentBidValue auction
+    auc@Auction{..} = fromMaybe (error noKeyErrMsg) (M.lookup aucTXID auctions)
+    currUserBidVal = Li.foldr (\Bid{..} acc ->
+      if bidder == S.fromMisoString loggedInUsername then bidValue + acc else acc) 0 bids
+    coinsNeededForBid = if Li.null bids then targetBid else targetBid - (getUserBidTotal auc (S.fromMisoString loggedInUsername))
 
 getTXDescription :: Msg -> String
 getTXDescription (AuctionCreated _ (AucTXID aucTXID) auction) = "Auction created"
-getTXDescription (BidSubmitted _ (AucTXID aucTXID) Bid{..}) = Li.concat ["Raised bid by ", show bidValue, " ", bool "coin" "coins" (bidValue > 1)]
+getTXDescription (BidSubmitted _ (AucTXID aucTXID) Bid{..}) = Li.concat ["Raised bid to ", show bidValue, " ", bool "coin" "coins" (bidValue > 1)]
 getTXDescription (CoinsGenerated _ (Username username) _ coinCount) = Li.concat ["Minted ", show coinCount, " ", bool "coin" "coins" (coinCount > 1)]
 getTXDescription (CollectionSubmitted _ (Username clientName) currentTime collectionResult aucTXID newAuction) = case collectionResult of 
   LoserRefunded coinCount -> Li.concat ["Coins refunded", show coinCount, " ", bool "coin" "coins" (coinCount > 1)]

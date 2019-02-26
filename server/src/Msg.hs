@@ -76,8 +76,11 @@ handleBidRequest aucTXID amount = do
   let client@Client{..} = fromJust $ getClient clients $ T.pack clientName --ugh fix fromJust --also just change the client name to be Text
   let clientWallet = getWallet wallet
   let coinTXID = head $ M.keys clientWallet
+  liftIO $ print "------ is client wallet not null"
+  liftIO $ print $ not $ M.null clientWallet
   if not $ M.null clientWallet then do
        faeOut <- liftIO $ postBidTX key aucTXID coinTXID
+       liftIO $ print faeOut
        ServerState {..} <- liftIO $ readMVar state
        handleFaeOutput faeOut
   else liftIO $ sendMsg conn $ ErrMsg NoCoins
@@ -93,31 +96,31 @@ handleCreateAuctionRequest AuctionOpts{..} = do
   handleFaeOutput faeOut
 
 handleFaeResponse :: PostTXResponse -> ReaderT (MVar ServerState, String) IO ()
-handleFaeResponse (BidTX txid aucTXID coinTXID (TXResult txResult))
-  | txResult /= "\"You won!\"" && txResult  /= "\"Bid accepted\"" = 
-    error ("Bid was not accepted by Fae, error: " ++ txResult) 
+handleFaeResponse a@(BidTX txid aucTXID coinTXID (TXResult txResult))
+  | txResult /= "\"You won!\"" && txResult  /= "\"Bid accepted\"" = traceShow ("EERRROR")  (error ("Bid was not accepted by Fae, error: " ++ txResult)) 
   | otherwise = do
-  (state, clientName) <- ask
-  let key = Key clientName
-  ServerState {..} <- liftIO $ readMVar state
-  currentTime <- liftIO getCurrentTime
-  let Client{..} = fromJust $ getClient clients $ T.pack clientName --ugh fix fromJust
-  let unwrappedWallet = getWallet wallet
-  let bidAmount = fromMaybe (error "no such CoinTXID") $ M.lookup coinTXID unwrappedWallet
-  let auction@Auction{..} = fromMaybe (error "no such aucTXID") (M.lookup aucTXID auctions)
-  let cumulativeBidValue = if length bids == 0 then bidAmount else (+) bidAmount (currentBidValue $ auction)
-  newBid <- liftIO $ getNewBid clientName cumulativeBidValue
-  liftIO $ print cumulativeBidValue
-  let updatedAuctions = updateAuctionWithBid aucTXID newBid auctions
-  let newWallet = Wallet $ M.delete coinTXID $ unwrappedWallet  -- remove spent coin cache
-  liftIO $ updateServerState state ServerState {clients = updateClientWallet clients name newWallet, auctions = updatedAuctions}
-  liftIO $ broadcast state $ outgoingMsg newBid
-  where
-    getWallet (Wallet wallet) = wallet
-    getNewBid clientName bidAmount = do
-      currentTime <- getCurrentTime
-      return Bid {bidder = clientName, bidValue = bidAmount, bidTimestamp = currentTime, isWinningBid = txResult == "You won!"}
-    outgoingMsg = BidSubmitted (show txid) aucTXID 
+    (state, clientName) <- ask
+    liftIO $ print a
+    let key = Key clientName
+    ServerState {..} <- liftIO $ readMVar state
+    currentTime <- liftIO getCurrentTime
+    let Client{..} = fromJust $ getClient clients $ T.pack clientName --ugh fix fromJust
+    let unwrappedWallet = getWallet wallet
+    let bidAmount = fromMaybe (error "no such CoinTXID") $ M.lookup coinTXID unwrappedWallet
+    let auction@Auction{..} = fromMaybe (error "no such aucTXID") (M.lookup aucTXID auctions)
+    let cumulativeBidValue = if length bids == 0 then bidAmount else (+) bidAmount (currentBidValue $ auction)
+    newBid <- liftIO $ getNewBid clientName cumulativeBidValue
+    liftIO $ print cumulativeBidValue
+    let updatedAuctions = updateAuctionWithBid aucTXID newBid auctions
+    let newWallet = Wallet $ M.delete coinTXID $ unwrappedWallet  -- remove spent coin cache
+    liftIO $ updateServerState state ServerState {clients = updateClientWallet clients name newWallet, auctions = updatedAuctions}
+    liftIO $ broadcast state $ outgoingMsg newBid
+    where
+      getWallet (Wallet wallet) = wallet
+      getNewBid clientName bidAmount = do
+        currentTime <- getCurrentTime
+        return Bid {bidder = clientName, bidValue = bidAmount, bidTimestamp = currentTime, isWinningBid = txResult == "You won!"}
+      outgoingMsg = BidSubmitted (show txid) aucTXID 
 
 handleFaeResponse (AuctionCreatedTX txid (AucStartingValue startingValue) (MaxBidCount aucMaxBidCount)) = do
   (state, clientName) <- ask
