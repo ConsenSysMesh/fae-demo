@@ -85,3 +85,34 @@ collect (Username username) auc@Auction{..}
       isUserHighestBidder = highestBidder auc == username
       userBidsVal = foldr (\Bid{..} bidsSum -> if bidder == username then bidValue + bidsSum else bidsSum) 0 bids
       retractBids username = Li.filter (\Bid{..} -> bidder /= username)
+
+
+canRetractBids :: Auction -> Username -> Bool
+canRetractBids auc@Auction{..} user@(Username username) = aucInProgress && hasBid && not alreadyRetracted
+    where
+      aucStarted = Li.length bids == 0
+      aucEnded = aucMaxBidCount == Li.length bids
+      aucInProgress = aucStarted && not aucEnded
+      hasBid = getUserBidTotal auc username /= 0
+      alreadyRetracted = Li.any (== user) bidsRetracted
+
+-- encode first two invariant for bid retractions 
+--  1. auction is in progress
+--  2. given username has placed bids
+--  3. bids haven't already been retracted by username
+
+canRefundBids :: Auction -> Username -> Bool
+canRefundBids auc@Auction{..} user@(Username username) =
+    aucEnded && hasBid && (username /= winningBidder) && not alreadyRefunded
+    where
+      aucEnded = aucMaxBidCount == Li.length bids
+      hasBid = getUserBidTotal auc username /= 0
+      winningBidder = highestBidder auc
+      alreadyRetracted = Li.any (== user) bidsRetracted
+      alreadyRefunded = Li.any (== user) bidsRefunded
+
+-- second set of invariants would be that bids cannot be refunded unless
+-- 1. auction has ended
+-- 2. given username has placed bids
+-- 3. given username doesnt have the highest bid
+-- 4. bids haven't already been refunded to username
