@@ -142,7 +142,7 @@ handleFaeResponse (AuctionCreatedTX txid (AucStartingValue startingValue) (MaxBi
     getNewAuction clientName = do
       currentTime <- getCurrentTime
       return Auction
-        {createdBy = clientName, bids = [], createdTimestamp = currentTime, .. }
+        {createdBy = clientName, bids = [], bidsRetracted = [], bidsRefunded = [], createdTimestamp = currentTime, .. }
 
 handleFaeResponse (CollectTX txid aucTXID) = do
   (state, clientName) <- ask

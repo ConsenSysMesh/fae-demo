@@ -26,7 +26,7 @@ newtype Key =
 
 newtype Username =
     Username String
-  deriving (Show, Eq, Generic, ToJSON, FromJSON)
+  deriving (Show, Eq, Ord, Generic, ToJSON, FromJSON)
 
 type CoinCount = Int
     
@@ -49,7 +49,21 @@ data Auction = Auction
   , createdTimestamp :: UTCTime
   , startingValue :: Int
   , aucMaxBidCount :: Int
+  , bidsRetracted :: [Username]
+  , bidsRefunded :: [Username]
   } deriving (Eq, Ord, Show, Generic, FromJSON, ToJSON)
+
+-- encode first two invariant for bid retractions 
+--  1. auction is in progress
+--  2. given username has placed bids
+--  3. bids haven't already been retracted by username
+
+-- second set of invariants would be that bids cannot be refunded unless
+-- 1. auction has ended
+-- 2. given username has placed bids
+-- 3. given username doesnt have the highest bid
+-- 4. bids haven't already been refunded to username
+
 
 data Bid = Bid
   { bidValue :: Int
