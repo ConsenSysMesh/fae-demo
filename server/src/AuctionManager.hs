@@ -54,12 +54,9 @@ getBidValue Bid {..} = bidValue
 numBids :: Auction -> Int
 numBids Auction {..} = length bids
 
-getBidder :: Bid -> String
-getBidder Bid {..} = bidder
-
 currentBidValue :: Auction -> Int
 currentBidValue Auction {..}
-  | length bids > 0 = (getBidValue . head) bids
+  | length bids > 0 = (bidder . head) bids
   | otherwise = 0
   
 getUserBidTotal :: Auction -> String -> Int
@@ -110,6 +107,12 @@ canRefundBids auc@Auction{..} user@(Username username) =
       winningBidder = highestBidder auc
       alreadyRetracted = Li.any (== user) bidsRetracted
       alreadyRefunded = Li.any (== user) bidsRefunded
+
+retractBids :: Auction -> Username -> Auction
+retractBids auc@Auction{..} user@(Username username) = Auction{ bidsRetracted = user : bidsRefunded, ..}
+
+refundBids :: Auction -> Username -> Auction
+refundBids auc@Auction{..} user@(Username username) = Auction{ bidsRefunded = user : bidsRefunded, ..}
 
 -- second set of invariants would be that bids cannot be refunded unless
 -- 1. auction has ended
