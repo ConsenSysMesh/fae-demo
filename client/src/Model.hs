@@ -155,12 +155,12 @@ handleServerAction a@(AuctionCreated (Username username) aucTXID auction) Model 
     newTXLog = txLog ++ [getTXLogEntry a]
     updatedAuctions = createAuction aucTXID auction auctions
 
-handleServerAction a@(BidSubmitted _  aucTXID bid@Bid{..}) m@Model {..} =
+handleServerAction a@(BidSubmitted _  aucTXID bid@Bid{..}) m@Model {..} = traceShow a (
   noEff Model {
       auctions = updatedAuctions,
       accountBalance = accountBalance - bidValue, 
       txLog = newTXLog,
-      ..}
+      ..})
   where
     updatedAuctions = bidOnAuction aucTXID bid auctions
     newTXLog = txLog ++ [getTXLogEntry a]

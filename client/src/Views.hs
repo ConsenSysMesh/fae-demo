@@ -267,7 +267,8 @@ auctionViewRight username maxBidCountField aucTXID bidFieldValue auction@Auction
               ]
         canRetractBids = (not $ auctionEnded auction) && hasBid username bids && (not (username == highestBidder auction))
         canWithdrawCoins = (auctionEnded auction) && hasBid username bids && (not (username == highestBidder auction))
-        auxActionBtns = [ withdrawCoinsBtn aucTXID | canWithdrawCoins ] ++ [ retractBidsBtn aucTXID | canRetractBids ]
+        usersBidTotal = getUserBidTotal auction username
+        auxActionBtns = [ withdrawCoinsBtn aucTXID usersBidTotal | canWithdrawCoins ] ++ [ retractBidsBtn aucTXID | canRetractBids ]
 
 radialChart :: Int -> Int -> View Action
 radialChart bidCount 0 = div_ [class_ "c100 p0"] [ txt, div_ [class_ "slice"] [ div_ [class_ "bar"] [], div_ [class_ "fill"] [] ] ]
@@ -373,13 +374,13 @@ retractBidsBtn aucTXID =
       [text "Retract Bids"]
 
 -- any losing bidders can get their coins back this way
-withdrawCoinsBtn :: AucTXID -> View Action
-withdrawCoinsBtn aucTXID =
+withdrawCoinsBtn :: AucTXID -> Int -> View Action
+withdrawCoinsBtn aucTXID coinAmount =
   button_
       [ 
           onClick (AppAction $ SendServerAction $ CollectRequest aucTXID)
       ]
-      [text "Retrieve Coins"]
+      [text $ "Retrieve " <> (S.ms $ show coinAmount <> (bool " Coin" " Coins" (coinAmount > 1) ))]
 
 collectPrizeBtn :: AucTXID -> View Action
 collectPrizeBtn aucTXID =
@@ -388,4 +389,3 @@ collectPrizeBtn aucTXID =
           onClick (AppAction $ SendServerAction $ CollectRequest aucTXID)
       ]
       [text "Collect Prize"]
-      

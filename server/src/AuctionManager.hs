@@ -60,7 +60,10 @@ getBidder Bid {..} = bidder
 currentBidValue :: Auction -> Int
 currentBidValue Auction {..}
   | length bids > 0 = (getBidValue . head) bids
-  | otherwise = startingValue
+  | otherwise = 0
+  
+getUserBidTotal :: Auction -> String -> Int
+getUserBidTotal Auction {..} username = maybe 0 bidValue (Li.find (((==) username) . bidder) bids)
 
 highestBidder :: Auction -> String
 highestBidder Auction {..}
@@ -76,7 +79,7 @@ collect (Username username) auc@Auction{..}
     | not aucStarted = (,) auc $ CoinCollectionErr AuctionNotStarted
     | aucEnded = (,) Auction { bids = retractBids username bids, .. } $ BidsRetracted userBidsVal 
     | otherwise = (,) auc $ LoserRefunded userBidsVal
-  where 
+  where
       aucStarted = Li.length bids == 0
       aucEnded = aucMaxBidCount == Li.length bids
       isUserHighestBidder = highestBidder auc == username

@@ -37,7 +37,7 @@ import Text.Pretty.Simple (pPrint)
 
 msgHandler :: Msg -> ReaderT (MVar ServerState, String) IO ()
 msgHandler (RequestCoins numCoins) = handleCoinRequest numCoins
-msgHandler (BidRequest aucTXID amount) = handleBidRequest aucTXID amount
+msgHandler a@(BidRequest aucTXID amountToBidUpTo) = traceShow a (handleBidRequest aucTXID amountToBidUpTo)
 msgHandler (CreateAuctionRequest auctionOpts) = handleCreateAuctionRequest auctionOpts
 msgHandler a@(CollectRequest aucTXID) = traceShow a (handleCollectRequest aucTXID) 
 
@@ -68,8 +68,8 @@ handleCollectRequest aucTXID = do
   handleFaeOutput faeOut
 
 handleBidRequest :: AucTXID -> Int -> ReaderT (MVar ServerState, String) IO ()
-handleBidRequest aucTXID amount = do
-  liftIO $ putStrLn $ concat ["Requested to bid - ", show amount]
+handleBidRequest aucTXID amountToBidUpTo = do
+  liftIO $ putStrLn $ concat ["Requested to bid - up to ", show amountToBidUpTo]
   (state, clientName) <- ask
   let key = Key clientName
   ServerState {..} <- liftIO $ readMVar state
@@ -101,23 +101,30 @@ handleFaeResponse a@(BidTX txid aucTXID coinTXID (TXResult txResult))
   | otherwise = do
     (state, clientName) <- ask
     liftIO $ print a
-    let key = Key clientName
     ServerState {..} <- liftIO $ readMVar state
     currentTime <- liftIO getCurrentTime
-    let Client{..} = fromJust $ getClient clients $ T.pack clientName --ugh fix fromJust
-    let unwrappedWallet = getWallet wallet
-    let bidAmount = fromMaybe (error "no such CoinTXID") $ M.lookup coinTXID unwrappedWallet
-    let auction@Auction{..} = fromMaybe (error "no such aucTXID") (M.lookup aucTXID auctions)
-    let cumulativeBidValue = if length bids == 0 then bidAmount else (+) bidAmount (currentBidValue $ auction)
-    newBid <- liftIO $ getNewBid clientName cumulativeBidValue
-    liftIO $ print cumulativeBidValue
-    let updatedAuctions = updateAuctionWithBid aucTXID newBid auctions
-    let newWallet = Wallet $ M.delete coinTXID $ unwrappedWallet  -- remove spent coin cache
+    let 
+      Client{..} = fromMaybe (error "couldn't find the client with given name") (getClient clients $ T.pack clientName)
+      unwrappedWallet = getWallet wallet
+      auction@Auction{..} = fromMaybe (error "no such aucTXID") (M.lookup aucTXID auctions)
+      userTotalBidSoFar = getUserBidTotal auction clientName
+      userRaisedTheirBidBy = fromMaybe (error "no such CoinTXID") $ M.lookup coinTXID unwrappedWallet
+      auctionsNewCurrBidVal = userRaisedTheirBidBy + userTotalBidSoFar
+    bid <- liftIO $ getBid clientName auctionsNewCurrBidVal
+    liftIO $ putStrLn "USER Total bid so far - "
+    liftIO $ print userTotalBidSoFar
+    liftIO $ putStrLn "USER RAISED THEIR OWN BID BY IS - "
+    liftIO $ print userRaisedTheirBidBy
+    liftIO $ putStrLn "NEW AUCTION BID AMOUNT REPORTED IS - "
+    liftIO $ print auctionsNewCurrBidVal
+    let 
+      updatedAuctions = updateAuctionWithBid aucTXID bid auctions
+      newWallet = Wallet $ M.delete coinTXID $ unwrappedWallet  -- remove spent coin cache
     liftIO $ updateServerState state ServerState {clients = updateClientWallet clients name newWallet, auctions = updatedAuctions}
-    liftIO $ broadcast state $ outgoingMsg newBid
+    liftIO $ broadcast state $ outgoingMsg bid
     where
       getWallet (Wallet wallet) = wallet
-      getNewBid clientName bidAmount = do
+      getBid clientName bidAmount = do
         currentTime <- getCurrentTime
         return Bid {bidder = clientName, bidValue = bidAmount, bidTimestamp = currentTime, isWinningBid = txResult == "You won!"}
       outgoingMsg = BidSubmitted (show txid) aucTXID 

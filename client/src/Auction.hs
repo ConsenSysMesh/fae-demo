@@ -73,12 +73,8 @@ currentBidValue auc@Auction {..}
 
 getUserBidTotal :: Auction -> String -> Int
 getUserBidTotal Auction {..} username = maybe 0 bidValue (Li.find (((==) username) . bidder) bids)
-  --Li.foldr (\Bid{..} acc -> if bidder == username then bidValue + acc else acc) 0 bids
-
 
 highestBidder :: Auction -> String
 highestBidder Auction {..}
   | length bids > 0 = (getBidder . Li.head) bids
   | otherwise = "No Bidders"
-
---aucCurrentPrice Auction{..} = bidValue $ Li.head bids
