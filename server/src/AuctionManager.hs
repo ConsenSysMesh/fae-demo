@@ -17,9 +17,8 @@ import Types
 import SharedTypes 
 import Data.Maybe 
 
-
+import Debug.Trace
 import PostTX.Types
-
 
 updateAuctionState :: ServerState -> Map AucTXID Auction -> ServerState
 updateAuctionState ServerState {..} auctionState =
@@ -56,43 +55,41 @@ numBids Auction {..} = length bids
 
 currentBidValue :: Auction -> Int
 currentBidValue Auction {..}
-  | length bids > 0 = (bidder . head) bids
+  | length bids > 0 = bidValue $ head bids
   | otherwise = 0
   
 getUserBidTotal :: Auction -> String -> Int
 getUserBidTotal Auction {..} username = maybe 0 bidValue (Li.find (((==) username) . bidder) bids)
 
+-- use maybe instead
 highestBidder :: Auction -> String
 highestBidder Auction {..}
-  | length bids > 0 = (getBidder . Li.last) bids
+  | length bids > 0 = bidder $ Li.head bids
   | otherwise = "No Bidders"
 
 -- if the auction has ended then the collection by the loser doesn't affect the auction
 -- otherwise if the auction is in progress then any bidder who isn't winning can retract their
 -- bids through calling collect
 collect :: Username -> Auction -> (Auction, CoinCollection)
-collect (Username username) auc@Auction{..} 
-    | isUserHighestBidder = (,) auc $ CoinCollectionErr HighBidderCan'tCollect
-    | not aucStarted = (,) auc $ CoinCollectionErr AuctionNotStarted
-    | aucEnded = (,) Auction { bids = retractBids username bids, .. } $ BidsRetracted userBidsVal 
-    | otherwise = (,) auc $ LoserRefunded userBidsVal
+collect username@(Username user) auc@Auction{..} 
+    | aucEnded = (,) Auction { bidsRefunded = username : bidsRefunded, .. } $ LoserRefunded userBidsVal
+    | otherwise = (,) Auction { bidsRetracted = username : bidsRetracted, .. } $ BidsRetracted userBidsVal 
   where
-      aucStarted = Li.length bids == 0
       aucEnded = aucMaxBidCount == Li.length bids
-      isUserHighestBidder = highestBidder auc == username
-      userBidsVal = foldr (\Bid{..} bidsSum -> if bidder == username then bidValue + bidsSum else bidsSum) 0 bids
-      retractBids username = Li.filter (\Bid{..} -> bidder /= username)
-
+      isUserHighestBidder = highestBidder auc == user
+      userBidsVal = foldr (\Bid{..} bidsSum -> if bidder == user then bidValue + bidsSum else bidsSum) 0 bids
+      retractBids username = Li.filter (\Bid{..} -> bidder /= user)
 
 canRetractBids :: Auction -> Username -> Bool
-canRetractBids auc@Auction{..} user@(Username username) = aucInProgress && hasBid && not alreadyRetracted
+canRetractBids auc@Auction{..} user@(Username username) = traceShow ("username: " <> username <> " auc in progress " <> show aucInProgress <>   " hasBid " <> show hasBid <> "  | " <> "alreadyRetracted " <> show alreadyRetracted <> " \n") (aucInProgress && hasBid && not (winningBidder == username) && not alreadyRetracted)
     where
-      aucStarted = Li.length bids == 0
+      aucStarted = Li.length bids > 0
       aucEnded = aucMaxBidCount == Li.length bids
       aucInProgress = aucStarted && not aucEnded
       hasBid = getUserBidTotal auc username /= 0
+      winningBidder = highestBidder auc
       alreadyRetracted = Li.any (== user) bidsRetracted
-
+      
 -- encode first two invariant for bid retractions 
 --  1. auction is in progress
 --  2. given username has placed bids

@@ -80,7 +80,10 @@ collect :: ExceptT PostTXError (ReaderT TXConfig IO) PostTXResponse
 collect = do
   (CollectConfig key aucTXID) <- ask
   TXSummary{..} <- postTX (CollectTXin key aucTXID)
-  if txResult /= "\"Collect\"" then throwError $ TXFailed txResult else
+  liftIO $ print "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! \n"
+  liftIO $ print txResult
+  liftIO $ print $ txResult == "\"Collected\"" 
+  if txResult /= "\"Collected\"" then throwError $ TXFailed txResult else
     return $ CollectTX transactionID aucTXID
 
 parseTXSummary :: Text -> Either String TXSummary

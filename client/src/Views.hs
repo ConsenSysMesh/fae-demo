@@ -332,7 +332,6 @@ loginForm Model {..} =
         ]
     ]
 
-
 bidHistoryTable Auction{..} = table
   where table =  div_
             [class_ "tx-log-table"]
@@ -360,7 +359,6 @@ getBidHistTableRow Bid{..} =
     , td_ [class_ "hash-cell padded"] [text $ S.ms bidder]
     , td_ [class_ "hash-cell padded"] [text $ S.ms $ bidValue]
     ]
-
 
 getBidHistTableRows bids = getBidHistTableRow <$> bids
 

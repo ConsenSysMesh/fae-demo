@@ -17,7 +17,6 @@ import Control.Monad.Except
 import Data.Either
 import Data.Maybe
 import Control.Monad.Trans.State.Lazy
-
 import Data.Text (Text)
 import Data.List
 import qualified Data.Text as T
@@ -107,7 +106,8 @@ handleFaeResponse a@(BidTX txid aucTXID coinTXID (TXResult txResult))
       Client{..} = fromMaybe (error "couldn't find the client with given name") (getClient clients $ T.pack clientName)
       unwrappedWallet = getWallet wallet
       auction@Auction{..} = fromMaybe (error "no such aucTXID") (M.lookup aucTXID auctions)
-      userTotalBidSoFar = getUserBidTotal auction clientName
+      hasRetractedPrevBids = any ((==) $ Username clientName) bidsRetracted
+      userTotalBidSoFar = if hasRetractedPrevBids then 0 else getUserBidTotal auction clientName
       userRaisedTheirBidBy = fromMaybe (error "no such CoinTXID") $ M.lookup coinTXID unwrappedWallet
       auctionsNewCurrBidVal = userRaisedTheirBidBy + userTotalBidSoFar
     bid <- liftIO $ getBid clientName auctionsNewCurrBidVal

@@ -73,17 +73,18 @@ getUserBidTotal Auction {..} username = maybe 0 bidValue (Li.find (((==) usernam
 
 highestBidder :: Auction -> String
 highestBidder Auction {..}
-  | length bids > 0 = (bidder . Li.head) bids
+  | length bids > 0 = bidder $ Li.head bids
   | otherwise = "No Bidders"
 
 canRetractBids :: Auction -> Username -> Bool
-canRetractBids auc@Auction{..} user@(Username username) = aucInProgress && hasBid && not alreadyRetracted
+canRetractBids auc@Auction{..} user@(Username username) = traceShow ("username: " <> username <> " auc in progress " <> show aucInProgress <>   " hasBid " <> show hasBid <> "  | " <> "alreadyRetracted " <> show alreadyRetracted <> " \n") (aucInProgress && hasBid && not (winningBidder == username) && not alreadyRetracted)
     where
-      aucStarted = (traceShow (Li.length bids == 0) (Li.length bids == 0))
-      aucEnded = traceShow (aucMaxBidCount == Li.length bids) (aucMaxBidCount == Li.length bids)
-      aucInProgress = traceShow (aucStarted && not aucEnded) (aucMaxBidCount == Li.length bids)
-      hasBid = traceShow (getUserBidTotal auc username /= 0) (aucMaxBidCount == Li.length bids)
-      alreadyRetracted = traceShow (Li.any (== user) bidsRetracted) (aucMaxBidCount == Li.length bids)
+      aucStarted = Li.length bids > 0
+      aucEnded = aucMaxBidCount == Li.length bids
+      aucInProgress = aucStarted && not aucEnded
+      hasBid = getUserBidTotal auc username /= 0
+      winningBidder = highestBidder auc
+      alreadyRetracted = Li.any (== user) bidsRetracted
 
 -- encode first two invariant for bid retractions 
 --  1. auction is in progress
